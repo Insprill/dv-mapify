@@ -1,0 +1,22 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapify", "Mapify/Mapify.csproj", "{57D181A9-9D9D-4EBA-BBDD-9172EEB79983}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBD}") = "MapifyEditor", "MapifyEditor/MapifyEditor.csproj", "{57D181A9-9D9D-4EBA-BBDD-9172EEB79984}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57D181A9-9D9D-4EBA-BBDD-9172EEB79983}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57D181A9-9D9D-4EBA-BBDD-9172EEB79983}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57D181A9-9D9D-4EBA-BBDD-9172EEB79983}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57D181A9-9D9D-4EBA-BBDD-9172EEB79983}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57D181A9-9D9D-4EBA-BBDD-9172EEB79984}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57D181A9-9D9D-4EBA-BBDD-9172EEB79984}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57D181A9-9D9D-4EBA-BBDD-9172EEB79984}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57D181A9-9D9D-4EBA-BBDD-9172EEB79984}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+EndGlobal

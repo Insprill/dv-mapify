@@ -1,0 +1,8 @@
+{
+  "Id": "Mapify",
+  "Version": "0.1.0",
+  "DisplayName": "Mapify",
+  "Author": "Insprill",
+  "EntryMethod": "Mapify.Main.Load",
+  "ManagerVersion": "0.25.0"
+}

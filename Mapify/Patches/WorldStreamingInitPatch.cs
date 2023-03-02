@@ -11,7 +11,6 @@ using Mapify.Editor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// todo: some world assets are still being loaded... no idea from where
 namespace Mapify.Patches
 {
     [HarmonyPatch(typeof(WorldStreamingInit), "Awake")]
@@ -41,6 +40,11 @@ namespace Mapify.Patches
 
             // Register scene loaded hook
             SceneManager.sceneLoaded += OnSceneLoad;
+
+            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>())
+            {
+                Object.Destroy(streamer);
+            }
             return true;
         }
 

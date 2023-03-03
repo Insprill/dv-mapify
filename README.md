@@ -53,7 +53,7 @@ They said it couldn't be done, so I did it :)
 ## Creating Maps
 
 ### Project Setup
-1. Create a new 3D project with Unity 2019.4.40.
+1. Create a new 3D project with Unity **2019.4.22f1**.
 2. Import *only the `Editor` folder* of the [Bezier Curve Editor](https://assetstore.unity.com/packages/tools/bezier-curve-editor-11278) asset from the Unity Asset Store.
 3. Copy `../DerailValley_Data/Managed/BezierCurves.dll` from your Derail Valley installation directory into the `Scripts` folder.
 4. Import the [Post Processing](https://docs.unity3d.com/Packages/com.unity.postprocessing@3.2/manual/index.html) package from the Package Manager.
@@ -106,7 +106,8 @@ Note that shortcuts like `%ProgramFiles%` *cannot* be used.
     <PropertyGroup>
         <ReferencePath>
             C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\DerailValley_Data\Managed\;
-            C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\DerailValley_Data\Managed\UnityModManager\
+            C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\DerailValley_Data\Managed\UnityModManager\;
+            C:\Program Files\Unity\Hub\Editor\2019.4.22f1\Editor\Data\Managed
         </ReferencePath>
         <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>
     </PropertyGroup>
@@ -125,7 +126,8 @@ Make sure to include the semicolons between each of the paths, but not after the
     <PropertyGroup>
         <ReferencePath>
             /home/username/.local/share/Steam/steamapps/common/Derail Valley/DerailValley_Data/Managed/;
-            /home/username/.local/share/Steam/steamapps/common/Derail Valley/DerailValley_Data/Managed/UnityModManager/
+            /home/username/.local/share/Steam/steamapps/common/Derail Valley/DerailValley_Data/Managed/UnityModManager/;
+            /home/username/.local/share/UnityHub/Editor/2019.4.22f1/Editor/Data/Managed/
         </ReferencePath>
         <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>
     </PropertyGroup>

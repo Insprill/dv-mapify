@@ -9,6 +9,7 @@ using DV.TerrainSystem;
 using DV.WorldTools;
 using HarmonyLib;
 using Mapify.Editor;
+using Mapify.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,12 +18,19 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(WorldStreamingInit), "Awake")]
     public static class WorldStreamingInit_Awake_Patch
     {
+        private static string originalRailwayScenePath;
+        private static readonly Dictionary<string, GameObject> switchPrefabs = new Dictionary<string, GameObject>(4);
+
         public static bool Prefix(WorldStreamingInit __instance)
         {
             // todo: can we do this without the user specifying the bundles and us hardcoding the names?
             // Load asset bundles
             AssetBundle assets = AssetBundle.LoadFromFile(Path.Combine(Main.ModEntry.Path, "Map/assets"));
             AssetBundle.LoadFromFile(Path.Combine(Main.ModEntry.Path, "Map/scenes"));
+
+            originalRailwayScenePath = __instance.railwayScenePath;
+            Main.Logger.Log($"Loading default railway scene ({originalRailwayScenePath}) to copy assets from");
+            SceneManager.LoadScene(originalRailwayScenePath, LoadSceneMode.Additive);
 
             // todo: do we need to hardcode these?
             // Set what scenes to load
@@ -51,20 +59,25 @@ namespace Mapify.Patches
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
             if (scene.path == wsi.terrainsScenePath)
             {
-                Main.Logger.Log($"Loading terrain scene at {wsi.terrainsScenePath}");
+                Main.Logger.Log($"Loaded terrain scene at {wsi.terrainsScenePath}");
                 SetupDistantTerrain(scene.GetRootGameObjects().FirstOrDefault(o => o.name == "[distant terrain]"));
                 SetupTerrainGrid();
             }
             else if (scene.path == wsi.railwayScenePath)
             {
-                Main.Logger.Log($"Loading railway scene at {wsi.railwayScenePath}");
+                Main.Logger.Log($"Loaded railway scene at {wsi.railwayScenePath}");
                 SetupRailTracks();
                 CreateSigns();
             }
             else if (scene.path == wsi.gameContentScenePath)
             {
-                Main.Logger.Log($"Loading game content scene at {wsi.gameContentScenePath}");
+                Main.Logger.Log($"Loaded game content scene at {wsi.gameContentScenePath}");
                 SetupGameScene();
+            }
+            else if (scene.path == originalRailwayScenePath)
+            {
+                Main.Logger.Log($"Loaded default railway scene at {originalRailwayScenePath}");
+                CopyDefaultAssets(originalRailwayScenePath);
             }
         }
 
@@ -96,11 +109,10 @@ namespace Mapify.Patches
 
         private static void SetupRailTracks()
         {
+            Main.Logger.Log("Creating RailTracks");
             Track[] tracks = Object.FindObjectsOfType<Track>();
             foreach (Track track in tracks)
             {
-                BezierCurve curve = track.gameObject.GetComponent<BezierCurve>();
-                curve.resolution = 0.5f;
                 track.gameObject.SetActive(false);
                 RailTrack railTrack = track.gameObject.AddComponent<RailTrack>();
                 railTrack.dontChange = false;
@@ -108,80 +120,172 @@ namespace Mapify.Patches
                 railTrack.ApplyRailType();
             }
 
+            Main.Logger.Log("Creating Junctions");
+            Switch[] switches = Object.FindObjectsOfType<Switch>();
+            foreach (Switch sw in switches)
+            {
+                CreateJunction(sw);
+            }
+
+            Main.Logger.Log("Connecting tracks");
             foreach (Track track in tracks)
             {
-                RailTrack railTrack = track.gameObject.GetComponent<RailTrack>();
-                if (track.inTrack)
-                    railTrack.inBranch = new Junction.Branch(track.inTrack.GetComponent<RailTrack>(), true);
-                if (track.outTrack)
-                    railTrack.outBranch = new Junction.Branch(track.outTrack.GetComponent<RailTrack>(), false);
+                ConnectRailTrack(track);
                 track.gameObject.SetActive(true);
             }
 
+            foreach (Switch sw in switches) GameObject.DestroyImmediate(sw.gameObject);
+
             RailManager.AlignAllTrackEnds();
+            RailManager.TestConnections();
+        }
+
+        private static void CopyDefaultAssets(string scenePath)
+        {
+            Scene scene = SceneManager.GetSceneByPath(scenePath);
+            if (!scene.isLoaded)
+            {
+                Main.Logger.Error($"Default scene {scenePath} isn't loaded!");
+                return;
+            }
+
+            GameObject[] gameObjects = scene.GetRootGameObjects();
+            GameObject railwayRoot = null;
+            foreach (GameObject rootObject in gameObjects)
+            {
+                rootObject.SetActive(false);
+                if (rootObject.name != "[railway]") continue;
+                railwayRoot = rootObject;
+                Main.Logger.Log("Moving [railway] to the active scene");
+                SceneManager.MoveGameObjectToScene(rootObject, SceneManager.GetActiveScene());
+                break;
+            }
+
+            Main.Logger.Log("Unloading default railway scene");
+            // cope
+#pragma warning disable CS0618
+            SceneManager.UnloadScene(scene);
+#pragma warning restore CS0618
+
+            if (railwayRoot == null)
+            {
+                Main.Logger.Error("Failed to find [railway]!");
+                return;
+            }
+
+            for (int i = 0; i < railwayRoot.transform.childCount; i++)
+            {
+                GameObject gameObject = railwayRoot.transform.GetChild(i).gameObject;
+                string name = gameObject.name;
+                switch (name)
+                {
+                    case "junc-left":
+                    case "junc-right":
+                    case "junc-left-outer-sign":
+                    case "junc-right-outer-sign":
+                        if (switchPrefabs.ContainsKey(name) || gameObject.transform.rotation.x != 0.0f || gameObject.transform.rotation.z != 0.0f) continue;
+                        Main.Logger.Log($"Found {name}");
+                        CleanupSwitch(gameObject);
+                        switchPrefabs[name] = gameObject;
+                        break;
+                }
+            }
+
+            GameObject.DestroyImmediate(railwayRoot);
+        }
+
+        private static void CleanupSwitch(GameObject gameObject)
+        {
+            gameObject.transform.SetParent(null);
+            gameObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            foreach (Junction junction in gameObject.GetComponentsInChildren<Junction>()) Object.Destroy(junction);
+            foreach (BezierCurve curve in gameObject.GetComponentsInChildren<BezierCurve>()) GameObject.Destroy(curve.gameObject);
+            gameObject.SetActive(false);
+        }
+
+        private static void CreateJunction(Switch sw)
+        {
+            sw.gameObject.PrintHierarchy();
+            Transform swTransform = sw.transform;
+            GameObject prefabClone = GameObject.Instantiate(switchPrefabs[sw.SwitchPrefabName]);
+            Transform prefabCloneTransform = prefabClone.transform;
+            Transform inJunction = prefabCloneTransform.Find("in_junction");
+            Vector3 offset = prefabCloneTransform.position - inJunction.position;
+            foreach (Transform child in prefabCloneTransform)
+                child.transform.position += offset;
+            prefabCloneTransform.SetPositionAndRotation(swTransform.position, swTransform.rotation);
+            GameObject throughTrack = sw.throughTrack.gameObject;
+            GameObject divergingTrack = sw.divergingTrack.gameObject;
+            throughTrack.transform.SetParent(prefabCloneTransform, false);
+            divergingTrack.transform.SetParent(prefabCloneTransform, false);
+            sw.tracksParent = prefabClone;
+            Junction junction = inJunction.gameObject.AddComponent<Junction>();
+            junction.selectedBranch = 1;
+            prefabClone.GetComponentInChildren<VisualSwitch>().junction = junction;
+            junction.inBranch = new Junction.Branch(sw.inTrack.GetComponent<RailTrack>(), sw.inTrackFirst);
+            RailTrack throughRailTrack = throughTrack.GetComponent<RailTrack>();
+            throughRailTrack.generateMeshes = false;
+            RailTrack divergingRailTrack = divergingTrack.GetComponent<RailTrack>();
+            divergingRailTrack.generateMeshes = false;
+            junction.outBranches = new[] {
+                new Junction.Branch(throughRailTrack, true),
+                new Junction.Branch(divergingRailTrack, true)
+            }.ToList();
+            prefabClone.SetActive(true);
+        }
+
+        private static void ConnectRailTrack(Track track)
+        {
+            RailTrack railTrack = track.gameObject.GetComponent<RailTrack>();
+            if (track.inTrack != null)
+            {
+                RailTrack inRailTrack = track.inTrack.GetComponent<RailTrack>();
+                railTrack.inBranch = new Junction.Branch(inRailTrack, track.inTrackFirst);
+            }
+
+            if (track.outTrack != null)
+            {
+                RailTrack outRailTrack = track.outTrack.GetComponent<RailTrack>();
+                railTrack.outBranch = new Junction.Branch(outRailTrack, track.outTrackFirst);
+            }
+
+            if (track.inSwitch)
+                railTrack.inJunction = track.inSwitch.tracksParent.GetComponentInChildren<Junction>(true);
+
+            if (track.outSwitch)
+                railTrack.outJunction = track.outSwitch.tracksParent.GetComponentInChildren<Junction>(true);
         }
 
         private static void CreateSigns()
         {
-            GameObject signParent = new GameObject("Signs");
-            signParent.AddComponent<SignPlacer>();
+            new GameObject("Signs").AddComponent<SignPlacer>();
         }
 
-        // todo: is there a nicer way we can do this? maybe create a prefab for it?
         private static void SetupGameScene()
         {
             Main.Logger.Log("Creating SaveLoadController");
-            GameObject licensesAndGarages = new GameObject("[LicensesAndGarages]");
-            licensesAndGarages.AddComponent<SaveLoadController>();
+            new GameObject("[LicensesAndGarages]").AddComponent<SaveLoadController>();
             Main.Logger.Log("Creating CarSpawner");
-            GameObject carSpawner = new GameObject("[CarSpawner]");
-            carSpawner.AddComponent<CarSpawner>();
-            carSpawner.AddComponent<CarSpawnerOriginShiftHandler>();
+            new GameObject("[CarSpawner]").WithComponent<CarSpawner>().WithComponent<CarSpawnerOriginShiftHandler>();
             Main.Logger.Log("Creating ItemDisablerGrid");
-            GameObject jobLogicController = new GameObject("[JobLogicController]");
-            jobLogicController.AddComponent<LogicController>();
+            new GameObject("[JobLogicController]").AddComponent<LogicController>();
             Main.Logger.Log("Creating ItemDisablerGrid");
-            GameObject derailAndDamageObserver = new GameObject("[DerailAndDamageObserver]");
-            derailAndDamageObserver.AddComponent<DerailAndDamageObserver>();
+            new GameObject("[DerailAndDamageObserver]").AddComponent<DerailAndDamageObserver>();
             Main.Logger.Log("Creating StorageLogic");
             GameObject storageLogic = new GameObject("[StorageLogic]");
-            GameObject storageWorld = new GameObject("StorageWorld") {
-                transform = {
-                    parent = storageLogic.transform
-                }
-            };
-            storageWorld.AddComponent<StorageBase>().storageType = StorageType.World;
-            GameObject storageLostAndFound = new GameObject("StorageLostAndFound") {
-                transform = {
-                    parent = storageLogic.transform
-                }
-            };
-            storageLostAndFound.AddComponent<StorageBase>().storageType = StorageType.LostAndFound;
-            GameObject storageInventory = new GameObject("StorageInventory") {
-                transform = {
-                    parent = storageLogic.transform
-                }
-            };
-            storageInventory.AddComponent<StorageBase>().storageType = StorageType.Inventory;
-            GameObject storageBelt = new GameObject("StorageBelt") {
-                transform = {
-                    parent = storageLogic.transform
-                }
-            };
-            storageBelt.AddComponent<StorageBase>().storageType = StorageType.Belt;
+            storageLogic.NewChild("StorageWorld").WithComponentT<StorageBase>().storageType = StorageType.World;
+            storageLogic.NewChild("StorageLostAndFound").WithComponentT<StorageBase>().storageType = StorageType.LostAndFound;
+            storageLogic.NewChild("StorageInventory").WithComponentT<StorageBase>().storageType = StorageType.Inventory;
+            storageLogic.NewChild("StorageBelt").WithComponentT<StorageBase>().storageType = StorageType.Belt;
             storageLogic.AddComponent<StorageController>(); // Must be added after all StorageBase's
             Main.Logger.Log("Creating ItemDisablerGrid");
-            GameObject itemDisablerGrid = new GameObject("[ItemDisablerGrid]");
-            itemDisablerGrid.AddComponent<ItemDisablerGrid>();
+            new GameObject("[ItemDisablerGrid]").AddComponent<ItemDisablerGrid>();
             Main.Logger.Log("Creating ShopLogic");
-            GameObject shopLogic = new GameObject("[ShopLogic]");
-            GlobalShopController globalShopController = shopLogic.AddComponent<GlobalShopController>();
-            // todo: add support for shops
+            GlobalShopController globalShopController = new GameObject("[ShopLogic]").AddComponent<GlobalShopController>();
             globalShopController.globalShopList = new List<Shop>();
             globalShopController.shopItemsData = new List<ShopItemData>();
             Main.Logger.Log("Creating RenderTextureSystem");
-            GameObject renderTextureSystem = new GameObject("[RenderTextureSystem]");
-            renderTextureSystem.AddComponent<RenderTextureSystem>();
+            new GameObject("[RenderTextureSystem]").AddComponent<RenderTextureSystem>();
         }
     }
 

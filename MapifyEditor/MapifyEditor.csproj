@@ -10,8 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Assembly-CSharp"/>
-        <Reference Include="DV.Utils"/>
+        <Reference Include="BezierCurves"/>
         <Reference Include="Unity.TextMeshPro"/>
         <Reference Include="UnityEditor"/>
         <Reference Include="UnityEngine"/>

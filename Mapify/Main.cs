@@ -21,6 +21,8 @@ namespace Mapify
                 harmony = new Harmony(ModEntry.Info.Id);
                 harmony.PatchAll();
                 Logger.Log("Successfully patched");
+
+                DebugCommands.RegisterCommands();
             }
             catch (Exception ex)
             {

@@ -54,13 +54,14 @@ They said it couldn't be done, so I did it :)
 
 ### Project Setup
 1. Create a new 3D project with Unity 2019.4.40.
-2. Import the [Bezier Curve Editor](https://assetstore.unity.com/packages/tools/bezier-curve-editor-11278) asset from the Unity Asset Store.
-3. Import the [Post Processing](https://docs.unity3d.com/Packages/com.unity.postprocessing@3.2/manual/index.html) package from the Package Manager.
-4. Build or download the latest version of Mapify.
-5. Create a folder called `Scripts` and drag `MapifyEditor.dll` into it. If building, you can find it in the `build` folder.
-6. Create a folder called `Scenes`, and create three scenes inside it. `Terrain`, `Railway`, and `GameContent`. No scenes should have cameras in them.
-7. Add your scenes to an AssetBundle named `scenes`.
-8. Add all other assets to an AssetBundle named `assets`.
+2. Import *only the `Editor` folder* of the [Bezier Curve Editor](https://assetstore.unity.com/packages/tools/bezier-curve-editor-11278) asset from the Unity Asset Store.
+3. Copy `../DerailValley_Data/Managed/BezierCurves.dll` from your Derail Valley installation directory into the `Scripts` folder.
+4. Import the [Post Processing](https://docs.unity3d.com/Packages/com.unity.postprocessing@3.2/manual/index.html) package from the Package Manager.
+5. Build or download the latest version of Mapify.
+6. Create a folder called `Scripts` and drag `MapifyEditor.dll` into it. If building, you can find it in the `build` folder.
+7. Create a folder called `Scenes`, and create three scenes inside it. `Terrain`, `Railway`, and `GameContent`. No scenes should have cameras in them.
+8. Add your scenes to an AssetBundle named `scenes`.
+9. Add all other assets to an AssetBundle named `assets`.
 
 
 ### Creating a Map
@@ -69,7 +70,7 @@ They said it couldn't be done, so I did it :)
 3. In your `Terrain` scene, create an object called `[GlobalPostProcessing]`. Add a `PostProcessingVolume` component to it, and enable `Is Global`.
 4. Create a new post processing profile that has Ambient Occlusion, Bloom, and Auto Exposure.
 5. In your `Railway` scene, create an object called `[railway]`. This is where your track splines will go.
-6. To create splines, add an object under the aforementioned `[railway]` object with a `BezierCurve` and a `Track` component. The BezierCurve should have exactly two points with `close` and `mirror` disabled. The `resolution` doesn't matter as its overwritten at runtime.
+6. To create splines, add an object under the aforementioned `[railway]` object with a `BezierCurve` and a `Track` component. The BezierCurve should have exactly two points with `close` and `mirror` disabled. The `resolution` should be set to `0.5`.
 
 
 ### Exporting

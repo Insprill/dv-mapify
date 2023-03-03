@@ -42,10 +42,7 @@ namespace Mapify.Patches
             // Register scene loaded hook
             SceneManager.sceneLoaded += OnSceneLoad;
 
-            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>())
-            {
-                Object.Destroy(streamer);
-            }
+            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>()) Object.Destroy(streamer);
             return true;
         }
 
@@ -99,7 +96,8 @@ namespace Mapify.Patches
 
         private static void SetupRailTracks()
         {
-            foreach (Track track in Object.FindObjectsOfType<Track>())
+            Track[] tracks = Object.FindObjectsOfType<Track>();
+            foreach (Track track in tracks)
             {
                 BezierCurve curve = track.gameObject.GetComponent<BezierCurve>();
                 curve.resolution = 0.5f;
@@ -108,8 +106,18 @@ namespace Mapify.Patches
                 railTrack.dontChange = false;
                 railTrack.age = track.age;
                 railTrack.ApplyRailType();
+            }
+
+            foreach (Track track in tracks)
+            {
+                RailTrack railTrack = track.gameObject.GetComponent<RailTrack>();
+                if (track.inTrack)
+                    railTrack.inBranch = new Junction.Branch(track.inTrack.GetComponent<RailTrack>(), true);
+                if (track.outTrack)
+                    railTrack.outBranch = new Junction.Branch(track.outTrack.GetComponent<RailTrack>(), false);
                 track.gameObject.SetActive(true);
             }
+
             RailManager.AlignAllTrackEnds();
         }
 
@@ -186,7 +194,7 @@ namespace Mapify.Patches
 
             for (int i = 0; i < codes.Count; i++)
                 // Don't add the vegetationStudioPrefab
-                if (codes[i].opcode == OpCodes.Ldstr && (codes[i].operand as string) == "loading terrain")
+                if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand as string == "loading terrain")
                 {
                     codes.RemoveRange(i - 9, 8);
                     break;

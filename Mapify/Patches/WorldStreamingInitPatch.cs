@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using DV;
 using DV.RenderTextureSystem;
+using DV.Signs;
 using DV.TerrainSystem;
 using DV.WorldTools;
 using HarmonyLib;
@@ -61,6 +62,7 @@ namespace Mapify.Patches
             {
                 Main.Logger.Log($"Loading railway scene at {wsi.railwayScenePath}");
                 SetupRailTracks();
+                CreateSigns();
             }
             else if (scene.path == wsi.gameContentScenePath)
             {
@@ -101,18 +103,20 @@ namespace Mapify.Patches
             {
                 BezierCurve curve = track.gameObject.GetComponent<BezierCurve>();
                 curve.resolution = 0.5f;
+                track.gameObject.SetActive(false);
                 RailTrack railTrack = track.gameObject.AddComponent<RailTrack>();
-                if (!railTrack.CurveIsValid())
-                {
-                    Main.Logger.Warning($"Curve on track {track.name} isn't valid!");
-                    continue;
-                }
-
+                railTrack.dontChange = false;
                 railTrack.age = track.age;
                 railTrack.ApplyRailType();
-                if (railTrack.generateColliders)
-                    railTrack.CreateCollider();
+                track.gameObject.SetActive(true);
             }
+            RailManager.AlignAllTrackEnds();
+        }
+
+        private static void CreateSigns()
+        {
+            GameObject signParent = new GameObject("Signs");
+            signParent.AddComponent<SignPlacer>();
         }
 
         // todo: is there a nicer way we can do this? maybe create a prefab for it?

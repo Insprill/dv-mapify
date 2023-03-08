@@ -70,13 +70,11 @@ They said it couldn't be done, so I did it :)
 3. In your `Terrain` scene, create an object called `[GlobalPostProcessing]`. Add a `PostProcessingVolume` component to it, and enable `Is Global`.
 4. Create a new post processing profile that has Ambient Occlusion, Bloom, and Auto Exposure.
 5. In your `Railway` scene, create an object called `[railway]`. This is where your track splines will go.
-6. To create splines, add an object under the aforementioned `[railway]` object with a `BezierCurve` and a `Track` component. The BezierCurve should have exactly two points with `close` and `mirror` disabled. The `resolution` should be set to `0.5`.
+6. To create splines, go to `Mapify > Create Track`. You can then adjust the track with the attached BezierCurve. To add switches, use the buttons on the Track component. Any track ends within one meter of each other will be linked together when exporting.
 
 
 ### Exporting
-To export your map, go to `Assets > Build AssetBundles`.
-You can find the built AssetBundles in `Assets/Out`. 
-The files are named the same as the AssetBundle names above.
+To export your map, go to `Mapify > Export Map`.
 
 
 ### Loading the map

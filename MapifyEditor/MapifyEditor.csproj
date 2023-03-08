@@ -24,7 +24,10 @@
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Command="mkdir -p ../build"/>
-        <Exec Command="cp &quot;$(TargetPath)&quot; ../build/"/>
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p ../build"/>
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="cp &quot;$(TargetPath)&quot; ../build/"/>
+
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="if not exist ..\build mkdir ..\build"/>
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="copy &quot;$(TargetPath)&quot; ..\build\"/>
     </Target>
 </Project>

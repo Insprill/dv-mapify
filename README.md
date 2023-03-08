@@ -141,6 +141,39 @@ The info.json can be found in the root of this repository.
 
 
 
+<!-- ROADMAP -->
+
+## Roadmap
+
+A vague roadmap roughly in order of priority.
+
+- [x] Load custom scenes
+- [x] Road tracks
+- [x] Switches
+- [ ] Buffer stops
+- [ ] Stations
+    - [ ] Job generation
+        - [ ] Load/Unload machines
+    - [ ] Locomotive spawners
+    - [ ] Service stations
+    - [ ] Station office
+        - [ ] Job validator
+        - [ ] Career manager
+        - [ ] Lost and found
+        - [ ] Dumpster
+        - [ ] Teleport point
+- [ ] Shops
+- [ ] License-based zone blocking
+- [ ] Garages
+- [ ] Player homes
+- [ ] Custom map items
+- [ ] Terrain streaming
+- [ ] Custom skyboxes
+- [ ] Better savegame handling
+
+
+
+
 <!-- CONTRIBUTING -->
 
 ## Contributing

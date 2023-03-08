@@ -43,7 +43,7 @@ namespace Mapify.Patches
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
             levelInfo.waterLevel = mapInfo.waterLevel;
             levelInfo.worldSize = mapInfo.worldSize;
-            levelInfo.worldOffset = mapInfo.worldOffset;
+            levelInfo.worldOffset = Vector3.zero;
             levelInfo.defaultSpawnPosition = mapInfo.defaultSpawnPosition;
             levelInfo.defaultSpawnRotation = mapInfo.defaultSpawnRotation;
 

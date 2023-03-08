@@ -8,6 +8,7 @@ namespace Mapify.Editor
         [MenuItem("Mapify/Debug/Connect Tracks")]
         public static void ConnectTracks()
         {
+            Debug.Log("Connecting all tracks");
             Track[] tracks = Object.FindObjectsOfType<Track>();
             foreach (Track track in tracks) track.Disconnect();
 

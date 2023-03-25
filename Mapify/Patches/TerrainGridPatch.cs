@@ -21,14 +21,4 @@ namespace Mapify.Patches
             return codes.AsEnumerable();
         }
     }
-
-    // This is sketchy but it'll do until we implement terrain chunking
-    [HarmonyPatch(typeof(TerrainGrid), "Update")]
-    public static class TerrainGrid_Update_Patch
-    {
-        public static bool Prefix()
-        {
-            return false;
-        }
-    }
 }

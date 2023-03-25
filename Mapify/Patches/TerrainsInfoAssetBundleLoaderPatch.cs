@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -21,7 +22,7 @@ namespace Mapify.Patches
                 if (codes[i].opcode == OpCodes.Stfld && codes[i].operand.ToString().Contains("assBunInfo"))
                 {
                     // Don't set assBunInfo in the constructor since the AssetBundle it tries to load doesn't exist.
-                    codes.RemoveRange(i - 13, 13);
+                    codes.RemoveRange(i - 12, 13);
                     break;
                 }
 
@@ -39,7 +40,7 @@ namespace Mapify.Patches
             // Set our own terrain info
             TerrainsInfoFromAssetBundle bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
             bundle.terrainSizeInWorld = SingletonBehaviour<LevelInfo>.Instance.worldSize;
-            bundle.numberOfTerrains = 1; //todo: set this when we have terrain chunking
+            bundle.numberOfTerrains = Main.MapInfo.terrainCount;
             bundle.hasMicroSplatDiffuse = false;
             bundle.hasMicroSplatNormal = false;
             Field_assBunInfo.SetValue(__instance, bundle);
@@ -49,9 +50,10 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), "GetAssetBundleFilePath")]
     public static class TerrainsInfoAssetBundleLoader_GetAssetBundleFilePath_Patch
     {
-        public static bool Prefix(TerrainsInfoAssetBundleLoader __instance, ref string __result)
+        public static bool Prefix(TerrainsInfoAssetBundleLoader __instance, Vector2Int coord, ref string __result)
         {
-            __result = SingletonBehaviour<WorldStreamingInit>.Instance.terrainsScenePath;
+            Main.Logger.Log($"Loading bundle {Path.Combine(Main.Settings.MapDir, $"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}")}");
+            __result = Path.Combine(Main.Settings.MapDir, $"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}");
             return false;
         }
     }

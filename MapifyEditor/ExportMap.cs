@@ -5,7 +5,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Mapify.Editor.Utils;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Mapify.Editor
 {
@@ -64,7 +67,7 @@ namespace Mapify.Editor
                 else
                 {
                     startingPath = GetDefaultSavePath();
-                    folderName = "My Custom Map";
+                    folderName = EditorAssets.FindAllAssets<MapInfo>()[0].mapName;
                 }
 
                 string exportFolderPath = EditorUtility.SaveFolderPanel("Export Map", startingPath, folderName);
@@ -109,18 +112,64 @@ namespace Mapify.Editor
 
             TrackConnector.ConnectTracks();
 
+            AssetBundleBuild[] builds = CreateBuilds();
+
             Debug.Log("Building AssetBundles");
-            AssetBundleBuild[] builds = {
-                new AssetBundleBuild {
-                    assetBundleName = "assets",
-                    assetNames = AssetDatabase.GetAssetPathsFromAssetBundle("assets")
-                },
-                new AssetBundleBuild {
-                    assetBundleName = "scenes",
-                    assetNames = AssetDatabase.GetAssetPathsFromAssetBundle("scenes")
-                }
-            };
             BuildPipeline.BuildAssetBundles(exportFolderPath, builds, BuildAssetBundleOptions.None, EditorUserBuildSettings.activeBuildTarget);
+        }
+
+        private static AssetBundleBuild[] CreateBuilds()
+        {
+            Debug.Log("Gathering assets");
+            const string terrainScenePath = "Assets/Scenes/Terrain.unity";
+            Scene terrainScene = EditorSceneManager.GetSceneByPath(terrainScenePath);
+            bool isTerrainSceneLoaded = terrainScene.isLoaded;
+            if (!isTerrainSceneLoaded)
+                EditorSceneManager.OpenScene(terrainScenePath, OpenSceneMode.Additive);
+
+            Terrain[] terrains = terrainScene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Terrain>()).Where(terrain => terrain.gameObject.activeInHierarchy).ToArray();
+            Terrain[] sortedTerrain = terrains.OrderBy(go =>
+            {
+                Vector3 pos = go.transform.position;
+                return pos.y * terrains.Length + pos.x;
+            }).ToArray();
+
+            EditorAssets.FindAllAssets<MapInfo>()[0].terrainCount = terrains.Length;
+
+            List<AssetBundleBuild> builds = new List<AssetBundleBuild>(sortedTerrain.Length + 2);
+            for (int i = 0; i < sortedTerrain.Length; i++)
+                builds.Add(new AssetBundleBuild {
+                    assetBundleName = $"terraindata_{i}",
+                    assetNames = new[] { AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData) }
+                });
+
+            string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
+            // There should be 3 scenes for Terrain, Railway and Game Content.
+            const byte sceneCount = 3;
+            List<string> assetPaths = new List<string>(allAssetPaths.Length - sortedTerrain.Length - sceneCount);
+            List<string> scenePaths = new List<string>(sceneCount);
+            foreach (string assetPath in allAssetPaths)
+            {
+                AssetImporter importer = AssetImporter.GetAtPath(assetPath);
+                if (importer == null || importer.GetType() == typeof(MonoImporter)) continue;
+                Object obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
+                if (obj is TerrainData) continue;
+                (obj is SceneAsset ? scenePaths : assetPaths).Add(assetPath);
+            }
+
+            builds.Add(new AssetBundleBuild {
+                assetBundleName = "assets",
+                assetNames = assetPaths.ToArray()
+            });
+            builds.Add(new AssetBundleBuild {
+                assetBundleName = "scenes",
+                assetNames = scenePaths.ToArray()
+            });
+
+            if (!isTerrainSceneLoaded)
+                EditorSceneManager.UnloadSceneAsync(terrainScenePath);
+
+            return builds.ToArray();
         }
 
         private static string GetDefaultSavePath()

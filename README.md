@@ -60,8 +60,6 @@ They said it couldn't be done, so I did it :)
 5. Build or download the latest version of Mapify.
 6. Create a folder called `Scripts` and drag `MapifyEditor.dll` into it. If building, you can find it in the `build` folder.
 7. Create a folder called `Scenes`, and create three scenes inside it. `Terrain`, `Railway`, and `GameContent`. No scenes should have cameras in them.
-8. Add your scenes to an AssetBundle named `scenes`.
-9. Add all other assets to an AssetBundle named `assets`.
 
 
 ### Creating a Map

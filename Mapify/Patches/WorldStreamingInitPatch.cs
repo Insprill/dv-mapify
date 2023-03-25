@@ -23,10 +23,13 @@ namespace Mapify.Patches
 
         public static bool Prefix(WorldStreamingInit __instance)
         {
-            // todo: can we do this without the user specifying the bundles and us hardcoding the names?
             // Load asset bundles
-            AssetBundle assets = AssetBundle.LoadFromFile(Path.Combine(Main.ModEntry.Path, "Map/assets"));
-            AssetBundle.LoadFromFile(Path.Combine(Main.ModEntry.Path, "Map/scenes"));
+            string mapDir = Main.Settings.MapDir;
+
+            Main.Logger.Log($"Loading map {Main.Settings.MapName}");
+
+            AssetBundle assets = AssetBundle.LoadFromFile(Path.Combine(mapDir, "assets"));
+            AssetBundle.LoadFromFile(Path.Combine(mapDir, "scenes"));
 
             originalRailwayScenePath = __instance.railwayScenePath;
             Main.Logger.Log($"Loading default railway scene ({originalRailwayScenePath}) to copy assets from");
@@ -39,13 +42,13 @@ namespace Mapify.Patches
             __instance.gameContentScenePath = "Assets/Scenes/GameContent.unity";
 
             // Set LevelInfo
-            MapInfo mapInfo = assets.LoadAllAssets<MapInfo>()[0];
+            Main.MapInfo = assets.LoadAllAssets<MapInfo>()[0];
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
-            levelInfo.waterLevel = mapInfo.waterLevel;
-            levelInfo.worldSize = mapInfo.worldSize;
+            levelInfo.waterLevel = Main.MapInfo.waterLevel;
+            levelInfo.worldSize = Main.MapInfo.worldSize;
             levelInfo.worldOffset = Vector3.zero;
-            levelInfo.defaultSpawnPosition = mapInfo.defaultSpawnPosition;
-            levelInfo.defaultSpawnRotation = mapInfo.defaultSpawnRotation;
+            levelInfo.defaultSpawnPosition = Main.MapInfo.defaultSpawnPosition;
+            levelInfo.defaultSpawnRotation = Main.MapInfo.defaultSpawnRotation;
 
             // Register scene loaded hook
             SceneManager.sceneLoaded += OnSceneLoad;
@@ -96,15 +99,20 @@ namespace Mapify.Patches
 
         private static void SetupTerrainGrid()
         {
+            Terrain[] terrains = Object.FindObjectsOfType<Terrain>();
             GameObject gridObject = new GameObject();
             TerrainGrid grid = gridObject.AddComponent<TerrainGrid>();
             grid.loadingRingSize = 2;
             grid.addToVegetationStudio = false;
-            grid.pixelError = 10;
-            grid.drawInstanced = true;
+            grid.pixelError = terrains[0].heightmapPixelError;
+            grid.drawInstanced = terrains[0].drawInstanced;
             grid.terrainLayer = 8;
             grid.vegetationReloadWaitFrames = 2;
             grid.maxConcurrentLoads = 3;
+            foreach (Terrain terrain in terrains)
+            {
+                Object.Destroy(terrain.gameObject);
+            }
         }
 
         private static void SetupRailTracks()
@@ -205,7 +213,6 @@ namespace Mapify.Patches
 
         private static void CreateJunction(Switch sw)
         {
-            sw.gameObject.PrintHierarchy();
             Transform swTransform = sw.transform;
             GameObject prefabClone = GameObject.Instantiate(switchPrefabs[sw.SwitchPrefabName]);
             Transform prefabCloneTransform = prefabClone.transform;

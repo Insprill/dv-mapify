@@ -21,22 +21,10 @@ namespace Mapify
 
         private static void GrantAllLicenses(CommandArg[] args)
         {
-            LicenseManager.AcquireGeneralLicense(GeneralLicenseType.DE6);
-            LicenseManager.AcquireGeneralLicense(GeneralLicenseType.SH282);
-            LicenseManager.AcquireGeneralLicense(GeneralLicenseType.ConcurrentJobs1);
-            LicenseManager.AcquireGeneralLicense(GeneralLicenseType.ConcurrentJobs2);
-            LicenseManager.AcquireGeneralLicense(GeneralLicenseType.ManualService);
-            LicenseManager.AcquireGeneralLicense(GeneralLicenseType.MultipleUnit);
-            LicenseManager.AcquireJobLicense(JobLicenses.Hazmat1);
-            LicenseManager.AcquireJobLicense(JobLicenses.Hazmat2);
-            LicenseManager.AcquireJobLicense(JobLicenses.Hazmat3);
-            LicenseManager.AcquireJobLicense(JobLicenses.Military1);
-            LicenseManager.AcquireJobLicense(JobLicenses.Military2);
-            LicenseManager.AcquireJobLicense(JobLicenses.Military3);
-            LicenseManager.AcquireJobLicense(JobLicenses.Shunting);
-            LicenseManager.AcquireJobLicense(JobLicenses.LogisticalHaul);
-            LicenseManager.AcquireJobLicense(JobLicenses.TrainLength1);
-            LicenseManager.AcquireJobLicense(JobLicenses.TrainLength2);
+            foreach (GeneralLicenseType generalLicense in Enum.GetValues(typeof(GeneralLicenseType)))
+                LicenseManager.AcquireGeneralLicense(generalLicense);
+            foreach (JobLicenses jobLicense in Enum.GetValues(typeof(JobLicenses)))
+                LicenseManager.AcquireJobLicense(jobLicense);
             Debug.Log("Granted all licenses");
         }
     }

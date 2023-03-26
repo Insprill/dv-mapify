@@ -99,20 +99,15 @@ namespace Mapify.Patches
 
         private static void SetupTerrainGrid()
         {
-            Terrain[] terrains = Object.FindObjectsOfType<Terrain>();
             GameObject gridObject = new GameObject();
             TerrainGrid grid = gridObject.AddComponent<TerrainGrid>();
             grid.loadingRingSize = 2;
             grid.addToVegetationStudio = false;
-            grid.pixelError = terrains[0].heightmapPixelError;
-            grid.drawInstanced = terrains[0].drawInstanced;
+            grid.pixelError = Main.MapInfo.terrainPixelError;
+            grid.drawInstanced = Main.MapInfo.terrainDrawInstanced;
             grid.terrainLayer = 8;
             grid.vegetationReloadWaitFrames = 2;
             grid.maxConcurrentLoads = 3;
-            foreach (Terrain terrain in terrains)
-            {
-                Object.Destroy(terrain.gameObject);
-            }
         }
 
         private static void SetupRailTracks()
@@ -130,10 +125,7 @@ namespace Mapify.Patches
 
             Main.Logger.Log("Creating Junctions");
             Switch[] switches = Object.FindObjectsOfType<Switch>();
-            foreach (Switch sw in switches)
-            {
-                CreateJunction(sw);
-            }
+            foreach (Switch sw in switches) CreateJunction(sw);
 
             Main.Logger.Log("Connecting tracks");
             foreach (Track track in tracks)

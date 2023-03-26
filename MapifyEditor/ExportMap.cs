@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Mapify.Editor.Utils;
+using Mapify.Editor.Validators;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace Mapify.Editor
         private static ExportMap window;
         private static bool openFolderAfterExport;
 
-        private List<MapValidator.Result> lastResults;
+        private List<Result> lastResults;
 
         private static string LastExportPath {
             get => EditorPrefs.GetString("Mapify_LastExportPath");
@@ -38,7 +39,7 @@ namespace Mapify.Editor
                 GUILayout.Space(5);
 
                 GUILayout.BeginVertical();
-                foreach (MapValidator.Result result in lastResults)
+                foreach (Result result in lastResults)
                 {
                     GUILayout.Label($"• <color=red>{result.message}</color>", style);
                     GUILayout.Space(5);
@@ -67,7 +68,7 @@ namespace Mapify.Editor
                 else
                 {
                     startingPath = GetDefaultSavePath();
-                    folderName = EditorAssets.FindAllAssets<MapInfo>()[0].mapName;
+                    folderName = EditorAssets.FindAssets<MapInfo>()[0].mapName;
                 }
 
                 string exportFolderPath = EditorUtility.SaveFolderPanel("Export Map", startingPath, folderName);
@@ -96,7 +97,7 @@ namespace Mapify.Editor
             window.Show();
             window.titleContent = new GUIContent("Export Map");
             window.lastResults = MapValidator.Validate().ToList().Where(x => x != null).ToList();
-            foreach (MapValidator.Result result in window.lastResults) Debug.LogError(result.message, result.context);
+            foreach (Result result in window.lastResults) Debug.LogError(result.message, result.context);
         }
 
         private static void Export(string exportFolderPath)
@@ -133,8 +134,6 @@ namespace Mapify.Editor
                 Vector3 pos = go.transform.position;
                 return pos.y * terrains.Length + pos.x;
             }).ToArray();
-
-            EditorAssets.FindAllAssets<MapInfo>()[0].terrainCount = terrains.Length;
 
             List<AssetBundleBuild> builds = new List<AssetBundleBuild>(sortedTerrain.Length + 2);
             for (int i = 0; i < sortedTerrain.Length; i++)

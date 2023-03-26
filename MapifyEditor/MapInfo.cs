@@ -12,5 +12,13 @@ namespace Mapify.Editor
         public Vector3 defaultSpawnRotation;
         [HideInNormalInspector]
         public int terrainCount;
+        [HideInNormalInspector]
+        public Material terrainMaterial;
+        [HideInNormalInspector]
+        public float terrainPixelError;
+        [HideInNormalInspector]
+        public bool terrainDrawInstanced;
+        [HideInNormalInspector]
+        public float terrainBasemapDistance;
     }
 }

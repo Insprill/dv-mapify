@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Mapify.Utils
@@ -40,6 +42,11 @@ namespace Mapify.Utils
         {
             if (!gameObject.GetComponent<T>()) gameObject.AddComponent<T>();
             return gameObject;
+        }
+
+        public static IEnumerable<string> ToNames(this IEnumerable<Component> components)
+        {
+            return components.Select(component => component.gameObject.name);
         }
 
         public static void PrintHierarchy(this GameObject gameObject, string indent = "")

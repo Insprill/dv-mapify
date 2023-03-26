@@ -35,9 +35,8 @@ namespace Mapify.Editor
             CreateSwitchTrack(switchObject, sw, "[track diverging]", true, left);
 
             Transform t = switchObject.transform;
-            t.parent = railwayParent.transform;
-            t.localPosition = position;
-            t.localRotation = rotation;
+            t.SetPositionAndRotation(position, rotation);
+            t.SetParent(railwayParent.transform);
 
             return sw;
         }
@@ -76,6 +75,10 @@ namespace Mapify.Editor
 
             Track track = trackObject.AddComponent<Track>();
             track.inSwitch = sw;
+            if (diverging)
+                sw.divergingTrack = track;
+            else
+                sw.throughTrack = track;
 
             Transform t = trackObject.transform;
             t.parent = parent.transform;

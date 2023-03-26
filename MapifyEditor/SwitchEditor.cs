@@ -1,3 +1,4 @@
+using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,19 +18,21 @@ namespace Mapify.Editor
         {
             DrawDefaultInspector();
 
-            if (sw.divergingTrack == null && GUILayout.Button("Add Track From Diverging")) AddTrack(true);
-            if (sw.throughTrack == null && GUILayout.Button("Add Track From Through")) AddTrack(false);
+            if ((sw.divergingTrack.outTrack == null && sw.divergingTrack.outSwitch == null) && GUILayout.Button("Add Track From Diverging")) AddTrack(true);
+            if ((sw.throughTrack.outTrack == null && sw.throughTrack.outSwitch == null) && GUILayout.Button("Add Track From Through")) AddTrack(false);
         }
 
         private void AddTrack(bool diverging)
         {
-            BezierCurve curve = (diverging ? sw.divergingTrack : sw.throughTrack).Curve;
+            Track swTrack = diverging ? sw.divergingTrack : sw.throughTrack;
+            BezierCurve curve = swTrack.Curve;
             Quaternion rot = Quaternion.LookRotation(curve.GetPointAt(1f) - curve.GetPointAt(0.999f));
 
             Track track = Track.CreateTrack(curve.Last().position, rot);
+            swTrack.outTrack = track;
             track.inSwitch = sw;
 
-            Selection.objects = new Object[] { track.gameObject };
+            track.gameObject.Select();
         }
     }
 }

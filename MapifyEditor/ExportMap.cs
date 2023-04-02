@@ -104,12 +104,23 @@ namespace Mapify.Editor
         {
             DirectoryInfo directory = new DirectoryInfo(exportFolderPath);
 
-            if ((directory.GetFiles().Length > 0 || directory.GetDirectories().Length > 0) && !EditorUtility.DisplayDialog("Clear Folder",
+            if (directory.GetFiles().Length > 0 || directory.GetDirectories().Length > 0)
+            {
+                int result = EditorUtility.DisplayDialogComplex("Clear Folder",
                     "The directory you selected isn't empty, would you like to clear the files from the folder before proceeding? \n \n WARNING: THIS WILL DELETE ALL FILES (EXCLUDING DIRECTORIES) IN THE FOLDER.",
-                    "Skip",
-                    "Clear Folder"))
-                foreach (FileInfo file in directory.GetFiles())
-                    file.Delete();
+                    "Clear Folder",
+                    "Cancel",
+                    "Skip");
+                switch (result)
+                {
+                    case 0:
+                        foreach (FileInfo file in directory.GetFiles())
+                            file.Delete();
+                        break;
+                    case 1:
+                        return;
+                }
+            }
 
             TrackConnector.ConnectTracks();
 

@@ -39,6 +39,14 @@ namespace Mapify.Editor.Validators
                     yield return Result.Error("BezierCurve must have all points set!", curve);
                 }
             }
+
+            foreach (BezierPoint point in roots.SelectMany(go => go.GetComponentsInChildren<BezierPoint>()))
+            {
+                if (point.transform.localEulerAngles != Vector3.zero)
+                {
+                    yield return Result.Error("BezierPoint must not be rotated!", point);
+                }
+            }
         }
 
         protected override string GetScenePath()

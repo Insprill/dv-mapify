@@ -165,9 +165,9 @@ A vague roadmap roughly in order of priority.
 - [ ] Garages
 - [ ] Player homes
 - [ ] Custom map items
-- [ ] Terrain streaming
+- [x] Terrain streaming
 - [ ] Custom skyboxes
-- [ ] Better savegame handling
+- [x] Better savegame handling
 
 
 

@@ -296,8 +296,10 @@ TestMap/
 PackageBuilder/*
 !PackageBuilder/Assets/
 PackageBuilder/Assets/*
-!PackageBuilder/Assets/Mapify.meta
 !PackageBuilder/Assets/Mapify/
+!PackageBuilder/Assets/Mapify.meta
+PackageBuilder/Assets/Mapify/Scripts/*
+PackageBuilder/Assets/Mapify/Scripts.meta
 # Project Settings
 !PackageBuilder/ProjectSettings/
 PackageBuilder/ProjectSettings/*

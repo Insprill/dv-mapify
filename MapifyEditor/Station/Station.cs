@@ -1,15 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Mapify.Editor
 {
     public class Station : MonoBehaviour
     {
         [Header("Station Info")]
-        public string displayName;
-        public string yardID;
+        public string stationName;
+        [FormerlySerializedAs("yardID")]
+        [Tooltip("The 2-character ID of the station")]
+        public string stationID;
         public Color color;
+        [Tooltip("The location where the player will be teleport to when fast travelling")]
         public Transform teleportLocation;
+        [Tooltip("The rough center of the yard. Used at the reference point for generating jobs")]
+        public Transform yardCenter;
 
         [Header("Station Tracks")]
         public List<string> storageTrackNames;

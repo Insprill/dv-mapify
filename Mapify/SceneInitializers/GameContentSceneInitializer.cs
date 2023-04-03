@@ -65,7 +65,7 @@ namespace Mapify.SceneInitializers
                 StationController stationController = stationObject.AddComponent<StationController>();
 
                 // Station info
-                stationController.stationInfo = new StationInfo(station.displayName, " ", station.yardID, station.color);
+                stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color);
 
                 // Station tracks
                 stationController.storageRailtracksGONames = station.storageTrackNames;
@@ -87,7 +87,8 @@ namespace Mapify.SceneInitializers
 
                 // Job generation ranges.
                 // todo: should these be customizable?
-                stationObject.AddComponent<StationJobGenerationRange>();
+                StationJobGenerationRange jobGenerationRange = stationObject.AddComponent<StationJobGenerationRange>();
+                jobGenerationRange.stationCenterAnchor = station.yardCenter;
 
                 // todo: this
                 stationObject.AddComponent<StationProceduralJobsRuleset>();

@@ -27,9 +27,9 @@ namespace Mapify.Patches
             AssetBundle.LoadFromFile(Path.Combine(mapDir, "scenes"));
 
             // Load scenes for us to steal assets from
+            MonoBehaviourPatch.DisableAll();
             originalRailwayScenePath = __instance.railwayScenePath;
             SceneManager.LoadScene(originalRailwayScenePath, LoadSceneMode.Additive);
-            MonoBehaviourPatch.DisableAll();
             originalGameContentScenePath = __instance.gameContentScenePath;
             SceneManager.LoadScene(originalGameContentScenePath, LoadSceneMode.Additive);
 

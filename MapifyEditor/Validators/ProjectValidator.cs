@@ -10,10 +10,13 @@ namespace Mapify.Editor.Validators
 
         public override IEnumerator<Result> Validate()
         {
-            // MapInfo
+            #region MapInfo
+
             MapInfo[] mapInfos = EditorAssets.FindAssets<MapInfo>();
             if (mapInfos.Length != 1) yield return Result.Error($"There should be exactly one MapInfo! Found {mapInfos.Length}");
             if (mapInfos.Length == 1 && !Regex.IsMatch(mapInfos[0].mapName, MAP_NAME_REGEX)) yield return Result.Error($"Your map name must match the following pattern: {MAP_NAME_REGEX}");
+
+            #endregion
         }
     }
 }

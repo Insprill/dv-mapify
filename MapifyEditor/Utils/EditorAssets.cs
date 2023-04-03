@@ -13,7 +13,7 @@ namespace Mapify.Editor.Utils
 
         public static T FindAsset<T>() where T : Object
         {
-            return AssetDatabase.FindAssets($"t:{typeof(T).Name}").Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<T>).FirstOrDefault();
+            return FindAssets<T>().FirstOrDefault();
         }
     }
 }

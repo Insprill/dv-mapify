@@ -18,6 +18,7 @@ namespace Mapify.SceneInitializers
 
         public static void SceneLoaded()
         {
+            SetupVanillaAssets();
             SetupGameScene();
             SetupStations();
         }
@@ -52,9 +53,9 @@ namespace Mapify.SceneInitializers
         private static void SetupStations()
         {
             Station[] stations = Object.FindObjectsOfType<Station>();
-            Dictionary<Station, List<LocomotiveSpawner>> locomotiveSpawners = Object
-                .FindObjectsOfType<LocomotiveSpawner>()
-                .GroupBy(spawner => spawner.closestStation)
+            Dictionary<Station, List<LocomotiveSpawner>> locomotiveSpawners = Object.FindObjectsOfType<LocomotiveSpawner>()
+                .GroupBy(spawner => spawner.gameObject.GetClosestComponent<Station>())
+                .Where(group => group.Key != null)
                 .ToDictionary(group => group.Key, group => group.ToList());
 
             foreach (Station station in stations)
@@ -64,19 +65,25 @@ namespace Mapify.SceneInitializers
                 StationController stationController = stationObject.AddComponent<StationController>();
 
                 // Station info
-                stationController.stationInfo = new StationInfo(station.name, station.type, station.yardID, station.color);
+                stationController.stationInfo = new StationInfo(station.displayName, " ", station.yardID, station.color);
 
                 // Station tracks
-                stationController.storageRailtracksGONames = station.storageTracks.ToNames().ToList();
-                stationController.transferInRailtracksGONames = station.transferInTracks.ToNames().ToList();
-                stationController.transferOutRailtracksGONames = station.transferOutTracks.ToNames().ToList();
+                stationController.storageRailtracksGONames = station.storageTrackNames;
+                stationController.transferInRailtracksGONames = station.transferInTrackNames;
+                stationController.transferOutRailtracksGONames = station.transferOutTrackNames;
 
                 // Job booklet spawn surface
-                GameObject jobBookletSpawnSurfaceObject = stationObject.NewChildWithPosition("JobSpawnerAnchor", station.transform.TransformPoint(station.bookletSpawnArea.center));
-                PointOnPlane jobBookletSpawnSurface = jobBookletSpawnSurfaceObject.AddComponent<PointOnPlane>();
-                Vector3 size = station.bookletSpawnArea.size;
-                jobBookletSpawnSurface.xSize = size.x;
-                jobBookletSpawnSurface.xSize = size.z;
+                PointOnPlane jobBookletSpawnSurface = stationObject.GetComponentInChildren<PointOnPlane>();
+                stationObject.PrintHierarchy();
+                if (jobBookletSpawnSurface == null)
+                {
+                    GameObject jobBookletSpawnSurfaceObject = stationObject.NewChildWithPosition("JobSpawnerAnchor", station.transform.TransformPoint(station.bookletSpawnArea.center));
+                    jobBookletSpawnSurface = jobBookletSpawnSurfaceObject.AddComponent<PointOnPlane>();
+                    Vector3 size = station.bookletSpawnArea.size;
+                    jobBookletSpawnSurface.xSize = size.x;
+                    jobBookletSpawnSurface.xSize = size.z;
+                }
+
                 StationController_Field_jobBookletSpawnSurface.SetValue(stationController, jobBookletSpawnSurface);
 
                 // Job generation ranges.
@@ -98,16 +105,41 @@ namespace Mapify.SceneInitializers
                         GameObject gameObject = stationObject.NewChild("LocomotiveSpawner");
                         StationLocoSpawner locoSpawner = gameObject.AddComponent<StationLocoSpawner>();
                         locoSpawner.locoSpawnTrackName = locomotiveSpawner.Track.name;
-                        locoSpawner.locoTypeGroupsToSpawn = locomotiveSpawner.locomotiveTypesToSpawn.Select(rollingStockTypes =>
-                            new ListTrainCarTypeWrapper(rollingStockTypes.Select(rollingStockType =>
-                                    (TrainCarType)Enum.Parse(typeof(TrainCarType), $"{rollingStockTypes}")
-                                ).ToList()
-                            )
-                        ).ToList();
+                        locoSpawner.locoTypeGroupsToSpawn = locomotiveSpawner.condensedLocomotiveTypes
+                            .Select(rollingStockTypes =>
+                                new ListTrainCarTypeWrapper(rollingStockTypes.Split(',').Select(rollingStockType =>
+                                        (TrainCarType)Enum.Parse(typeof(TrainCarType), rollingStockType)
+                                    ).ToList()
+                                )
+                            ).ToList();
                     }
 
                 stationObject.SetActive(true);
             }
+        }
+
+        private static void SetupVanillaAssets()
+        {
+            foreach (VanillaObject vanillaObject in Object.FindObjectsOfType<VanillaObject>())
+                switch (vanillaObject.asset)
+                {
+                    case VanillaAsset.CareerManager:
+                    case VanillaAsset.JobValidator:
+                    case VanillaAsset.TrashCan:
+                    case VanillaAsset.Dumpster:
+                    case VanillaAsset.LostAndFoundShed:
+                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
+                        break;
+                    case VanillaAsset.StationOffice1:
+                    case VanillaAsset.StationOffice2:
+                    case VanillaAsset.StationOffice3:
+                    case VanillaAsset.StationOffice4:
+                    case VanillaAsset.StationOffice5:
+                    case VanillaAsset.StationOffice6:
+                    case VanillaAsset.StationOffice7:
+                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset), new[] { typeof(Station) });
+                        break;
+                }
         }
     }
 }

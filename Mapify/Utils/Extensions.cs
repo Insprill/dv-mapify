@@ -1,11 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Mapify.Utils
 {
     public static class Extensions
     {
+        #region GameObjects & Components
+
         public static GameObject NewChild(this GameObject parent, string name)
         {
             return NewChildWithTransform(parent, name, Vector3.zero, Vector3.zero);
@@ -44,9 +49,56 @@ namespace Mapify.Utils
             return gameObject;
         }
 
-        public static IEnumerable<string> ToNames(this IEnumerable<Component> components)
+        public static T GetClosestComponent<T>(this GameObject gameObject) where T : Component
         {
-            return components.Select(component => component.gameObject.name);
+            return Object.FindObjectsOfType<T>()
+                .OrderBy(c => (gameObject.transform.position - c.transform.position).sqrMagnitude)
+                .FirstOrDefault();
+        }
+
+        public static List<Transform> GetChildren(this Transform transform)
+        {
+            List<Transform> children = new List<Transform>(transform.childCount);
+            for (int i = 0; i < transform.childCount; i++) children.Add(transform.GetChild(i));
+
+            return children;
+        }
+
+        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true)
+        {
+            Transform t = gameObject.transform;
+            Transform ot = other.transform;
+            ot.SetParent(t.parent, false);
+            ot.SetPositionAndRotation(t.position, t.rotation);
+            ot.SetSiblingIndex(t.GetSiblingIndex());
+            if (preserveTypes != null)
+                foreach (Type type in preserveTypes)
+                {
+                    Component[] components = gameObject.GetComponents(type);
+                    foreach (Component component in components)
+                    {
+                        Component newComponent = other.AddComponent(type);
+                        FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        foreach (FieldInfo field in fields)
+                            field.SetValue(newComponent, field.GetValue(component));
+                    }
+                }
+
+            if (keepChildren)
+                foreach (Transform child in t.GetChildren())
+                    child.SetParent(ot);
+
+            GameObject.DestroyImmediate(gameObject);
+            return other;
+        }
+
+        public static GameObject FindChildByName(this GameObject parent, string name)
+        {
+            Transform[] children = parent.GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in children)
+                if (child.gameObject.name == name)
+                    return child.gameObject;
+            return null;
         }
 
         public static void PrintHierarchy(this GameObject gameObject, string indent = "")
@@ -57,6 +109,15 @@ namespace Mapify.Utils
             foreach (Component component in t.GetComponents<Component>()) Main.Logger.Log(indent + "|   +-- " + component.GetType().Name);
 
             foreach (Transform child in t) PrintHierarchy(child.gameObject, indent + "|   ");
+        }
+
+        #endregion
+
+        public static bool TryAdd<K, V>(this Dictionary<K, V> dictionary, K key, V value)
+        {
+            bool contains = dictionary.ContainsKey(key);
+            if (!contains) dictionary.Add(key, value);
+            return !contains;
         }
     }
 }

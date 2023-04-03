@@ -24,7 +24,13 @@ namespace Mapify.Editor
         [HideInInspector]
         public GameObject tracksParent;
 
-        public string SwitchPrefabName => $"junc-{(isDivergingLeft ? "left" : "right")}{(standSide == StandSide.DIVERGING ? "-outer-sign" : "")}";
+        public VanillaAsset SwitchPrefabName => isDivergingLeft
+            ? standSide == StandSide.DIVERGING
+                ? VanillaAsset.SwitchLeftOuterSign
+                : VanillaAsset.SwitchLeft
+            : standSide == StandSide.DIVERGING
+                ? VanillaAsset.SwitchRightOuterSign
+                : VanillaAsset.SwitchRight;
 
         public static Switch CreateSwitch(Vector3 position, Quaternion rotation, bool left)
         {

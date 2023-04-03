@@ -6,16 +6,15 @@ namespace Mapify.Editor
     public class Station : MonoBehaviour
     {
         [Header("Station Info")]
-        public new string name;
-        public string type;
+        public string displayName;
         public string yardID;
         public Color color;
         public Transform teleportLocation;
 
         [Header("Station Tracks")]
-        public List<Track> storageTracks;
-        public List<Track> transferInTracks;
-        public List<Track> transferOutTracks;
+        public List<string> storageTrackNames;
+        public List<string> transferInTrackNames;
+        public List<string> transferOutTrackNames;
 
         [Header("Jobs")]
         [Tooltip("The area where job booklets should spawn")]

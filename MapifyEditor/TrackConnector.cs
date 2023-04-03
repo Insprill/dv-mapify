@@ -5,6 +5,8 @@ namespace Mapify.Editor
 {
     public static class TrackConnector
     {
+        private const float MAX_CONNECT_RANGE = 1.0f;
+
         [MenuItem("Mapify/Debug/Connect Tracks")]
         public static void ConnectTracks()
         {
@@ -135,7 +137,7 @@ namespace Mapify.Editor
             return closestTrack == null ? null : new Branch(closestTrack, first);
         }
 
-        private static Switch FindClosestJunction(Vector3 point, float maxRange = 2f)
+        private static Switch FindClosestJunction(Vector3 point)
         {
             float num1 = float.PositiveInfinity;
             Switch[] objectsOfType = Object.FindObjectsOfType<Switch>();
@@ -144,7 +146,7 @@ namespace Mapify.Editor
                 if (!(junction == null))
                 {
                     float num2 = Vector3.SqrMagnitude(point - junction.transform.position);
-                    if (!(num2 <= maxRange * maxRange) || !(num2 < num1)) continue;
+                    if (!(num2 <= MAX_CONNECT_RANGE * MAX_CONNECT_RANGE) || !(num2 < num1)) continue;
                     num1 = num2;
                     closestJunction = junction;
                 }

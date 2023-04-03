@@ -7,6 +7,7 @@ using Mapify.Editor;
 using Mapify.SceneInitializers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Mapify.Patches
 {
@@ -14,6 +15,7 @@ namespace Mapify.Patches
     public static class WorldStreamingInit_Awake_Patch
     {
         private static string originalRailwayScenePath;
+        private static string originalGameContentScenePath;
 
         public static bool Prefix(WorldStreamingInit __instance)
         {
@@ -24,10 +26,12 @@ namespace Mapify.Patches
             AssetBundle assets = AssetBundle.LoadFromFile(Path.Combine(mapDir, "assets"));
             AssetBundle.LoadFromFile(Path.Combine(mapDir, "scenes"));
 
-            // Load default railway scene for us to steal assets from
+            // Load scenes for us to steal assets from
             originalRailwayScenePath = __instance.railwayScenePath;
-            Main.Logger.Log($"Loading default railway scene ({originalRailwayScenePath}) to copy assets from");
             SceneManager.LoadScene(originalRailwayScenePath, LoadSceneMode.Additive);
+            MonoBehaviourPatch.DisableAll();
+            originalGameContentScenePath = __instance.gameContentScenePath;
+            SceneManager.LoadScene(originalGameContentScenePath, LoadSceneMode.Additive);
 
             // todo: do we need to hardcode these?
             // Load our scenes, not the vanilla ones
@@ -72,8 +76,14 @@ namespace Mapify.Patches
             }
             else if (scene.path == originalRailwayScenePath)
             {
-                Main.Logger.Log($"Loaded default railway scene at {originalRailwayScenePath}");
+                Main.Logger.Log($"Loaded vanilla railway scene at {originalRailwayScenePath}");
                 VanillaRailwaySceneInitializer.SceneLoaded(scene);
+            }
+            else if (scene.path == originalGameContentScenePath)
+            {
+                Main.Logger.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
+                VanillaGameContentSceneInitializer.SceneLoaded(scene);
+                MonoBehaviourPatch.EnableAll();
             }
         }
     }

@@ -68,7 +68,7 @@ namespace Mapify.Editor
                 else
                 {
                     startingPath = GetDefaultSavePath();
-                    folderName = EditorAssets.FindAssets<MapInfo>()[0].mapName;
+                    folderName = EditorAssets.FindAsset<MapInfo>()?.mapName;
                 }
 
                 string exportFolderPath = EditorUtility.SaveFolderPanel("Export Map", startingPath, folderName);
@@ -114,6 +114,7 @@ namespace Mapify.Editor
                 switch (result)
                 {
                     case 0:
+                        Debug.Log("clearing dir");
                         foreach (FileInfo file in directory.GetFiles())
                             file.Delete();
                         break;

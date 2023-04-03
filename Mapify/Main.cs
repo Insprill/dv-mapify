@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using HarmonyLib;
 using Mapify.Editor;
-using Mapify.Patches;
 using UnityModManagerNet;
 
 namespace Mapify
@@ -16,6 +15,7 @@ namespace Mapify
         public static Settings Settings;
         public static MapInfo MapInfo;
         public static OrderedDictionary MapDirs { get; } = new OrderedDictionary();
+        internal static Harmony Harmony;
 
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -24,15 +24,13 @@ namespace Mapify
             ModEntry.OnGUI = DrawGUI;
             ModEntry.OnSaveGUI = SaveGUI;
 
-            Harmony harmony = null;
-
             try
             {
                 if (!Settings.IsDefaultMap)
                 {
                     Logger.Log("Patching...");
-                    harmony = new Harmony(ModEntry.Info.Id);
-                    harmony.PatchAll();
+                    Harmony = new Harmony(ModEntry.Info.Id);
+                    Harmony.PatchAll();
                     Logger.Log("Successfully patched");
                 }
                 else
@@ -49,7 +47,7 @@ namespace Mapify
             catch (Exception ex)
             {
                 Logger.LogException($"Failed to load {ModEntry.Info.DisplayName}:", ex);
-                harmony?.UnpatchAll();
+                Harmony?.UnpatchAll();
                 return false;
             }
 

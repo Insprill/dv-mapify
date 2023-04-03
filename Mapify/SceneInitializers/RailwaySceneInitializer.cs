@@ -51,7 +51,7 @@ namespace Mapify.SceneInitializers
         private static void CreateJunction(Switch sw)
         {
             Transform swTransform = sw.transform;
-            GameObject prefabClone = GameObject.Instantiate(VanillaRailwaySceneInitializer.GetSwitchPrefab(sw.SwitchPrefabName));
+            GameObject prefabClone = AssetCopier.Instantiate(sw.SwitchPrefabName, false);
             Transform prefabCloneTransform = prefabClone.transform;
             Transform inJunction = prefabCloneTransform.Find("in_junction");
             Vector3 offset = prefabCloneTransform.position - inJunction.position;

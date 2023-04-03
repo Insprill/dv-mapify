@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Mapify.Editor;
+using Mapify.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,79 +8,51 @@ namespace Mapify.SceneInitializers
 {
     public static class VanillaRailwaySceneInitializer
     {
-        private static readonly Dictionary<string, GameObject> switchPrefabs = new Dictionary<string, GameObject>(4);
-
-        public static GameObject GetSwitchPrefab(string name)
-        {
-            return switchPrefabs[name];
-        }
-
         public static void SceneLoaded(Scene scene)
         {
-            CopyDefaultAssets(scene.path);
+            AssetCopier.CopyDefaultAssets(scene, ToSave);
         }
 
-        private static void CopyDefaultAssets(string scenePath)
+        private static Dictionary<VanillaAsset, GameObject> ToSave(GameObject gameObject)
         {
-            Scene scene = SceneManager.GetSceneByPath(scenePath);
-            if (!scene.isLoaded)
-            {
-                Main.Logger.Error($"Default scene {scenePath} isn't loaded!");
-                return;
-            }
+            Dictionary<VanillaAsset, GameObject> gameObjects = new Dictionary<VanillaAsset, GameObject>(4);
+            if (gameObject.name != "[railway]")
+                return gameObjects;
 
-            GameObject[] gameObjects = scene.GetRootGameObjects();
-            GameObject railwayRoot = null;
-            foreach (GameObject rootObject in gameObjects)
+            for (int i = 0; i < gameObject.transform.childCount; i++)
             {
-                rootObject.SetActive(false);
-                if (rootObject.name != "[railway]") continue;
-                railwayRoot = rootObject;
-                Main.Logger.Log("Moving [railway] to the active scene");
-                SceneManager.MoveGameObjectToScene(rootObject, SceneManager.GetActiveScene());
-                break;
-            }
-
-            Main.Logger.Log("Unloading default railway scene");
-            // cope
-#pragma warning disable CS0618
-            SceneManager.UnloadScene(scene);
-#pragma warning restore CS0618
-
-            if (railwayRoot == null)
-            {
-                Main.Logger.Error("Failed to find [railway]!");
-                return;
-            }
-
-            for (int i = 0; i < railwayRoot.transform.childCount; i++)
-            {
-                GameObject gameObject = railwayRoot.transform.GetChild(i).gameObject;
-                string name = gameObject.name;
+                GameObject child = gameObject.transform.GetChild(i).gameObject;
+                if (child.transform.rotation.x != 0.0f || child.transform.rotation.z != 0.0f)
+                    continue;
+                string name = child.name;
                 switch (name)
                 {
                     case "junc-left":
+                        CleanupSwitch(child);
+                        gameObjects.TryAdd(VanillaAsset.SwitchLeft, child);
+                        break;
                     case "junc-right":
+                        CleanupSwitch(child);
+                        gameObjects.TryAdd(VanillaAsset.SwitchRight, child);
+                        break;
                     case "junc-left-outer-sign":
+                        CleanupSwitch(child);
+                        gameObjects.TryAdd(VanillaAsset.SwitchLeftOuterSign, child);
+                        break;
                     case "junc-right-outer-sign":
-                        if (switchPrefabs.ContainsKey(name) || gameObject.transform.rotation.x != 0.0f || gameObject.transform.rotation.z != 0.0f) continue;
-                        Main.Logger.Log($"Found {name}");
-                        CleanupSwitch(gameObject);
-                        switchPrefabs[name] = gameObject;
+                        CleanupSwitch(child);
+                        gameObjects.TryAdd(VanillaAsset.SwitchRightOuterSign, child);
                         break;
                 }
             }
 
-            GameObject.DestroyImmediate(railwayRoot);
+            return gameObjects;
         }
 
         private static void CleanupSwitch(GameObject gameObject)
         {
-            gameObject.transform.SetParent(null);
-            gameObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             foreach (Junction junction in gameObject.GetComponentsInChildren<Junction>()) Object.Destroy(junction);
             foreach (BezierCurve curve in gameObject.GetComponentsInChildren<BezierCurve>()) GameObject.Destroy(curve.gameObject);
-            gameObject.SetActive(false);
         }
     }
 }

@@ -11,9 +11,16 @@ namespace Mapify.Editor.Validators
         protected override IEnumerator<Result> ValidateScene(Scene scene)
         {
             GameObject[] roots = scene.GetRootGameObjects();
+
+            #region Distant Terrain
+
             int distantTerrainCount = roots.Count(go => go.name == "[distant terrain]");
             if (distantTerrainCount != 1)
                 yield return Result.Error($"There must be exactly one [distant terrain] object in the {GetPrettySceneName()} scene! Found {distantTerrainCount}");
+
+            #endregion
+
+            # region Terrain
 
             Terrain[] terrains = roots
                 .SelectMany(go => go.GetComponentsInChildren<Terrain>())
@@ -54,17 +61,22 @@ namespace Mapify.Editor.Validators
             }
 
             MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
-            mapInfo.terrainMaterial = m;
-            mapInfo.terrainCount = terrains.Length;
-            mapInfo.terrainPixelError = terrains[0].heightmapPixelError;
-            mapInfo.terrainBasemapDistance = terrains[0].basemapDistance;
-            mapInfo.terrainDrawInstanced = terrains[0].drawInstanced;
+            if (mapInfo != null)
+            {
+                mapInfo.terrainMaterial = m;
+                mapInfo.terrainCount = terrains.Length;
+                mapInfo.terrainPixelError = terrains[0].heightmapPixelError;
+                mapInfo.terrainBasemapDistance = terrains[0].basemapDistance;
+                mapInfo.terrainDrawInstanced = terrains[0].drawInstanced;
+            }
 
             foreach (Terrain terrain in terrains)
                 terrain.tag = "EditorOnly"; // Terrain data is saved separately and rebuilt at runtime
+
+            #endregion
         }
 
-        protected override string GetScenePath()
+        public override string GetScenePath()
         {
             return "Assets/Scenes/Terrain.unity";
         }

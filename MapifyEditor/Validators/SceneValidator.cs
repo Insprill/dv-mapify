@@ -17,14 +17,14 @@ namespace Mapify.Editor.Validators
                 yield break;
             }
 
-            bool isTerrainSceneLoaded = scene.isLoaded;
-            if (!isTerrainSceneLoaded)
+            bool isSceneLoaded = scene.isLoaded;
+            if (!isSceneLoaded)
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
 
             IEnumerator<Result> validateRailwayScene = ValidateScene(scene);
             while (validateRailwayScene.MoveNext()) yield return validateRailwayScene.Current;
 
-            if (!isTerrainSceneLoaded)
+            if (!isSceneLoaded)
                 EditorSceneManager.UnloadSceneAsync(scenePath);
         }
 
@@ -35,6 +35,6 @@ namespace Mapify.Editor.Validators
             return GetScenePath().Split('/').Last().Split('.').First();
         }
 
-        protected abstract string GetScenePath();
+        public abstract string GetScenePath();
     }
 }

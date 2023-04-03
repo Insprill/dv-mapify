@@ -6,9 +6,13 @@ namespace Mapify.Editor
     [RequireComponent(typeof(Track))]
     public class LocomotiveSpawner : MonoBehaviour
     {
-        public List<List<RollingStockType>> locomotiveTypesToSpawn;
-        [HideInNormalInspector]
-        public Station closestStation;
+        // Updated in the inspector
+#pragma warning disable CS0649
+        [SerializeField]
+        internal List<RollingStockTypes> locomotiveTypesToSpawn;
+#pragma warning restore CS0649
+        [HideInInspector] // You can't edit the property drawer of collections themselves :|
+        public List<string> condensedLocomotiveTypes; // Workaround for Unity being stupid as always
         public Track Track => GetComponent<Track>();
     }
 }

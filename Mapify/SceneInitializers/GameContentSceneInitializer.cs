@@ -18,8 +18,8 @@ namespace Mapify.SceneInitializers
 
         public static void SceneLoaded()
         {
-            SetupVanillaAssets();
             SetupGameScene();
+            SetupVanillaAssets();
             SetupStations();
         }
 

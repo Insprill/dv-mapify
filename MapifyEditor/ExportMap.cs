@@ -114,7 +114,6 @@ namespace Mapify.Editor
                 switch (result)
                 {
                     case 0:
-                        Debug.Log("clearing dir");
                         foreach (FileInfo file in directory.GetFiles())
                             file.Delete();
                         break;

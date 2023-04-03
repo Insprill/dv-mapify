@@ -74,7 +74,6 @@ namespace Mapify.SceneInitializers
 
                 // Job booklet spawn surface
                 PointOnPlane jobBookletSpawnSurface = stationObject.GetComponentInChildren<PointOnPlane>();
-                stationObject.PrintHierarchy();
                 if (jobBookletSpawnSurface == null)
                 {
                     GameObject jobBookletSpawnSurfaceObject = stationObject.NewChildWithPosition("JobSpawnerAnchor", station.transform.TransformPoint(station.bookletSpawnArea.center));

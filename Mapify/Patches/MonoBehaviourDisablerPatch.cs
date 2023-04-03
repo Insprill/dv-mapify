@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using DV;
@@ -77,8 +78,14 @@ namespace Mapify.Patches
             }
         }
 
-        public static void EnableAll()
+        public static void EnableAllLater()
         {
+            SingletonBehaviour<CoroutineManager>.Instance.StartCoroutine(EnableLater());
+        }
+
+        private static IEnumerator EnableLater()
+        {
+            yield return null;
             foreach (MethodInfo method in patchedMethods)
                 Main.Harmony.Unpatch(method, prefix);
             patchedMethods = null;

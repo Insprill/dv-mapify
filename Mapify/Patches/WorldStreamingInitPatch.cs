@@ -7,7 +7,6 @@ using Mapify.Editor;
 using Mapify.SceneInitializers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 namespace Mapify.Patches
 {
@@ -83,7 +82,7 @@ namespace Mapify.Patches
             {
                 Main.Logger.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
                 VanillaGameContentSceneInitializer.SceneLoaded(scene);
-                MonoBehaviourPatch.EnableAll();
+                MonoBehaviourPatch.EnableAllLater();
             }
         }
     }

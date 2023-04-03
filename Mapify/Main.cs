@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using HarmonyLib;
 using Mapify.Editor;
+using Mapify.Patches;
 using UnityModManagerNet;
 
 namespace Mapify
@@ -39,7 +40,7 @@ namespace Mapify
                     Logger.Log("Default map selected, skipping patches");
                 }
 
-                DebugCommands.RegisterCommands();
+                WorldStreamingInit.LoadingFinished += DebugCommands.RegisterCommands;
 
                 Logger.Log("Searching for maps...");
                 FindMaps();

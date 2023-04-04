@@ -155,7 +155,6 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.TrashCan:
                     case VanillaAsset.Dumpster:
                     case VanillaAsset.LostAndFoundShed:
-                    case VanillaAsset.WarehouseMachine:
                     case VanillaAsset.StationOffice1:
                     case VanillaAsset.StationOffice2:
                     case VanillaAsset.StationOffice3:
@@ -163,7 +162,16 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.StationOffice5:
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
-                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset), new[] { typeof(Station), typeof(WarehouseMachine) });
+                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset), new[] { typeof(Station) });
+                        break;
+                    case VanillaAsset.WarehouseMachine:
+                        WarehouseMachine machine = vanillaObject.GetComponent<WarehouseMachine>();
+                        Station[] stations = Object.FindObjectsOfType<Station>().Where(s => s.warehouseMachines.Contains(machine)).ToArray();
+                        machine = vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset), new[] { typeof(WarehouseMachine) }).GetComponent<WarehouseMachine>();
+                        foreach (Station station in stations)
+                            for (int i = 0; i < station.warehouseMachines.Count; i++)
+                                if (station.warehouseMachines[i] == null)
+                                    station.warehouseMachines[i] = machine;
                         break;
                 }
         }

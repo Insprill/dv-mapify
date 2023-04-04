@@ -58,11 +58,18 @@ namespace Mapify.SceneInitializers
                 .Where(group => group.Key != null)
                 .ToDictionary(group => group.Key, group => group.ToList());
 
+
             foreach (Station station in stations)
             {
                 GameObject stationObject = station.gameObject;
                 stationObject.SetActive(false);
-                StationController stationController = stationObject.AddComponent<StationController>();
+                stationObject.AddComponent<StationController>();
+            }
+
+            foreach (Station station in stations)
+            {
+                GameObject stationObject = station.gameObject;
+                StationController stationController = stationObject.GetComponent<StationController>();
 
                 // Station info
                 stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color);
@@ -85,13 +92,33 @@ namespace Mapify.SceneInitializers
 
                 StationController_Field_jobBookletSpawnSurface.SetValue(stationController, jobBookletSpawnSurface);
 
-                // Job generation ranges.
+                // Job generation ranges
                 // todo: should these be customizable?
                 StationJobGenerationRange jobGenerationRange = stationObject.AddComponent<StationJobGenerationRange>();
                 jobGenerationRange.stationCenterAnchor = station.yardCenter;
 
-                // todo: this
-                stationObject.AddComponent<StationProceduralJobsRuleset>();
+                // Job generation rules
+                StationProceduralJobsRuleset proceduralJobsRuleset = stationObject.AddComponent<StationProceduralJobsRuleset>();
+                proceduralJobsRuleset.inputCargoGroups = JsonUtility.FromJson<List<CargoSet>>(station.inputCargoGroupsSerialized).ToVanilla();
+                proceduralJobsRuleset.outputCargoGroups = JsonUtility.FromJson<List<CargoSet>>(station.outputCargoGroupsSerialized).ToVanilla();
+                proceduralJobsRuleset.jobsCapacity = station.jobsCapacity;
+                proceduralJobsRuleset.minCarsPerJob = station.minCarsPerJob;
+                proceduralJobsRuleset.maxCarsPerJob = station.maxCarsPerJob;
+                proceduralJobsRuleset.maxShuntingStorageTracks = station.maxShuntingStorageTracks;
+                proceduralJobsRuleset.haulStartingJobSupported = station.haulStartingJobSupported;
+                proceduralJobsRuleset.loadStartingJobSupported = station.loadStartingJobSupported;
+                proceduralJobsRuleset.unloadStartingJobSupported = station.unloadStartingJobSupported;
+                proceduralJobsRuleset.emptyHaulStartingJobSupported = station.emptyHaulStartingJobSupported;
+
+                // Warehouse machines
+                //todo: this list gets broken when the warehouse machines get replaced with their vanilla counterparts
+                stationController.warehouseMachineControllers = station.warehouseMachines.Select(machine =>
+                {
+                    WarehouseMachineController machineController = machine.gameObject.WithComponentT<WarehouseMachineController>();
+                    machineController.warehouseTrackName = machine.warehouseTrackName;
+                    machineController.supportedCargoTypes = machine.supportedCargoTypes.ToVanilla();
+                    return machineController;
+                }).ToList();
 
                 // Teleport anchor
                 Transform teleportAnchor = stationObject.NewChild("TeleportAnchor").transform;
@@ -128,8 +155,7 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.TrashCan:
                     case VanillaAsset.Dumpster:
                     case VanillaAsset.LostAndFoundShed:
-                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
-                        break;
+                    case VanillaAsset.WarehouseMachine:
                     case VanillaAsset.StationOffice1:
                     case VanillaAsset.StationOffice2:
                     case VanillaAsset.StationOffice3:
@@ -137,7 +163,7 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.StationOffice5:
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
-                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset), new[] { typeof(Station) });
+                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset), new[] { typeof(Station), typeof(WarehouseMachine) });
                         break;
                 }
         }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.SceneManagement;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,9 +8,9 @@ namespace Mapify.Editor.Validators
 {
     public class GameContentSceneValidator : SceneValidator
     {
-        protected override IEnumerator<Result> ValidateScene(Scene scene)
+        protected override IEnumerator<Result> ValidateScene(Scene terrainScene, Scene railwayScene, Scene gameContentScene)
         {
-            GameObject[] roots = scene.GetRootGameObjects();
+            GameObject[] roots = gameContentScene.GetRootGameObjects();
 
             #region Lights
 
@@ -23,11 +23,6 @@ namespace Mapify.Editor.Validators
 
             #region Stations
 
-            string railwayScenePath = new RailwaySceneValidator().GetScenePath();
-            Scene railwayScene = EditorSceneManager.GetSceneByPath(railwayScenePath);
-            bool isRailwaySceneLoaded = railwayScene.isLoaded;
-            if (!isRailwaySceneLoaded)
-                EditorSceneManager.OpenScene(railwayScenePath, OpenSceneMode.Additive);
             string[] nonSwitchTrackNames = railwayScene.GetRootGameObjects()
                 .SelectMany(go => go.GetComponentsInChildren<Track>())
                 .Where(track => track.GetComponentInParent<Switch>() == null)
@@ -54,10 +49,10 @@ namespace Mapify.Editor.Validators
                 VanillaObject vanillaObject = station.GetComponent<VanillaObject>();
                 if ((vanillaObject == null || !$"{vanillaObject.asset}".StartsWith("Station")) && station.bookletSpawnArea == null)
                     yield return Result.Error($"You must specify a job booklet spawn area for custom station {station.stationName}!", station);
-            }
 
-            if (!isRailwaySceneLoaded)
-                EditorSceneManager.UnloadSceneAsync(railwayScenePath);
+                station.inputCargoGroupsSerialized = JsonUtility.ToJson(station.inputCargoGroups);
+                station.outputCargoGroupsSerialized = JsonUtility.ToJson(station.outputCargoGroups);
+            }
 
             #endregion
         }

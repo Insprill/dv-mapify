@@ -29,9 +29,21 @@ namespace Mapify.Editor
         public int maxShuntingStorageTracks = 3;
         public int minCarsPerJob = 3;
         public int maxCarsPerJob = 20;
-        [Header("Cargo groups")]
-        // public List<CargoGroup> inputCargoGroups;
-        // public List<CargoGroup> outputCargoGroups;
+
+        [Header("Cargo")]
+        public List<WarehouseMachine> warehouseMachines;
+#pragma warning disable CS0649
+        [SerializeField]
+        internal List<CargoSet> inputCargoGroups;
+        [SerializeField]
+        internal List<CargoSet> outputCargoGroups;
+#pragma warning restore CS0649
+        // More workarounds for Unity's excuse of a game engine
+        [HideInNormalInspector]
+        public string inputCargoGroupsSerialized;
+        [HideInNormalInspector]
+        public string outputCargoGroupsSerialized;
+
         [Header("Starting chain job priorities")]
         public bool loadStartingJobSupported = true;
         public bool haulStartingJobSupported = true;

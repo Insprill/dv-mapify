@@ -18,5 +18,6 @@ namespace Mapify.Editor
         SwitchRight,
         SwitchLeftOuterSign,
         SwitchRightOuterSign,
+        WarehouseMachine,
     }
 }

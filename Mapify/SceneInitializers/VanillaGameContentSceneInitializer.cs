@@ -35,6 +35,9 @@ namespace Mapify.SceneInitializers
             GameObject shed = gameObject.FindChildByName("OldShed");
             gameObjects.Add(VanillaAsset.LostAndFoundShed, shed);
 
+            GameObject warehouseMachine = gameObject.FindChildByName("WarehouseMachineHMB");
+            gameObjects.Add(VanillaAsset.WarehouseMachine, warehouseMachine);
+
             for (int i = 1; i <= 7; i++)
             {
                 GameObject office = gameObject.FindChildByName($"Office_0{i}");

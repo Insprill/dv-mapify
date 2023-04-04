@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using DV.Logic.Job;
+using Mapify.Editor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -113,11 +115,39 @@ namespace Mapify.Utils
 
         #endregion
 
+        #region Mapify -> Vanilla Converters
+
+        public static CargoType ToVanilla(this Cargo cargo)
+        {
+            return (CargoType)Enum.Parse(typeof(CargoType), cargo.ToString());
+        }
+
+        public static List<CargoType> ToVanilla(this IEnumerable<Cargo> cargos)
+        {
+            return cargos.Select(c => c.ToVanilla()).ToList();
+        }
+
+        public static List<CargoGroup> ToVanilla(this IEnumerable<CargoSet> list)
+        {
+            return list.Select(l =>
+                new CargoGroup(
+                    l.cargoTypes.ToVanilla(),
+                    l.stations.Select(s => s.GetComponent<StationController>()).ToList()
+                )
+            ).ToList();
+        }
+
+        #endregion
+
+        #region C# Utils
+
         public static bool TryAdd<K, V>(this Dictionary<K, V> dictionary, K key, V value)
         {
             bool contains = dictionary.ContainsKey(key);
             if (!contains) dictionary.Add(key, value);
             return !contains;
         }
+
+        #endregion
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Mapify.Editor.Utils;
+using UnityEngine.SceneManagement;
 
 namespace Mapify.Editor.Validators
 {
@@ -8,7 +9,7 @@ namespace Mapify.Editor.Validators
     {
         private const string MAP_NAME_REGEX = "[a-zA-Z0-9-_& ]";
 
-        public override IEnumerator<Result> Validate()
+        public override IEnumerator<Result> Validate(List<Scene> scenes)
         {
             #region MapInfo
 

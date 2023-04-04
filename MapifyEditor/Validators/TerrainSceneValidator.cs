@@ -8,9 +8,9 @@ namespace Mapify.Editor.Validators
 {
     public class TerrainSceneValidator : SceneValidator
     {
-        protected override IEnumerator<Result> ValidateScene(Scene scene)
+        protected override IEnumerator<Result> ValidateScene(Scene terrainScene, Scene railwayScene, Scene gameContentScene)
         {
-            GameObject[] roots = scene.GetRootGameObjects();
+            GameObject[] roots = terrainScene.GetRootGameObjects();
 
             #region Distant Terrain
 

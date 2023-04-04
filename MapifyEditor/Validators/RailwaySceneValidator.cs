@@ -9,7 +9,7 @@ namespace Mapify.Editor.Validators
     {
         protected override IEnumerator<Result> ValidateScene(Scene scene)
         {
-            GameObject[] roots = scene.GetRootGameObjects();
+            GameObject[] roots = railwayScene.GetRootGameObjects();
 
             # region Track
 

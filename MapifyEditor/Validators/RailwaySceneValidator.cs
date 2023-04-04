@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,7 +8,10 @@ namespace Mapify.Editor.Validators
 {
     public class RailwaySceneValidator : SceneValidator
     {
-        protected override IEnumerator<Result> ValidateScene(Scene scene)
+        private static readonly Regex STATION_TRACK_NAME_PATTERN = new Regex("\\[Y\\]_\\[([a-z0-9]*)\\]_\\[([a-z0-9]+)-(\\d+)-([a-z0-9]+)\\]", RegexOptions.IgnoreCase);
+        private static readonly Regex ROAD_TRACK_NAME_PATTERN = new Regex("\\[#\\]([ _])Road([ _])[0-9]*", RegexOptions.IgnoreCase);
+
+        protected override IEnumerator<Result> ValidateScene(Scene terrainScene, Scene railwayScene, Scene gameContentScene)
         {
             GameObject[] roots = railwayScene.GetRootGameObjects();
 
@@ -25,8 +29,37 @@ namespace Mapify.Editor.Validators
                 yield break;
             }
 
-            if (roots[0].name != "[railway]") yield return Result.Error($"Unknown object {roots[0].name} in {GetPrettySceneName()} scene. The only object should be [railway]", roots[0]);
-            if (roots[0] != null && roots[0].GetComponentsInChildren<Track>().Length == 0) yield return Result.Error("Failed to find any track!");
+            if (roots[0].name != "[railway]")
+                yield return Result.Error($"Unknown object {roots[0].name} in {GetPrettySceneName()} scene. The only object should be [railway]", roots[0]);
+
+            List<Track> tracks = roots.SelectMany(go => go.GetComponentsInChildren<Track>()).ToList();
+            if (tracks.Count == 0)
+                yield return Result.Error("Failed to find any track!");
+
+            foreach (Track track in tracks)
+            {
+                string trackName = track.name;
+                if (trackName == "[track through]" || trackName == "[track diverging]") continue;
+                Match stationMatch = STATION_TRACK_NAME_PATTERN.Match(trackName);
+                if (!stationMatch.Success)
+                {
+                    Match roadMatch = ROAD_TRACK_NAME_PATTERN.Match(trackName);
+                    if (!roadMatch.Success) yield return Result.Error($"Invalid track name '{trackName}'! It must match the pattern {STATION_TRACK_NAME_PATTERN} or {ROAD_TRACK_NAME_PATTERN}", track);
+                }
+                else
+                {
+                    string yardId = stationMatch.Groups[1].Value;
+                    int stationMatchCount = gameContentScene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<Station>()).Count(station => station.stationID == yardId);
+                    if (stationMatchCount == 0) yield return Result.Error($"Failed to find station with ID {yardId}", track);
+                }
+            }
+
+            List<Track> duplicateTracks = tracks.GroupBy(x => x)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+            foreach (Track duplicate in duplicateTracks)
+                yield return Result.Error($"Duplicate track name {duplicate.name}", duplicate);
 
             #endregion
 

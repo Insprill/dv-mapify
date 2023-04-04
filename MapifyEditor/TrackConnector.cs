@@ -43,6 +43,7 @@ namespace Mapify.Editor
 
             foreach (Track track in tracks)
             {
+                if (track.ParentSwitch != null) continue;
                 ConnectInToClosestBranch(track);
                 ConnectOutToClosestBranch(track);
             }

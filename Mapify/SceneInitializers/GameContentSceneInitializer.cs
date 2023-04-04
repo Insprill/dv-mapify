@@ -48,6 +48,9 @@ namespace Mapify.SceneInitializers
             globalShopController.shopItemsData = new List<ShopItemData>();
             Main.Logger.Log("Creating RenderTextureSystem");
             new GameObject("[RenderTextureSystem]").AddComponent<RenderTextureSystem>();
+            // I'm not sure where vanilla creates this because it doesn't have auto create enabled.
+            Main.Logger.Log("Creating YardTracksOrganizer");
+            new GameObject("[YardTracksOrganizer]").AddComponent<YardTracksOrganizer>();
         }
 
         private static void SetupStations()

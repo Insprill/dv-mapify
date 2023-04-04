@@ -7,9 +7,10 @@ namespace Mapify.Editor
     {
         public string mapName = "My Custom Map";
         public float waterLevel;
-        public float worldSize = 16384f;
         public Vector3 defaultSpawnPosition;
         public Vector3 defaultSpawnRotation;
+        [HideInNormalInspector]
+        public float worldSize;
         [HideInNormalInspector]
         public int terrainCount;
         [HideInNormalInspector]

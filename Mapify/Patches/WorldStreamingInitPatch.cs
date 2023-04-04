@@ -71,7 +71,7 @@ namespace Mapify.Patches
             else if (scene.path == wsi.gameContentScenePath)
             {
                 Main.Logger.Log($"Loaded game content scene at {wsi.gameContentScenePath}");
-                GameContentSceneInitializer.SceneLoaded();
+                GameContentSceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == originalRailwayScenePath)
             {

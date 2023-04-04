@@ -1,6 +1,7 @@
 using System.Linq;
 using DV.TerrainSystem;
 using DV.WorldTools;
+using Mapify.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,7 +17,7 @@ namespace Mapify.SceneInitializers
 
         private static void SetupTerrainGrid()
         {
-            GameObject gridObject = new GameObject("TerrainGrid");
+            GameObject gridObject = WorldMover.Instance.originShiftParent.gameObject.NewChild("TerrainGrid");
             TerrainGrid grid = gridObject.AddComponent<TerrainGrid>();
             grid.loadingRingSize = 2;
             grid.addToVegetationStudio = false;
@@ -35,6 +36,7 @@ namespace Mapify.SceneInitializers
                 return;
             }
 
+            gameObject.transform.SetParent(WorldMover.Instance.originShiftParent);
             DistantTerrain distantTerrain = gameObject.gameObject.AddComponent<DistantTerrain>();
             distantTerrain.worldScale = SingletonBehaviour<LevelInfo>.Instance.worldSize;
             distantTerrain.step = 128; // No idea what this means but this is what it's set to in the game.

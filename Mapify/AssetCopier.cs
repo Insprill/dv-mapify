@@ -11,7 +11,7 @@ namespace Mapify
 
         public static GameObject Instantiate(VanillaAsset asset, bool active = true)
         {
-            GameObject go = GameObject.Instantiate(prefabs[asset]);
+            GameObject go = GameObject.Instantiate(prefabs[asset], WorldMover.Instance.originShiftParent);
             go.SetActive(active);
             return go;
         }

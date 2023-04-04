@@ -8,6 +8,7 @@ using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace Mapify.SceneInitializers
@@ -16,11 +17,13 @@ namespace Mapify.SceneInitializers
     {
         private static readonly FieldInfo StationController_Field_jobBookletSpawnSurface = AccessTools.DeclaredField(typeof(StationController), "jobBookletSpawnSurface");
 
-        public static void SceneLoaded()
+        public static void SceneLoaded(Scene scene)
         {
             SetupGameScene();
             SetupVanillaAssets();
             SetupStations();
+            foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
+                transform.SetParent(WorldMover.Instance.originShiftParent);
         }
 
         private static void SetupGameScene()

@@ -17,9 +17,11 @@ namespace Mapify.Editor
         [Tooltip("The rough center of the yard. Used at the reference point for generating jobs")]
         public Transform yardCenter;
 
-        [Header("Station Tracks")]
+        [HideInNormalInspector]
         public List<string> storageTrackNames;
+        [HideInNormalInspector]
         public List<string> transferInTrackNames;
+        [HideInNormalInspector]
         public List<string> transferOutTrackNames;
 
         [Header("Jobs")]

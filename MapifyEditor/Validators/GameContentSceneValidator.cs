@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -23,22 +23,33 @@ namespace Mapify.Editor.Validators
 
             #region Stations
 
-            string[] nonSwitchTrackNames = railwayScene.GetRootGameObjects()
+            Track[] tracks = railwayScene.GetRootGameObjects()
                 .SelectMany(go => go.GetComponentsInChildren<Track>())
-                .Where(track => track.GetComponentInParent<Switch>() == null)
-                .Select(go => go.name)
                 .ToArray();
             foreach (Station station in roots.SelectMany(go => go.GetComponentsInChildren<Station>()))
             {
-                // Track names
-                IEnumerable<string> trackNames = station.storageTrackNames.Concat(station.transferInTrackNames).Concat(station.transferOutTrackNames);
-                foreach (string stationStorageTrackName in trackNames)
+                // Tracks
+                station.storageTrackNames = new List<string>();
+                station.transferInTrackNames = new List<string>();
+                station.transferOutTrackNames = new List<string>();
+                foreach (Track track in tracks)
                 {
-                    int matchCount = nonSwitchTrackNames.Count(name => name == stationStorageTrackName);
-                    if (matchCount == 0)
-                        yield return Result.Error($"Failed to find track {stationStorageTrackName}!", station);
-                    else if (matchCount > 1)
-                        yield return Result.Error($"Found multiple tracks with name {stationStorageTrackName}! Track names should be unique.", station);
+                    Match match = RailwaySceneValidator.STATION_TRACK_NAME_PATTERN.Match(track.name);
+                    if (!match.Success) continue;
+                    if (match.Groups[1].Value != station.stationID) continue;
+                    string trackType = match.Groups[4].Value;
+                    switch (trackType)
+                    {
+                        case "S":
+                            station.storageTrackNames.Add(track.name);
+                            break;
+                        case "I":
+                            station.transferInTrackNames.Add(track.name);
+                            break;
+                        case "O":
+                            station.transferOutTrackNames.Add(track.name);
+                            break;
+                    }
                 }
 
                 // Teleport location

@@ -8,7 +8,7 @@ namespace Mapify.Editor.Validators
 {
     public class RailwaySceneValidator : SceneValidator
     {
-        private static readonly Regex STATION_TRACK_NAME_PATTERN = new Regex("\\[Y\\]_\\[([a-z0-9]*)\\]_\\[([a-z0-9]+)-(\\d+)-([a-z0-9]+)\\]", RegexOptions.IgnoreCase);
+        public static readonly Regex STATION_TRACK_NAME_PATTERN = new Regex("\\[Y\\]_\\[([a-z0-9]*)\\]_\\[([a-z0-9]+)-(\\d+)-([a-z0-9]+)\\]", RegexOptions.IgnoreCase);
         private static readonly Regex ROAD_TRACK_NAME_PATTERN = new Regex("\\[#\\]([ _])Road([ _])[0-9]*", RegexOptions.IgnoreCase);
 
         protected override IEnumerator<Result> ValidateScene(Scene terrainScene, Scene railwayScene, Scene gameContentScene)

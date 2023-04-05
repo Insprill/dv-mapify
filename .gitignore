@@ -289,6 +289,9 @@ Directory.Build.targets
 # Custom map used for testing
 TestMap/
 
+# Decompiled project
+DerailValley/
+
 ### Package Builder
 # What kind of git nonsense is this...
 # Required Assets

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -34,6 +35,32 @@ namespace Mapify.Editor.Utils
             }
 
             return Mathf.Max(maxX, maxZ);
+        }
+
+        public static T GetComponentInSelfOrParent<T>(this Component component)
+        {
+            return component.gameObject.GetComponentInSelfOrParent<T>();
+        }
+
+        public static T GetComponentInSelfOrParent<T>(this GameObject gameObject)
+        {
+            T self = gameObject.GetComponent<T>();
+            return self != null ? self : gameObject.GetComponentInParent<T>();
+        }
+
+        public static Dictionary<Station, List<T>> MapToClosestStation<T>(this IEnumerable<T> arr) where T : Component
+        {
+            return arr
+                .GroupBy(spawner => spawner.gameObject.GetClosestComponent<Station>())
+                .Where(group => group.Key != null)
+                .ToDictionary(group => group.Key, group => group.ToList());
+        }
+
+        public static T GetClosestComponent<T>(this GameObject gameObject) where T : Component
+        {
+            return Object.FindObjectsOfType<T>()
+                .OrderBy(c => (gameObject.transform.position - c.transform.position).sqrMagnitude)
+                .FirstOrDefault();
         }
     }
 }

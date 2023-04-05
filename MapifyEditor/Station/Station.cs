@@ -33,6 +33,7 @@ namespace Mapify.Editor
         public int maxCarsPerJob = 20;
 
         [Header("Cargo")]
+        [HideInInspector]
         public List<WarehouseMachine> warehouseMachines;
 #pragma warning disable CS0649
         [SerializeField]

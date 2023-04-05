@@ -51,13 +51,6 @@ namespace Mapify.Utils
             return gameObject;
         }
 
-        public static T GetClosestComponent<T>(this GameObject gameObject) where T : Component
-        {
-            return Object.FindObjectsOfType<T>()
-                .OrderBy(c => (gameObject.transform.position - c.transform.position).sqrMagnitude)
-                .FirstOrDefault();
-        }
-
         public static List<Transform> GetChildren(this Transform transform)
         {
             List<Transform> children = new List<Transform>(transform.childCount);

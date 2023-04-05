@@ -6,10 +6,12 @@ using DV;
 using DV.RenderTextureSystem;
 using HarmonyLib;
 using Mapify.Editor;
+using Mapify.Editor.Utils;
 using Mapify.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
+using Station = Mapify.Editor.Station;
 
 namespace Mapify.SceneInitializers
 {
@@ -59,11 +61,7 @@ namespace Mapify.SceneInitializers
         private static void SetupStations()
         {
             Station[] stations = Object.FindObjectsOfType<Station>();
-            Dictionary<Station, List<LocomotiveSpawner>> locomotiveSpawners = Object.FindObjectsOfType<LocomotiveSpawner>()
-                .GroupBy(spawner => spawner.gameObject.GetClosestComponent<Station>())
-                .Where(group => group.Key != null)
-                .ToDictionary(group => group.Key, group => group.ToList());
-
+            Dictionary<Station, List<LocomotiveSpawner>> locomotiveSpawners = Object.FindObjectsOfType<LocomotiveSpawner>().MapToClosestStation();
 
             foreach (Station station in stations)
             {

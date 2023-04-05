@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Mapify.Editor.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,6 +23,8 @@ namespace Mapify.Editor.Validators
             #endregion
 
             #region Stations
+
+            Dictionary<Station, List<WarehouseMachine>> warehouses = roots.SelectMany(go => go.GetComponentsInChildren<WarehouseMachine>()).MapToClosestStation();
 
             Track[] tracks = railwayScene.GetRootGameObjects()
                 .SelectMany(go => go.GetComponentsInChildren<Track>())
@@ -63,6 +66,9 @@ namespace Mapify.Editor.Validators
 
                 station.inputCargoGroupsSerialized = JsonUtility.ToJson(station.inputCargoGroups);
                 station.outputCargoGroupsSerialized = JsonUtility.ToJson(station.outputCargoGroups);
+
+                if (warehouses.TryGetValue(station, out List<WarehouseMachine> machines))
+                    station.warehouseMachines = machines;
             }
 
             #endregion

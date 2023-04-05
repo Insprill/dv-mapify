@@ -110,21 +110,21 @@ namespace Mapify.Utils
 
         #region Mapify -> Vanilla Converters
 
-        public static CargoType ToVanilla(this Cargo cargo)
+        public static To ConvertByName<From, To>(this From cargo) where From : Enum where To : Enum
         {
-            return (CargoType)Enum.Parse(typeof(CargoType), cargo.ToString());
+            return (To)Enum.Parse(typeof(To), cargo.ToString());
         }
 
-        public static List<CargoType> ToVanilla(this IEnumerable<Cargo> cargos)
+        public static List<To> ConvertByName<From, To>(this IEnumerable<From> cargos) where From : Enum where To : Enum
         {
-            return cargos.Select(c => c.ToVanilla()).ToList();
+            return cargos.Select(c => c.ConvertByName<From, To>()).ToList();
         }
 
         public static List<CargoGroup> ToVanilla(this IEnumerable<CargoSet> list)
         {
-            return list.Select(l =>
+            return list?.Select(l =>
                 new CargoGroup(
-                    l.cargoTypes.ToVanilla(),
+                    l.cargoTypes.ConvertByName<Cargo, CargoType>(),
                     l.stations.Select(s => s.GetComponent<StationController>()).ToList()
                 )
             ).ToList();

@@ -120,7 +120,7 @@ namespace Mapify.SceneInitializers
                 {
                     WarehouseMachineController machineController = machine.gameObject.WithComponentT<WarehouseMachineController>();
                     machineController.warehouseTrackName = machine.warehouseTrackName;
-                    machineController.supportedCargoTypes = machine.supportedCargoTypes.ToVanilla();
+                    machineController.supportedCargoTypes = machine.supportedCargoTypes.ConvertByName<Cargo, CargoType>();
                     return machineController;
                 }).ToList();
 

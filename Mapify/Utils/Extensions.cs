@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CommandTerminal;
 using DV.Logic.Job;
+using HarmonyLib;
 using Mapify.Editor;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Mapify.Utils
 {
@@ -139,6 +140,26 @@ namespace Mapify.Utils
             bool contains = dictionary.ContainsKey(key);
             if (!contains) dictionary.Add(key, value);
             return !contains;
+        }
+
+        public static void Fill<T>(this T[] array, int startIndex, int length, T item)
+        {
+            for (int i = startIndex; i <= length; i++)
+                array[i] = item;
+        }
+
+        #endregion
+
+        #region DV
+
+        private static readonly MethodInfo CommandArg_Method_TypeError = AccessTools.DeclaredMethod(typeof(CommandArg), "TypeError", new[] { typeof(string) });
+
+        public static double Double(this CommandArg arg)
+        {
+            if (double.TryParse(arg.String, out double result))
+                return result;
+            CommandArg_Method_TypeError.Invoke(arg, new[] { "double" });
+            return 0;
         }
 
         #endregion

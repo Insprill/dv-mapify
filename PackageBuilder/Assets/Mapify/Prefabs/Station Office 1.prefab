@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3139059925994552442}
-  - component: {fileID: 3505095273373018400}
   - component: {fileID: 7794002214966799778}
   - component: {fileID: 8688684374492490991}
   - component: {fileID: 4743580159542723369}
@@ -31,39 +30,11 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 4546795045023323691}
   - {fileID: 5087403294541507478}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3505095273373018400
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4033203878347210954}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 163791943, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  name: 
-  type: 
-  yardID: 
-  color: {r: 0, g: 0, b: 0, a: 0}
-  teleportLocation: {fileID: 5087403294541507478}
-  storageTrackNames: []
-  transferInTrackNames: []
-  transferOutTrackNames: []
-  bookletSpawnArea: {fileID: 0}
-  jobsCapacity: 30
-  maxShuntingStorageTracks: 3
-  minCarsPerJob: 3
-  maxCarsPerJob: 20
-  loadStartingJobSupported: 1
-  haulStartingJobSupported: 1
-  unloadStartingJobSupported: 1
-  emptyHaulStartingJobSupported: 1
 --- !u!114 &7794002214966799778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,5 +123,70 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3139059925994552442}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: -145, z: 0}
+--- !u!1 &6191015228236855359
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4546795045023323691}
+  - component: {fileID: 1113607969113541116}
+  m_Layer: 0
+  m_Name: Logic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4546795045023323691
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6191015228236855359}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 3139059925994552442}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1113607969113541116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6191015228236855359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 163791943, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stationName: 
+  stationID: 
+  color: {r: 0, g: 0, b: 0, a: 0}
+  teleportLocation: {fileID: 5087403294541507478}
+  yardCenter: {fileID: 0}
+  storageTrackNames: []
+  transferInTrackNames: []
+  transferOutTrackNames: []
+  bookletSpawnArea: {fileID: 0}
+  jobsCapacity: 30
+  maxShuntingStorageTracks: 3
+  minCarsPerJob: 3
+  maxCarsPerJob: 20
+  warehouseMachines: []
+  inputCargoGroups: []
+  outputCargoGroups: []
+  inputCargoGroupsSerialized: 
+  outputCargoGroupsSerialized: 
+  loadStartingJobSupported: 1
+  haulStartingJobSupported: 1
+  unloadStartingJobSupported: 1
+  emptyHaulStartingJobSupported: 1

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using DV;
+using DV.Logic.Job;
 using DV.RenderTextureSystem;
 using HarmonyLib;
 using Mapify.Editor;
@@ -84,7 +85,7 @@ namespace Mapify.SceneInitializers
                 stationController.transferOutRailtracksGONames = station.transferOutTrackNames;
 
                 // Job booklet spawn surface
-                PointOnPlane jobBookletSpawnSurface = stationObject.GetComponentInChildren<PointOnPlane>();
+                PointOnPlane jobBookletSpawnSurface = stationObject.transform.parent.GetComponentInChildren<PointOnPlane>();
                 if (jobBookletSpawnSurface == null)
                 {
                     GameObject jobBookletSpawnSurfaceObject = stationObject.NewChildWithPosition("JobSpawnerAnchor", station.transform.TransformPoint(station.bookletSpawnArea.center));
@@ -118,7 +119,7 @@ namespace Mapify.SceneInitializers
                 //todo: this list gets broken when the warehouse machines get replaced with their vanilla counterparts
                 stationController.warehouseMachineControllers = station.warehouseMachines.Select(machine =>
                 {
-                    WarehouseMachineController machineController = machine.gameObject.WithComponentT<WarehouseMachineController>();
+                    WarehouseMachineController machineController = machine.transform.parent.gameObject.WithComponentT<WarehouseMachineController>();
                     machineController.warehouseTrackName = machine.warehouseTrackName;
                     machineController.supportedCargoTypes = machine.supportedCargoTypes.ConvertByName<Cargo, CargoType>();
                     return machineController;
@@ -166,16 +167,8 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.StationOffice5:
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
-                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset), new[] { typeof(Station) });
-                        break;
                     case VanillaAsset.WarehouseMachine:
-                        WarehouseMachine machine = vanillaObject.GetComponent<WarehouseMachine>();
-                        Station[] stations = Object.FindObjectsOfType<Station>().Where(s => s.warehouseMachines.Contains(machine)).ToArray();
-                        machine = vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset), new[] { typeof(WarehouseMachine) }).GetComponent<WarehouseMachine>();
-                        foreach (Station station in stations)
-                            for (int i = 0; i < station.warehouseMachines.Count; i++)
-                                if (station.warehouseMachines[i] == null)
-                                    station.warehouseMachines[i] = machine;
+                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
                         break;
                 }
         }

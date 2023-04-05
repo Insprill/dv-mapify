@@ -60,7 +60,7 @@ namespace Mapify.Editor.Validators
                     yield return Result.Error($"You must set a teleport location for station {station.stationName}!", station);
 
                 // Job booklet spawn area
-                VanillaObject vanillaObject = station.GetComponent<VanillaObject>();
+                VanillaObject vanillaObject = station.GetComponentInSelfOrParent<VanillaObject>();
                 if ((vanillaObject == null || !$"{vanillaObject.asset}".StartsWith("Station")) && station.bookletSpawnArea == null)
                     yield return Result.Error($"You must specify a job booklet spawn area for custom station {station.stationName}!", station);
 

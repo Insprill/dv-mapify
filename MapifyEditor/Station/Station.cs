@@ -25,7 +25,7 @@ namespace Mapify.Editor
         public List<string> transferOutTrackNames;
 
         [Header("Jobs")]
-        [Tooltip("The area where job booklets should spawn")]
+        [Tooltip("The area where job booklets should spawn. Not required when using a vanilla station")]
         public BoxCollider bookletSpawnArea;
         public int jobsCapacity = 30;
         public int maxShuntingStorageTracks = 3;

@@ -5,6 +5,7 @@ using System.Reflection;
 using DV;
 using DV.Logic.Job;
 using DV.RenderTextureSystem;
+using DV.Teleporters;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -129,6 +130,7 @@ namespace Mapify.SceneInitializers
                 Transform teleportAnchor = stationObject.NewChild("TeleportAnchor").transform;
                 teleportAnchor.position = station.teleportLocation.position;
                 teleportAnchor.rotation = station.teleportLocation.rotation;
+                teleportAnchor.gameObject.AddComponent<StationTeleporter>();
 
                 // Locomotive Spawners
                 if (locomotiveSpawners.TryGetValue(station, out List<LocomotiveSpawner> spawners))

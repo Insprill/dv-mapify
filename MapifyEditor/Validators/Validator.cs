@@ -6,5 +6,8 @@ namespace Mapify.Editor.Validators
     public abstract class Validator
     {
         public abstract IEnumerator<Result> Validate(List<Scene> scenes);
+
+        public virtual void Cleanup()
+        { }
     }
 }

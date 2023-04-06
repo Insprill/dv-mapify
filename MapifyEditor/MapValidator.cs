@@ -11,16 +11,19 @@ namespace Mapify.Editor
     // TrainCarValidator at home:
     public static class MapValidator
     {
+        private static Dictionary<Scene, bool> sceneStates;
+        private static Validator[] validators;
+
         public static IEnumerator<Result> Validate()
         {
-            Validator[] validators = {
+            validators = new Validator[] {
                 new ProjectValidator(),
                 new RailwaySceneValidator(),
                 new TerrainSceneValidator(),
                 new GameContentSceneValidator()
             };
 
-            Dictionary<Scene, bool> sceneStates = new Dictionary<Scene, bool>(validators.Length);
+            sceneStates = new Dictionary<Scene, bool>(validators.Length);
 
             foreach (Validator validator in validators)
             {
@@ -45,10 +48,18 @@ namespace Mapify.Editor
                 IEnumerator<Result> results = validator.Validate(scenes);
                 while (results.MoveNext()) yield return results.Current;
             }
+        }
 
-            foreach (KeyValuePair<Scene, bool> data in sceneStates)
-                if (!data.Value)
-                    EditorSceneManager.UnloadSceneAsync(data.Key);
+        public static void Cleanup()
+        {
+            if (validators != null)
+                foreach (Validator validator in validators)
+                    validator.Cleanup();
+
+            if (sceneStates != null)
+                foreach (KeyValuePair<Scene, bool> data in sceneStates)
+                    if (!data.Value)
+                        EditorSceneManager.UnloadSceneAsync(data.Key);
         }
     }
 }

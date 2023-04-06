@@ -104,8 +104,9 @@ namespace Mapify.SceneInitializers
 
                 // Job generation rules
                 StationProceduralJobsRuleset proceduralJobsRuleset = stationObject.AddComponent<StationProceduralJobsRuleset>();
-                proceduralJobsRuleset.inputCargoGroups = JsonUtility.FromJson<List<CargoSet>>(station.inputCargoGroupsSerialized).ToVanilla();
-                proceduralJobsRuleset.outputCargoGroups = JsonUtility.FromJson<List<CargoSet>>(station.outputCargoGroupsSerialized).ToVanilla();
+                CargoSetMonoBehaviour[] mbs = station.GetComponents<CargoSetMonoBehaviour>();
+                proceduralJobsRuleset.inputCargoGroups = mbs.Take(station.inputCargoGroupsCount).Select(mb => mb.ToOriginal()).ToVanilla();
+                proceduralJobsRuleset.outputCargoGroups = mbs.Skip(station.inputCargoGroupsCount).Select(mb => mb.ToOriginal()).ToVanilla();
                 proceduralJobsRuleset.jobsCapacity = station.jobsCapacity;
                 proceduralJobsRuleset.minCarsPerJob = station.minCarsPerJob;
                 proceduralJobsRuleset.maxCarsPerJob = station.maxCarsPerJob;
@@ -116,7 +117,6 @@ namespace Mapify.SceneInitializers
                 proceduralJobsRuleset.emptyHaulStartingJobSupported = station.emptyHaulStartingJobSupported;
 
                 // Warehouse machines
-                //todo: this list gets broken when the warehouse machines get replaced with their vanilla counterparts
                 stationController.warehouseMachineControllers = station.warehouseMachines.Select(machine =>
                 {
                     WarehouseMachineController machineController = machine.transform.parent.gameObject.WithComponentT<WarehouseMachineController>();

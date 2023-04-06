@@ -26,9 +26,7 @@ namespace Mapify.Editor.Validators
 
             Dictionary<Station, List<WarehouseMachine>> warehouses = roots.SelectMany(go => go.GetComponentsInChildren<WarehouseMachine>()).MapToClosestStation();
 
-            Track[] tracks = railwayScene.GetRootGameObjects()
-                .SelectMany(go => go.GetComponentsInChildren<Track>())
-                .ToArray();
+            Track[] tracks = railwayScene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<Track>()).ToArray();
             foreach (Station station in roots.SelectMany(go => go.GetComponentsInChildren<Station>()))
             {
                 // Tracks
@@ -64,14 +62,21 @@ namespace Mapify.Editor.Validators
                 if ((vanillaObject == null || !$"{vanillaObject.asset}".StartsWith("Station")) && station.bookletSpawnArea == null)
                     yield return Result.Error($"You must specify a job booklet spawn area for custom station {station.stationName}!", station);
 
-                station.inputCargoGroupsSerialized = JsonUtility.ToJson(station.inputCargoGroups);
-                station.outputCargoGroupsSerialized = JsonUtility.ToJson(station.outputCargoGroups);
+                station.inputCargoGroupsCount = station.inputCargoGroups.Count;
+                station.inputCargoGroups.ForEach(set => set.ToMonoBehaviour(station.gameObject));
+                station.outputCargoGroups.ForEach(set => set.ToMonoBehaviour(station.gameObject));
 
                 if (warehouses.TryGetValue(station, out List<WarehouseMachine> machines))
                     station.warehouseMachines = machines;
             }
 
             #endregion
+        }
+
+        public override void Cleanup()
+        {
+            foreach (CargoSetMonoBehaviour mb in Object.FindObjectsOfType<CargoSetMonoBehaviour>())
+                Object.DestroyImmediate(mb);
         }
 
         public override string GetScenePath()

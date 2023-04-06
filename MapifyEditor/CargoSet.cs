@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEditor;
+using UnityEngine;
 
 namespace Mapify.Editor
 {
@@ -10,9 +10,12 @@ namespace Mapify.Editor
         public List<Cargo> cargoTypes;
         public List<Station> stations;
 
-        public string Serialize()
+        public CargoSetMonoBehaviour ToMonoBehaviour(GameObject gameObject)
         {
-            return EditorJsonUtility.ToJson(this);
+            CargoSetMonoBehaviour mb = gameObject.AddComponent<CargoSetMonoBehaviour>();
+            mb.cargoTypes = cargoTypes;
+            mb.stations = stations;
+            return mb;
         }
     }
 }

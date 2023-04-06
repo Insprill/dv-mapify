@@ -20,6 +20,7 @@ namespace Mapify.Editor
         private static bool openFolderAfterExport;
 
         private List<Result> lastResults;
+        private bool cleanedUp;
 
         private static string LastExportPath {
             get => EditorPrefs.GetString("Mapify_LastExportPath");
@@ -93,14 +94,23 @@ namespace Mapify.Editor
         [MenuItem("Mapify/Export Map")]
         public static void ShowWindow()
         {
+            bool wasOpen = HasOpenInstances<ExportMap>();
             window = GetWindow<ExportMap>();
             window.Show();
+            if (wasOpen) return;
             window.titleContent = new GUIContent("Export Map");
             window.lastResults = MapValidator.Validate().ToList().Where(x => x != null).ToList();
             foreach (Result result in window.lastResults) Debug.LogError(result.message, result.context);
         }
 
-        private static void Export(string exportFolderPath)
+        private void OnDestroy()
+        {
+            if (cleanedUp) return;
+            MapValidator.Cleanup();
+            cleanedUp = true;
+        }
+
+        private void Export(string exportFolderPath)
         {
             DirectoryInfo directory = new DirectoryInfo(exportFolderPath);
 
@@ -122,12 +132,10 @@ namespace Mapify.Editor
                 }
             }
 
-            TrackConnector.ConnectTracks();
-
             AssetBundleBuild[] builds = CreateBuilds();
 
             Debug.Log("Building AssetBundles");
-            BuildPipeline.BuildAssetBundles(exportFolderPath, builds, BuildAssetBundleOptions.None, EditorUserBuildSettings.activeBuildTarget);
+            BuildPipeline.BuildAssetBundles(exportFolderPath, builds, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
         }
 
         private static AssetBundleBuild[] CreateBuilds()
@@ -160,6 +168,7 @@ namespace Mapify.Editor
             List<string> scenePaths = new List<string>(sceneCount);
             foreach (string assetPath in allAssetPaths)
             {
+                if (!assetPath.StartsWith("Assets/")) continue;
                 AssetImporter importer = AssetImporter.GetAtPath(assetPath);
                 if (importer == null || importer.GetType() == typeof(MonoImporter)) continue;
                 Object obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);

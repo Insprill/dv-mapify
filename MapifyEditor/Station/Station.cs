@@ -27,6 +27,7 @@ namespace Mapify.Editor
         [Header("Jobs")]
         [Tooltip("The area where job booklets should spawn. Not required when using a vanilla station")]
         public BoxCollider bookletSpawnArea;
+        [Range(1, 30)]
         public int jobsCapacity = 30;
         public int maxShuntingStorageTracks = 3;
         public int minCarsPerJob = 3;
@@ -35,17 +36,16 @@ namespace Mapify.Editor
         [Header("Cargo")]
         [HideInInspector]
         public List<WarehouseMachine> warehouseMachines;
+        // Another workaround for Unity's excuse of a game engine
+        [HideInNormalInspector]
+        [SerializeField]
+        public int inputCargoGroupsCount;
 #pragma warning disable CS0649
         [SerializeField]
         internal List<CargoSet> inputCargoGroups;
         [SerializeField]
         internal List<CargoSet> outputCargoGroups;
 #pragma warning restore CS0649
-        // More workarounds for Unity's excuse of a game engine
-        [HideInNormalInspector]
-        public string inputCargoGroupsSerialized;
-        [HideInNormalInspector]
-        public string outputCargoGroupsSerialized;
 
         [Header("Starting chain job priorities")]
         public bool loadStartingJobSupported = true;

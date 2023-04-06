@@ -105,6 +105,7 @@ namespace Mapify.SceneInitializers
 
                 // Job generation rules
                 StationProceduralJobsRuleset proceduralJobsRuleset = stationObject.AddComponent<StationProceduralJobsRuleset>();
+                stationController.proceduralJobsRuleset = proceduralJobsRuleset;
                 CargoSetMonoBehaviour[] mbs = station.GetComponents<CargoSetMonoBehaviour>();
                 proceduralJobsRuleset.inputCargoGroups = mbs.Take(station.inputCargoGroupsCount).Select(mb => mb.ToOriginal()).ToVanilla();
                 proceduralJobsRuleset.outputCargoGroups = mbs.Skip(station.inputCargoGroupsCount).Select(mb => mb.ToOriginal()).ToVanilla();

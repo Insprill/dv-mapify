@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Mapify.Editor.Utils
 {
@@ -61,6 +64,30 @@ namespace Mapify.Editor.Utils
             return Object.FindObjectsOfType<T>()
                 .OrderBy(c => (gameObject.transform.position - c.transform.position).sqrMagnitude)
                 .FirstOrDefault();
+        }
+
+        public static T RecordObjectChanges<T>(this List<Object> objects, Func<T> func)
+        {
+            Undo.IncrementCurrentGroup();
+            Undo.RecordObjects(objects.ToArray(), "Map Validation");
+
+            T result = func.Invoke();
+
+            foreach (Object o in objects.Where(PrefabUtility.IsPartOfPrefabInstance))
+                PrefabUtility.RecordPrefabInstancePropertyModifications(o);
+
+            EditorSceneManager.SaveOpenScenes();
+            Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
+
+            return result;
+        }
+
+        public static BezierCurve Curve(this BezierPoint point)
+        {
+            if (point._curve != null) return point._curve;
+            BezierCurve curve = point.GetComponentInParent<BezierCurve>();
+            point._curve = curve;
+            return curve;
         }
     }
 }

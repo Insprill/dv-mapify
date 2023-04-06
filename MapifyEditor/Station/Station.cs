@@ -35,6 +35,7 @@ namespace Mapify.Editor
 
         [Header("Cargo")]
         [HideInInspector]
+        [SerializeField]
         public List<WarehouseMachine> warehouseMachines;
         // Another workaround for Unity's excuse of a game engine
         [HideInNormalInspector]

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using Mapify.Editor.Utils;
 using Mapify.Editor.Validators;
 using UnityEditor.SceneManagement;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Mapify.Editor
@@ -13,6 +15,7 @@ namespace Mapify.Editor
     {
         private static Dictionary<Scene, bool> sceneStates;
         private static Validator[] validators;
+        private static List<Object> gameObjectsToUndo;
 
         public static IEnumerator<Result> Validate()
         {
@@ -25,6 +28,7 @@ namespace Mapify.Editor
 
             sceneStates = new Dictionary<Scene, bool>(validators.Length);
 
+            gameObjectsToUndo = new List<Object>();
             foreach (Validator validator in validators)
             {
                 if (!(validator is SceneValidator sceneValidator)) continue;
@@ -40,26 +44,41 @@ namespace Mapify.Editor
                 if (!isSceneLoaded)
                     EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
                 sceneStates.Add(scene, isSceneLoaded);
+
+                gameObjectsToUndo.AddRange(scene.GetRootGameObjects().SelectMany(x => x.GetComponentsInChildren<Component>(true)));
             }
 
-            foreach (Validator validator in validators)
+            List<Result> results = gameObjectsToUndo.RecordObjectChanges(() =>
             {
-                List<Scene> scenes = sceneStates.Keys.ToList();
-                IEnumerator<Result> results = validator.Validate(scenes);
-                while (results.MoveNext()) yield return results.Current;
-            }
+                List<Result> tmp = new List<Result>();
+                foreach (Validator validator in validators)
+                {
+                    List<Scene> scenes = sceneStates.Keys.ToList();
+                    IEnumerator<Result> validation = validator.Validate(scenes);
+                    while (validation.MoveNext()) tmp.Add(validation.Current);
+                }
+
+                return tmp;
+            });
+
+            foreach (Result result in results)
+                yield return result;
         }
 
         public static void Cleanup()
         {
-            if (validators != null)
-                foreach (Validator validator in validators)
-                    validator.Cleanup();
+            gameObjectsToUndo.RecordObjectChanges<object>(() =>
+            {
+                if (validators != null)
+                    foreach (Validator validator in validators)
+                        validator.Cleanup();
 
-            if (sceneStates != null)
-                foreach (KeyValuePair<Scene, bool> data in sceneStates)
-                    if (!data.Value)
-                        EditorSceneManager.UnloadSceneAsync(data.Key);
+                if (sceneStates != null)
+                    foreach (KeyValuePair<Scene, bool> data in sceneStates)
+                        if (!data.Value)
+                            EditorSceneManager.UnloadSceneAsync(data.Key);
+                return null;
+            });
         }
     }
 }

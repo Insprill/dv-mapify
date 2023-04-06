@@ -151,15 +151,16 @@ A vague roadmap roughly in order of priority.
 - [ ] Buffer stops
 - [ ] Stations
     - [ ] Job generation
-        - [ ] Load/Unload machines
+        - [x] Load/Unload machines
     - [ ] Locomotive spawners
     - [ ] Service stations
-    - [ ] Station office
-        - [ ] Job validator
-        - [ ] Career manager
-        - [ ] Lost and found
-        - [ ] Dumpster
-        - [ ] Teleport point
+    - [x] Station office
+        - [x] Job validator
+        - [x] Career manager
+        - [x] Lost and found
+        - [x] Dumpster
+        - [x] Trash Can
+        - [x] Teleport point
 - [ ] Shops
 - [ ] License-based zone blocking
 - [ ] Garages

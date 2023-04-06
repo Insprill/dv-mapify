@@ -52,14 +52,6 @@ namespace Mapify.Utils
             return gameObject;
         }
 
-        public static List<Transform> GetChildren(this Transform transform)
-        {
-            List<Transform> children = new List<Transform>(transform.childCount);
-            for (int i = 0; i < transform.childCount; i++) children.Add(transform.GetChild(i));
-
-            return children;
-        }
-
         public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true)
         {
             Transform t = gameObject.transform;
@@ -81,7 +73,7 @@ namespace Mapify.Utils
                 }
 
             if (keepChildren)
-                foreach (Transform child in t.GetChildren())
+                foreach (Transform child in t)
                     child.SetParent(ot);
 
             GameObject.DestroyImmediate(gameObject);
@@ -142,12 +134,6 @@ namespace Mapify.Utils
             return !contains;
         }
 
-        public static void Fill<T>(this T[] array, int startIndex, int length, T item)
-        {
-            for (int i = startIndex; i <= length; i++)
-                array[i] = item;
-        }
-
         #endregion
 
         #region DV
@@ -158,7 +144,7 @@ namespace Mapify.Utils
         {
             if (double.TryParse(arg.String, out double result))
                 return result;
-            CommandArg_Method_TypeError.Invoke(arg, new[] { "double" });
+            CommandArg_Method_TypeError.Invoke(arg, new object[] { "double" });
             return 0;
         }
 

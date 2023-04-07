@@ -1,105 +1,63 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
-using Mapify.Editor;
-using Mapify.SceneInitializers;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Mapify.Patches
 {
     [HarmonyPatch(typeof(WorldStreamingInit), "Awake")]
     public static class WorldStreamingInit_Awake_Patch
     {
-        private static string originalRailwayScenePath;
-        private static string originalGameContentScenePath;
+        public static bool CanLoad = false;
+        public static bool CanInitialize = false;
 
         public static bool Prefix(WorldStreamingInit __instance)
         {
-            Main.Logger.Log($"Loading map {Main.Settings.MapName}");
-
-            // Load asset bundles
-            string mapDir = Main.Settings.MapDir;
-            AssetBundle assets = AssetBundle.LoadFromFile(Path.Combine(mapDir, "assets"));
-            AssetBundle.LoadFromFile(Path.Combine(mapDir, "scenes"));
-
-            // Load scenes for us to steal assets from
-            MonoBehaviourPatch.DisableAll();
-            originalRailwayScenePath = __instance.railwayScenePath;
-            SceneManager.LoadScene(originalRailwayScenePath, LoadSceneMode.Additive);
-            originalGameContentScenePath = __instance.gameContentScenePath;
-            SceneManager.LoadScene(originalGameContentScenePath, LoadSceneMode.Additive);
-
-            // todo: do we need to hardcode these?
-            // Load our scenes, not the vanilla ones
-            __instance.terrainsScenePath = "Assets/Scenes/Terrain.unity";
-            __instance.railwayScenePath = "Assets/Scenes/Railway.unity";
-            __instance.gameContentScenePath = "Assets/Scenes/GameContent.unity";
-
-            // Set LevelInfo
-            Main.MapInfo = assets.LoadAllAssets<MapInfo>()[0];
-            LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
-            levelInfo.waterLevel = Main.MapInfo.waterLevel;
-            levelInfo.worldSize = Main.MapInfo.worldSize;
-            levelInfo.worldOffset = Vector3.zero;
-            levelInfo.defaultSpawnPosition = Main.MapInfo.defaultSpawnPosition;
-            levelInfo.defaultSpawnRotation = Main.MapInfo.defaultSpawnRotation;
-
-            // Register scene loaded hook
-            SceneManager.sceneLoaded += OnSceneLoad;
-
-            // Destroy world streamers
-            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>()) Object.Destroy(streamer);
-            return true;
+            __instance.StartCoroutine(WaitForLoadingScreen());
+            return false;
         }
 
-        private static void OnSceneLoad(Scene scene, LoadSceneMode mode)
+        private static IEnumerator WaitForLoadingScreen()
         {
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
-            if (scene.path == wsi.terrainsScenePath)
-            {
-                Main.Logger.Log($"Loaded terrain scene at {wsi.terrainsScenePath}");
-                TerrainSceneInitializer.SceneLoaded(scene);
-            }
-            else if (scene.path == wsi.railwayScenePath)
-            {
-                Main.Logger.Log($"Loaded railway scene at {wsi.railwayScenePath}");
-                RailwaySceneInitializer.SceneLoaded();
-            }
-            else if (scene.path == wsi.gameContentScenePath)
-            {
-                Main.Logger.Log($"Loaded game content scene at {wsi.gameContentScenePath}");
-                GameContentSceneInitializer.SceneLoaded(scene);
-            }
-            else if (scene.path == originalRailwayScenePath)
-            {
-                Main.Logger.Log($"Loaded vanilla railway scene at {originalRailwayScenePath}");
-                VanillaRailwaySceneInitializer.SceneLoaded(scene);
-            }
-            else if (scene.path == originalGameContentScenePath)
-            {
-                Main.Logger.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
-                VanillaGameContentSceneInitializer.SceneLoaded(scene);
-                MonoBehaviourPatch.EnableAllLater();
-            }
+            yield return new WaitUntil(() => CanLoad);
+            wsi.StartCoroutine(MapLoader.LoadMap());
+            yield return new WaitUntil(() => CanInitialize);
+            wsi.StartCoroutine("LoadingRoutine");
         }
     }
 
     [HarmonyPatch(typeof(WorldStreamingInit), "LoadingRoutine", MethodType.Enumerator)]
     public static class WorldStreamingInit_LoadingRoutine_Patch
     {
+        private static readonly Dictionary<string, float> loadingPercentages = new Dictionary<string, float> {
+            { "creating player", 12.0f },
+            { "loading savegame", 14.0f },
+            { "<color=\"yellow\">loading savegame failed, trying with backup savegame</color>", 14.0f },
+            { "<color=\"red\">loading savegame failed, using empty savegame</color>", 14.0f }
+        };
+
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
 
             for (int i = 0; i < codes.Count; i++)
-                // Don't add the vegetationStudioPrefab
-                if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand as string == "loading terrain")
+                if (codes[i].opcode == OpCodes.Ldstr)
                 {
-                    codes.RemoveRange(i - 9, 8);
-                    break;
+                    if (!(codes[i].operand is string operand))
+                        continue;
+
+                    // Don't add the vegetationStudioPrefab
+                    if (operand == "loading terrain")
+                    {
+                        codes.RemoveRange(i - 9, 8);
+                        continue;
+                    }
+
+                    if (loadingPercentages.TryGetValue(operand, out float newPercentage))
+                        codes[i + 1].operand = newPercentage;
                 }
 
             return codes.AsEnumerable();

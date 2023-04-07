@@ -144,6 +144,7 @@ namespace Mapify.Utils
         #region DV
 
         private static readonly MethodInfo CommandArg_Method_TypeError = AccessTools.DeclaredMethod(typeof(CommandArg), "TypeError", new[] { typeof(string) });
+        private static readonly MethodInfo WorldStreamingInit_Method_Info = AccessTools.DeclaredMethod(typeof(WorldStreamingInit), "Info", new[] { typeof(string), typeof(float) });
 
         public static double Double(this CommandArg arg)
         {
@@ -151,6 +152,12 @@ namespace Mapify.Utils
                 return result;
             CommandArg_Method_TypeError.Invoke(arg, new object[] { "double" });
             return 0;
+        }
+
+
+        public static void Log(this WorldStreamingInit wsi, string message, float percentLoaded)
+        {
+            WorldStreamingInit_Method_Info.Invoke(wsi, new object[] { message, percentLoaded });
         }
 
         #endregion

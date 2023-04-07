@@ -47,23 +47,30 @@ namespace Mapify.Editor.Validators
                 switch (track.trackType)
                 {
                     case TrackType.Road:
+                        track.Curve.drawColor = new Color32(255, 255, 255, 255);
                         // Tracks starting with [Y] or [#] don't get signs generated (SignPlacer#ShouldIncludeTrack)
                         track.name = $"{(track.generateSigns ? "" : "[#] ")}Road {roadId++}";
                         continue; // Road safety laws prepare to be ignored!
-                    //todo: give each of these a colour
                     case TrackType.Storage:
+                        track.Curve.drawColor = new Color32(255, 127, 80, 255);
                         break;
                     case TrackType.Loading:
+                        track.Curve.drawColor = new Color32(0, 0, 128, 255);
                         break;
                     case TrackType.In:
+                        track.Curve.drawColor = new Color32(50, 240, 50, 255);
                         break;
                     case TrackType.Out:
+                        track.Curve.drawColor = new Color32(106, 90, 205, 255);
                         break;
                     case TrackType.Parking:
+                        track.Curve.drawColor = new Color32(200, 235, 0, 255);
                         break;
                     case TrackType.PassengerStorage:
+                        track.Curve.drawColor = new Color32(0, 128, 128, 255);
                         break;
                     case TrackType.PassengerLoading:
+                        track.Curve.drawColor = new Color32(0, 255, 255, 255);
                         break;
                 }
 

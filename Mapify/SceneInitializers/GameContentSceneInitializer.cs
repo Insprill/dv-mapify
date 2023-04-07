@@ -66,9 +66,11 @@ namespace Mapify.SceneInitializers
         {
             foreach (AreaBlocker areaBlocker in Object.FindObjectsOfType<AreaBlocker>())
             {
-                StationLicenseZoneBlocker zoneBlocker = areaBlocker.gameObject.AddComponent<StationLicenseZoneBlocker>();
+                GameObject go = areaBlocker.gameObject;
+                StationLicenseZoneBlocker zoneBlocker = go.AddComponent<StationLicenseZoneBlocker>();
                 zoneBlocker.requiredJobLicense = areaBlocker.requiredLicense.ConvertByName<JobLicense, JobLicenses>();
-                InvalidTeleportLocationReaction reaction = zoneBlocker.gameObject.AddComponent<InvalidTeleportLocationReaction>();
+                zoneBlocker.blockerObjectsParent = go;
+                InvalidTeleportLocationReaction reaction = go.AddComponent<InvalidTeleportLocationReaction>();
                 reaction.blocker = zoneBlocker;
                 zoneBlocker.tag = "NO_TELEPORT";
             }

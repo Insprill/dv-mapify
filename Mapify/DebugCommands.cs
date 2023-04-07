@@ -30,14 +30,48 @@ namespace Mapify
             }
         }
 
-        [RegisterCommand("mapify.licenses", Help = "Grants all licenses", MaxArgCount = 0)]
-        private static void GrantAllLicenses(CommandArg[] args)
+        [RegisterCommand("mapify.license", Help = "Modifies a licenses", MinArgCount = 0, MaxArgCount = 2)]
+        private static void ModifyLicense(CommandArg[] args)
         {
-            foreach (GeneralLicenseType generalLicense in Enum.GetValues(typeof(GeneralLicenseType)))
-                LicenseManager.AcquireGeneralLicense(generalLicense);
-            foreach (JobLicenses jobLicense in Enum.GetValues(typeof(JobLicenses)))
-                LicenseManager.AcquireJobLicense(jobLicense);
-            Debug.Log("Granted all licenses");
+            if (args.Length == 0)
+            {
+                foreach (GeneralLicenseType gl in Enum.GetValues(typeof(GeneralLicenseType)))
+                    LicenseManager.AcquireGeneralLicense(gl);
+                foreach (JobLicenses jl in Enum.GetValues(typeof(JobLicenses)))
+                    LicenseManager.AcquireJobLicense(jl);
+                Debug.Log("Granted all licenses");
+                return;
+            }
+
+            string licenseName = args[0].String;
+            bool isGeneral = Enum.TryParse(licenseName, out GeneralLicenseType generalLicense);
+            bool isJob = Enum.TryParse(licenseName, out JobLicenses jobLicense);
+            if (!isGeneral && !isJob)
+            {
+                Debug.LogError($"No license found with name '{licenseName}'");
+                return;
+            }
+
+            bool addLicense = args.Length == 2
+                ? args[1].Bool
+                : (isGeneral && !LicenseManager.IsGeneralLicenseAcquired(generalLicense)) || (isJob && !LicenseManager.IsJobLicenseAcquired(jobLicense));
+            if (isGeneral)
+            {
+                if (addLicense)
+                    LicenseManager.AcquireGeneralLicense(generalLicense);
+                else
+                    LicenseManager.RemoveGeneralLicense(generalLicense);
+            }
+            else
+            {
+                if (addLicense)
+                    LicenseManager.AcquireJobLicense(jobLicense);
+                else
+                    LicenseManager.RemoveJobLicense(jobLicense);
+            }
+
+            LicenseManager.SaveData();
+            Debug.Log($"{(addLicense ? "Granted" : "Revoked")} {(isGeneral ? "general" : "job")} license {licenseName}");
         }
 
         [RegisterCommand("mapify.money", Help = "Sets the amount of money you have", MinArgCount = 0, MaxArgCount = 1)]

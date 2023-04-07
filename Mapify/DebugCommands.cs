@@ -60,5 +60,20 @@ namespace Mapify
                 Debug.Log(str);
             }
         }
+
+        [RegisterCommand("mapify.spawnItem", Help = "Spawns an item at your feet", MaxArgCount = 1)]
+        private static void GiveItem(CommandArg[] args)
+        {
+            Object obj = Resources.Load(args[0].String);
+            GameObject go = obj as GameObject;
+            if (go == null)
+            {
+                Debug.LogError($"Failed to find item {args[0].String}");
+                return;
+            }
+
+            GameObject instantiated = GameObject.Instantiate(go);
+            instantiated.transform.position = PlayerManager.PlayerTransform.position;
+        }
     }
 }

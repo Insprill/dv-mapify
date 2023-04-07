@@ -150,7 +150,7 @@ A vague roadmap roughly in order of priority.
 - [x] Switches
 - [x] Buffer stops
 - [ ] Stations
-    - [ ] Job generation
+    - [x] Job generation
         - [x] Load/Unload machines
     - [x] Locomotive spawners
     - [ ] Service stations
@@ -161,8 +161,8 @@ A vague roadmap roughly in order of priority.
         - [x] Dumpster
         - [x] Trash Can
         - [x] Teleport point
-- [ ] Shops
-- [ ] License-based zone blocking
+    - [ ] Shops
+- [x] License-based zone blocking
 - [ ] Garages
 - [ ] Player homes
 - [ ] Custom map items

@@ -45,15 +45,18 @@ namespace Mapify.Editor
         {
             if ((transform.position - Camera.current.transform.position).sqrMagnitude >= SNAP_UPDATE_RANGE * SNAP_UPDATE_RANGE)
                 return;
-            BezierPoint first = Curve[0];
-            BezierPoint last = Curve.Last();
             if (!isInSnapped)
-                DrawDisconnectedIcon(first.position);
+                DrawDisconnectedIcon(Curve[0].position);
             if (!isOutSnapped)
-                DrawDisconnectedIcon(last.position);
+                DrawDisconnectedIcon(Curve.Last().position);
+            Snap();
+        }
+
+        internal void Snap()
+        {
             BezierPoint[] points = FindObjectsOfType<BezierCurve>().SelectMany(curve => new[] { curve[0], curve.Last() }).ToArray();
             GameObject[] selectedObjects = Selection.gameObjects;
-            bool isSelected = !IsSwitch && (selectedObjects.Contains(gameObject) || selectedObjects.Contains(first.gameObject) || selectedObjects.Contains(last.gameObject));
+            bool isSelected = !IsSwitch && (selectedObjects.Contains(gameObject) || selectedObjects.Contains(Curve[0].gameObject) || selectedObjects.Contains(Curve.Last().gameObject));
             TrySnap(points, isSelected, true);
             TrySnap(points, isSelected, false);
         }

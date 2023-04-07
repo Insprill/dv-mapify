@@ -11,28 +11,6 @@ namespace Mapify.Editor.Validators
         {
             GameObject[] roots = railwayScene.GetRootGameObjects();
 
-            # region Switches
-
-            foreach (Switch sw in Object.FindObjectsOfType<Switch>())
-            {
-                VanillaObject vanillaObject = sw.GetComponent<VanillaObject>();
-                vanillaObject.asset = sw.DivergingTrack.GetComponent<BezierCurve>().Last().localPosition.x < 0
-                    ? sw.standSide == Switch.StandSide.DIVERGING
-                        ? VanillaAsset.SwitchLeftOuterSign
-                        : VanillaAsset.SwitchLeft
-                    : sw.standSide == Switch.StandSide.DIVERGING
-                        ? VanillaAsset.SwitchRightOuterSign
-                        : VanillaAsset.SwitchRight;
-                Track divergingTrack = sw.DivergingTrack.GetComponent<Track>();
-                Track throughTrack = sw.ThroughTrack.GetComponent<Track>();
-                if (!divergingTrack.isInSnapped || !divergingTrack.isOutSnapped || !throughTrack.isInSnapped || !throughTrack.isOutSnapped)
-                    yield return Result.Error("Switches must have a track attached to all points", sw);
-            }
-
-            #endregion
-
-            # region Track
-
             if (roots.Length == 0)
             {
                 yield return Result.Error($"The {GetPrettySceneName()} scene must contain a [railway] object");
@@ -45,12 +23,17 @@ namespace Mapify.Editor.Validators
                 yield break;
             }
 
-            if (roots[0].name != "[railway]")
-                yield return Result.Error($"Unknown object {roots[0].name} in {GetPrettySceneName()} scene. The only object should be [railway]", roots[0]);
+            # region Track
 
             List<Track> tracks = roots.SelectMany(go => go.GetComponentsInChildren<Track>()).ToList();
             if (tracks.Count == 0)
+            {
                 yield return Result.Error("Failed to find any track!");
+                yield break;
+            }
+
+            if (roots[0].name != "[railway]")
+                yield return Result.Error($"Unknown object {roots[0].name} in {GetPrettySceneName()} scene. The only object should be [railway]", roots[0]);
 
             Station[] stations = gameContentScene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<Station>()).ToArray();
 
@@ -58,6 +41,7 @@ namespace Mapify.Editor.Validators
             bool anyFailed = false;
             foreach (Track track in tracks)
             {
+                track.Snap();
                 if (track.IsSwitch)
                     continue;
                 switch (track.trackType)
@@ -139,6 +123,26 @@ namespace Mapify.Editor.Validators
             foreach (BezierPoint point in roots.SelectMany(go => go.GetComponentsInChildren<BezierPoint>()))
                 if (point.transform.localEulerAngles != Vector3.zero)
                     yield return Result.Error("BezierPoint must not be rotated!", point);
+
+            #endregion
+
+            # region Switches
+
+            foreach (Switch sw in Object.FindObjectsOfType<Switch>())
+            {
+                VanillaObject vanillaObject = sw.GetComponent<VanillaObject>();
+                vanillaObject.asset = sw.DivergingTrack.GetComponent<BezierCurve>().Last().localPosition.x < 0
+                    ? sw.standSide == Switch.StandSide.DIVERGING
+                        ? VanillaAsset.SwitchLeftOuterSign
+                        : VanillaAsset.SwitchLeft
+                    : sw.standSide == Switch.StandSide.DIVERGING
+                        ? VanillaAsset.SwitchRightOuterSign
+                        : VanillaAsset.SwitchRight;
+                Track divergingTrack = sw.DivergingTrack.GetComponent<Track>();
+                Track throughTrack = sw.ThroughTrack.GetComponent<Track>();
+                if (!divergingTrack.isInSnapped || !divergingTrack.isOutSnapped || !throughTrack.isInSnapped || !throughTrack.isOutSnapped)
+                    yield return Result.Error("Switches must have a track attached to all points", sw);
+            }
 
             #endregion
 

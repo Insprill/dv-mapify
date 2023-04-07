@@ -24,6 +24,7 @@ namespace Mapify.SceneInitializers
         public static void SceneLoaded(Scene scene)
         {
             SetupGameScene();
+            SetupZoneBlockers();
             SetupVanillaAssets();
             SetupStations();
             CreateWater();
@@ -59,6 +60,18 @@ namespace Mapify.SceneInitializers
             // I'm not sure where vanilla creates this because it doesn't have auto create enabled.
             Main.Logger.Log("Creating YardTracksOrganizer");
             new GameObject("[YardTracksOrganizer]").AddComponent<YardTracksOrganizer>();
+        }
+
+        private static void SetupZoneBlockers()
+        {
+            foreach (AreaBlocker areaBlocker in Object.FindObjectsOfType<AreaBlocker>())
+            {
+                StationLicenseZoneBlocker zoneBlocker = areaBlocker.gameObject.AddComponent<StationLicenseZoneBlocker>();
+                zoneBlocker.requiredJobLicense = areaBlocker.requiredLicense.ConvertByName<JobLicense, JobLicenses>();
+                InvalidTeleportLocationReaction reaction = zoneBlocker.gameObject.AddComponent<InvalidTeleportLocationReaction>();
+                reaction.blocker = zoneBlocker;
+                zoneBlocker.tag = "NO_TELEPORT";
+            }
         }
 
         private static void SetupStations()

@@ -20,6 +20,11 @@ namespace Mapify.SceneInitializers
     public static class GameContentSceneInitializer
     {
         private static readonly FieldInfo StationController_Field_jobBookletSpawnSurface = AccessTools.DeclaredField(typeof(StationController), "jobBookletSpawnSurface");
+        private static readonly MethodInfo LogicController_Method_GetContainerTypesThatStationUses = AccessTools.DeclaredMethod(
+            typeof(LogicController),
+            "GetContainerTypesThatStationUses",
+            new[] { typeof(StationController) }
+        );
 
         public static void SceneLoaded(Scene scene)
         {
@@ -88,6 +93,7 @@ namespace Mapify.SceneInitializers
                 stationObject.AddComponent<StationController>();
             }
 
+            LogicController logicController = SingletonBehaviour<LogicController>.Instance;
             foreach (Station station in stations)
             {
                 GameObject stationObject = station.gameObject;
@@ -166,6 +172,10 @@ namespace Mapify.SceneInitializers
                                 )
                             ).ToList();
                     }
+
+                logicController.YardIdToStationController.Add(stationController.stationInfo.YardID, stationController);
+                logicController.stationToSupportedContainerTypes.Add(stationController,
+                    (HashSet<CargoContainerType>)LogicController_Method_GetContainerTypesThatStationUses.Invoke(logicController, new object[] { stationController }));
 
                 stationObject.SetActive(true);
             }

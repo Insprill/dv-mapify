@@ -17,7 +17,7 @@ namespace Mapify.SceneInitializers
 
         private static void SetupTerrainGrid()
         {
-            GameObject gridObject = WorldMover.Instance.NewChild("TerrainGrid");
+            GameObject gridObject = WorldMover.Instance.NewChildWithPosition("TerrainGrid", new Vector3(0, Main.MapInfo.terrainHeight, 0));
             TerrainGrid grid = gridObject.AddComponent<TerrainGrid>();
             grid.loadingRingSize = 2;
             grid.addToVegetationStudio = false;

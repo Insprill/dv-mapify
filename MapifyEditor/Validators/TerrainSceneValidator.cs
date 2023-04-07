@@ -64,6 +64,7 @@ namespace Mapify.Editor.Validators
             if (mapInfo != null)
             {
                 mapInfo.terrainMaterial = m;
+                mapInfo.terrainHeight = terrains[0].transform.position.y;
                 mapInfo.terrainCount = terrains.Length;
                 mapInfo.worldSize = terrains.CalculateWorldSize();
                 mapInfo.terrainPixelError = terrains[0].heightmapPixelError;

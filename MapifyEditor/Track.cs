@@ -1,49 +1,66 @@
+using System.Collections.Generic;
+using System.Linq;
 using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
 
 namespace Mapify.Editor
 {
-    [RequireComponent(typeof(BezierCurve))]
+    [RequireComponent(typeof(BezierCurve), typeof(TrackSnappable))]
     public class Track : MonoBehaviour
     {
+        public const float SNAP_RANGE = 1.0f;
+        public const float SNAP_UPDATE_RANGE = 500f;
+
         public float age;
-        [HideInNormalInspector]
-        public Switch inSwitch;
-        [HideInNormalInspector]
-        public Switch outSwitch;
-        [HideInNormalInspector]
-        public bool inTrackFirst;
-        [HideInNormalInspector]
-        public Track inTrack;
-        [HideInNormalInspector]
-        public bool outTrackFirst;
-        [HideInNormalInspector]
-        public Track outTrack;
-        public BezierCurve Curve => GetComponent<BezierCurve>();
-        public Switch ParentSwitch => GetComponentInParent<Switch>();
+        public string stationId;
+        public char yardId;
+        public byte trackId;
+        public TrackType trackType;
+        public bool generateSigns;
+
+        public bool isInSnapped { get; private set; }
+        public bool isOutSnapped { get; private set; }
+        private BezierCurve _curve;
+
+        public BezierCurve Curve {
+            get {
+                if (_curve != null) return _curve;
+                return _curve = GetComponent<BezierCurve>();
+            }
+        }
+
+        private Switch _parentSwitch;
+
+        private Switch ParentSwitch {
+            get {
+                if (_parentSwitch) return _parentSwitch;
+                return _parentSwitch = GetComponentInParent<Switch>();
+            }
+        }
+
+        public bool IsSwitch => ParentSwitch != null;
 
         private void OnDrawGizmos()
         {
-            // Handles.color = Color.red;
-            // if (outTrack == null && !outSwitch) DrawDisconnectedIcon(Curve.Last().position);
-            // if (inTrack == null && !inSwitch) DrawDisconnectedIcon(Curve[0].position);
-        }
-
-        public Transform GetInNodeTransform()
-        {
-            if (inSwitch) return inSwitch.transform;
-            return !inTrack ? null : inTrack.Curve[0].transform;
-        }
-
-        public Transform GetOutNodeTransform()
-        {
-            if (outSwitch) return outSwitch.transform;
-            return !outTrack ? null : outTrack.Curve.Last().transform;
+            if ((transform.position - Camera.current.transform.position).sqrMagnitude >= SNAP_UPDATE_RANGE * SNAP_UPDATE_RANGE)
+                return;
+            BezierPoint first = Curve[0];
+            BezierPoint last = Curve.Last();
+            if (!isInSnapped)
+                DrawDisconnectedIcon(first.position);
+            if (!isOutSnapped)
+                DrawDisconnectedIcon(last.position);
+            BezierPoint[] points = FindObjectsOfType<BezierCurve>().SelectMany(curve => new[] { curve[0], curve.Last() }).ToArray();
+            GameObject[] selectedObjects = Selection.gameObjects;
+            bool isSelected = !IsSwitch && (selectedObjects.Contains(gameObject) || selectedObjects.Contains(first.gameObject) || selectedObjects.Contains(last.gameObject));
+            TrySnap(points, isSelected, true);
+            TrySnap(points, isSelected, false);
         }
 
         private static void DrawDisconnectedIcon(Vector3 position)
         {
+            Handles.color = Color.red;
             Handles.Label(position, "Disconnected", EditorStyles.whiteBoldLabel);
             const float size = 0.25f;
             Transform cameraTransform = Camera.current.transform;
@@ -54,51 +71,43 @@ namespace Mapify.Editor
             Handles.DrawLine(position - rotation * new Vector3(size, -size, 0f), position + rotation * new Vector3(size, -size, 0f));
         }
 
-        public void Disconnect()
+        private void TrySnap(IEnumerable<BezierPoint> snapPoints, bool move, bool first)
         {
-            inTrack = null;
-            outTrack = null;
-            inSwitch = null;
-            outSwitch = null;
+            if (first) isInSnapped = false;
+            else isOutSnapped = false;
+
+            BezierPoint point = first ? Curve[0] : Curve.Last();
+            Vector3 pos = point.transform.position;
+            Vector3 closestPos = Vector3.zero;
+            float closestDist = float.MaxValue;
+            foreach (BezierPoint otherBp in snapPoints)
+            {
+                if (otherBp.Curve() == point.Curve()) continue;
+                Vector3 otherPos = otherBp.transform.position;
+                float dist = Mathf.Abs(Vector3.Distance(otherPos, pos));
+                if (dist > SNAP_RANGE || dist >= closestDist) continue;
+                closestPos = otherPos;
+                closestDist = dist;
+            }
+
+            if (closestDist >= float.MaxValue) return;
+
+            if (first) isInSnapped = true;
+            else isOutSnapped = true;
+            if (move) point.transform.position = closestPos;
         }
 
-        [MenuItem("Mapify/Create Track")]
-        private static void CreateTrack()
+        internal void Snapped(BezierPoint point)
         {
-            CreateTrack(Vector3.zero, Quaternion.identity).gameObject.Select();
+            if (point == Curve[0])
+                isInSnapped = true;
+            if (point == Curve.Last())
+                isOutSnapped = true;
         }
 
-        public static Track CreateTrack(Vector3 position, Quaternion rotation)
+        public static Track Find(string stationId, char yardId, byte trackId, TrackType trackType)
         {
-            GameObject railwayParent = GameObject.Find("[railway]");
-            GameObject trackObject = new GameObject("Track") {
-                transform = {
-                    parent = railwayParent.transform,
-                    position = position,
-                    rotation = rotation
-                }
-            };
-            Vector3 dir = trackObject.transform.forward;
-
-            BezierCurve trackCurve = trackObject.AddComponent<BezierCurve>();
-            trackCurve.resolution = 0.5f;
-            trackCurve.close = false;
-
-            BezierPoint point1 = trackCurve.CreatePointAt(position);
-            trackCurve.AddPoint(point1);
-            point1.handleStyle = BezierPoint.HandleStyle.Broken;
-            point1.handle2 = dir;
-
-            BezierPoint point2 = trackCurve.CreatePointAt(position + dir * 4);
-            trackCurve.AddPoint(point2);
-            point2.handleStyle = BezierPoint.HandleStyle.Broken;
-            point2.handle2 = -dir;
-
-            Track track = trackObject.AddComponent<Track>();
-
-            Undo.RegisterCreatedObjectUndo(trackObject, $"Create {trackObject.name}");
-
-            return track;
+            return FindObjectsOfType<Track>().FirstOrDefault(t => t.stationId == stationId && t.yardId == yardId && t.trackId == trackId && t.trackType == trackType);
         }
     }
 }

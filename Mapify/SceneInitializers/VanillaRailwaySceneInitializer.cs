@@ -43,6 +43,9 @@ namespace Mapify.SceneInitializers
                         CleanupSwitch(child);
                         gameObjects.TryAdd(VanillaAsset.SwitchRightOuterSign, child);
                         break;
+                    case "term-buffer":
+                        gameObjects.TryAdd(VanillaAsset.BufferStop, child);
+                        break;
                 }
             }
 

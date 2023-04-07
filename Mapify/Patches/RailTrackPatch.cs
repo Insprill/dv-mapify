@@ -1,0 +1,58 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
+using HarmonyLib;
+using Mapify.Editor;
+
+namespace Mapify.Patches
+{
+    [HarmonyPatch(typeof(RailTrack), "ConnectToClosestBranch")]
+    public static class RailTrack_ConnectToClosestBranch_Patch
+    {
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return RailTrack_ConnectX.Transpile(instructions);
+        }
+    }
+
+    [HarmonyPatch(typeof(RailTrack), "ConnectInToClosestJunction")]
+    public static class RailTrack_ConnectInToClosestJunction_Patch
+    {
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return RailTrack_ConnectX.Transpile(instructions);
+        }
+    }
+
+    [HarmonyPatch(typeof(RailTrack), "ConnectOutToClosestJunction")]
+    public static class RailTrack_ConnectOutToClosestJunction_Patch
+    {
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return RailTrack_ConnectX.Transpile(instructions);
+        }
+    }
+
+    public static class RailTrack_ConnectX
+    {
+        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+        {
+            CodeInstruction[] codes = instructions.ToArray();
+            foreach (CodeInstruction code in codes)
+                // Changes the range of the RailTrack#ConnectX methods to our snap range
+                if (code.opcode == OpCodes.Ldc_R4 && (float)code.operand - 5f < 0.001)
+                    code.operand = Track.SNAP_RANGE;
+
+            return codes;
+        }
+    }
+
+    [HarmonyPatch(typeof(RailTrack), nameof(RailTrack.MovePointToBranchEnd))]
+    public static class RailTrack_MovePointToBranchEnd_Patch
+    {
+        public static bool Prefix(Junction.Branch branch)
+        {
+            return branch != null;
+        }
+    }
+}

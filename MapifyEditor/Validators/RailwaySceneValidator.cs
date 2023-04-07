@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,12 +7,29 @@ namespace Mapify.Editor.Validators
 {
     public class RailwaySceneValidator : SceneValidator
     {
-        public static readonly Regex STATION_TRACK_NAME_PATTERN = new Regex("\\[Y\\]_\\[([a-z0-9]*)\\]_\\[([a-z0-9]+)-(\\d+)-([a-z0-9]+)\\]", RegexOptions.IgnoreCase);
-        private static readonly Regex ROAD_TRACK_NAME_PATTERN = new Regex("\\[#\\]([ _])Road([ _])[0-9]*", RegexOptions.IgnoreCase);
-
         protected override IEnumerator<Result> ValidateScene(Scene terrainScene, Scene railwayScene, Scene gameContentScene)
         {
             GameObject[] roots = railwayScene.GetRootGameObjects();
+
+            # region Switches
+
+            foreach (Switch sw in Object.FindObjectsOfType<Switch>())
+            {
+                VanillaObject vanillaObject = sw.GetComponent<VanillaObject>();
+                vanillaObject.asset = sw.DivergingTrack.GetComponent<BezierCurve>().Last().localPosition.x < 0
+                    ? sw.standSide == Switch.StandSide.DIVERGING
+                        ? VanillaAsset.SwitchLeftOuterSign
+                        : VanillaAsset.SwitchLeft
+                    : sw.standSide == Switch.StandSide.DIVERGING
+                        ? VanillaAsset.SwitchRightOuterSign
+                        : VanillaAsset.SwitchRight;
+                Track divergingTrack = sw.DivergingTrack.GetComponent<Track>();
+                Track throughTrack = sw.ThroughTrack.GetComponent<Track>();
+                if (!divergingTrack.isInSnapped || !divergingTrack.isOutSnapped || !throughTrack.isInSnapped || !throughTrack.isOutSnapped)
+                    yield return Result.Error("Switches must have a track attached to all points", sw);
+            }
+
+            #endregion
 
             # region Track
 
@@ -36,30 +52,71 @@ namespace Mapify.Editor.Validators
             if (tracks.Count == 0)
                 yield return Result.Error("Failed to find any track!");
 
+            Station[] stations = gameContentScene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<Station>()).ToArray();
+
+            int roadId = 1;
+            bool anyFailed = false;
             foreach (Track track in tracks)
             {
-                string trackName = track.name;
-                if (trackName == "[track through]" || trackName == "[track diverging]") continue;
-                Match stationMatch = STATION_TRACK_NAME_PATTERN.Match(trackName);
-                if (!stationMatch.Success)
+                if (track.IsSwitch)
+                    continue;
+                switch (track.trackType)
                 {
-                    Match roadMatch = ROAD_TRACK_NAME_PATTERN.Match(trackName);
-                    if (!roadMatch.Success) yield return Result.Error($"Invalid track name '{trackName}'! It must match the pattern {STATION_TRACK_NAME_PATTERN} or {ROAD_TRACK_NAME_PATTERN}", track);
+                    case TrackType.Road:
+                        // Tracks starting with [Y] or [#] don't get signs generated (SignPlacer#ShouldIncludeTrack)
+                        track.name = $"{(track.generateSigns ? "" : "[#] ")}Road {roadId++}";
+                        continue; // Road safety laws prepare to be ignored!
+                    //todo: give each of these a colour
+                    case TrackType.Storage:
+                        break;
+                    case TrackType.Loading:
+                        break;
+                    case TrackType.In:
+                        break;
+                    case TrackType.Out:
+                        break;
+                    case TrackType.Parking:
+                        break;
+                    case TrackType.PassengerStorage:
+                        break;
+                    case TrackType.PassengerLoading:
+                        break;
                 }
+
+                bool fail = false;
+                if (string.IsNullOrWhiteSpace(track.stationId))
+                {
+                    yield return Result.Error("Station ID not specified", track);
+                    fail = true;
+                }
+                else if (stations.All(station => station.stationID != track.stationId))
+                {
+                    yield return Result.Error($"Failed to find station with ID {track.yardId}", track);
+                    fail = true;
+                }
+
+                if (track.trackId < 1 || track.trackId > 99)
+                {
+                    yield return Result.Error("Track ID must be between 1 and 99 (inclusive)", track);
+                    fail = true;
+                }
+
+                if (!fail)
+                    track.name = $"[Y]_[{track.stationId}]_[{track.yardId}-{track.trackId:D2}-{track.trackType.LetterId()}]";
                 else
-                {
-                    string yardId = stationMatch.Groups[1].Value;
-                    int stationMatchCount = gameContentScene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<Station>()).Count(station => station.stationID == yardId);
-                    if (stationMatchCount == 0) yield return Result.Error($"Failed to find station with ID {yardId}", track);
-                }
+                    anyFailed = true;
             }
 
-            List<Track> duplicateTracks = tracks.GroupBy(x => x)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
-            foreach (Track duplicate in duplicateTracks)
-                yield return Result.Error($"Duplicate track name {duplicate.name}", duplicate);
+            if (!anyFailed)
+            {
+                List<Track> duplicateTracks = tracks.Where(x => x.trackType != TrackType.Road)
+                    .GroupBy(x => $"{x.stationId}-{x.yardId}-{x.trackId}-{x.trackType}")
+                    .Where(g => g.Count() > 1)
+                    .SelectMany(g => g)
+                    .ToList();
+                foreach (Track duplicate in duplicateTracks)
+                    yield return Result.Error($"Duplicate track {duplicate.name}", duplicate);
+            }
 
             #endregion
 
@@ -90,7 +147,7 @@ namespace Mapify.Editor.Validators
             foreach (LocomotiveSpawner spawner in roots.SelectMany(go => go.GetComponentsInChildren<LocomotiveSpawner>()))
                 if (spawner.locomotiveTypesToSpawn.Count == 0)
                     yield return Result.Error("Locomotive spawners must have at least one group to spawn!", spawner);
-                else if (spawner.locomotiveTypesToSpawn.Count(group => group.rollingStockTypes.Count == 0) != 0)
+                else if (spawner.locomotiveTypesToSpawn.Any(group => group.rollingStockTypes.Count == 0))
                     yield return Result.Error("Locomotive spawner groups must have at least one type to spawn!", spawner);
                 else
                     spawner.condensedLocomotiveTypes = spawner.locomotiveTypesToSpawn.Select(types => string.Join(",", types.rollingStockTypes.Select(type => type.ToString()))).ToList();

@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using DV.Signs;
 using Mapify.Editor;
+using Mapify.Utils;
 using UnityEngine;
 
 namespace Mapify.SceneInitializers
@@ -31,11 +33,12 @@ namespace Mapify.SceneInitializers
             foreach (Switch sw in switches) CreateJunction(sw);
 
             Main.Logger.Log("Connecting tracks");
-            foreach (Track track in tracks)
-            {
-                ConnectRailTrack(track);
-                track.gameObject.SetActive(true);
-            }
+            ConnectTracks(tracks);
+
+            foreach (Track track in tracks) track.gameObject.SetActive(true);
+
+            foreach (VanillaObject vanillaObject in Object.FindObjectsOfType<VanillaObject>().Where(vo => vo.asset == VanillaAsset.BufferStop))
+                vanillaObject.gameObject.Replace(AssetCopier.Instantiate(VanillaAsset.BufferStop));
 
             foreach (Switch sw in switches) GameObject.DestroyImmediate(sw.gameObject);
 
@@ -45,59 +48,64 @@ namespace Mapify.SceneInitializers
 
         private static void CreateSigns()
         {
-            new GameObject("Signs").AddComponent<SignPlacer>();
+            WorldMover.Instance.NewChild("Signs").AddComponent<SignPlacer>();
         }
 
         private static void CreateJunction(Switch sw)
         {
             Transform swTransform = sw.transform;
-            GameObject prefabClone = AssetCopier.Instantiate(sw.SwitchPrefabName, false);
+            VanillaAsset vanillaAsset = sw.GetComponent<VanillaObject>().asset;
+            bool isDivergingLeft = $"{vanillaAsset}".Contains("Left");
+            GameObject prefabClone = AssetCopier.Instantiate(vanillaAsset, false);
             Transform prefabCloneTransform = prefabClone.transform;
             Transform inJunction = prefabCloneTransform.Find("in_junction");
             Vector3 offset = prefabCloneTransform.position - inJunction.position;
             foreach (Transform child in prefabCloneTransform)
                 child.transform.position += offset;
             prefabCloneTransform.SetPositionAndRotation(swTransform.position, swTransform.rotation);
-            GameObject throughTrack = sw.throughTrack.gameObject;
-            GameObject divergingTrack = sw.divergingTrack.gameObject;
+            GameObject throughTrack = sw.ThroughTrack.gameObject;
+            GameObject divergingTrack = sw.DivergingTrack.gameObject;
             throughTrack.transform.SetParent(prefabCloneTransform, false);
             divergingTrack.transform.SetParent(prefabCloneTransform, false);
-            sw.tracksParent = prefabClone;
             Junction junction = inJunction.gameObject.AddComponent<Junction>();
             junction.selectedBranch = 1;
             prefabClone.GetComponentInChildren<VisualSwitch>().junction = junction;
-            junction.inBranch = new Junction.Branch(sw.inTrack.GetComponent<RailTrack>(), sw.inTrackFirst);
             RailTrack throughRailTrack = throughTrack.GetComponent<RailTrack>();
             throughRailTrack.generateMeshes = false;
+            throughRailTrack.inJunction = junction;
+            throughRailTrack.overrideDefaultJointsSpan = true;
+            throughRailTrack.jointsSpan = 5.1f;
             RailTrack divergingRailTrack = divergingTrack.GetComponent<RailTrack>();
             divergingRailTrack.generateMeshes = false;
-            junction.outBranches = new[] {
-                new Junction.Branch(throughRailTrack, true),
-                new Junction.Branch(divergingRailTrack, true)
-            }.ToList();
+            divergingRailTrack.inJunction = junction;
+            divergingRailTrack.overrideDefaultJointsSpan = true;
+            divergingRailTrack.jointsSpan = 5.1f;
+            junction.outBranches = new List<Junction.Branch>(2) {
+                new Junction.Branch(isDivergingLeft ? divergingRailTrack : throughRailTrack, true),
+                new Junction.Branch(isDivergingLeft ? throughRailTrack : divergingRailTrack, true)
+            };
             prefabClone.SetActive(true);
+            throughRailTrack.gameObject.SetActive(true);
+            divergingRailTrack.gameObject.SetActive(true);
         }
 
-        private static void ConnectRailTrack(Track track)
+        private static void ConnectTracks(IEnumerable<Track> tracks)
         {
-            RailTrack railTrack = track.gameObject.GetComponent<RailTrack>();
-            if (track.inTrack != null)
+            // Ignore the warnings from not being able to find track, that's just a side effect of how we do things.
+            LogType type = Debug.unityLogger.filterLogType;
+            Debug.unityLogger.filterLogType = LogType.Error;
+            foreach (Track track in tracks)
             {
-                RailTrack inRailTrack = track.inTrack.GetComponent<RailTrack>();
-                railTrack.inBranch = new Junction.Branch(inRailTrack, track.inTrackFirst);
+                RailTrack railTrack = track.GetComponent<RailTrack>();
+                if (railTrack.isJunctionTrack)
+                    continue;
+                if (railTrack.ConnectInToClosestJunction() == null)
+                    railTrack.ConnectInToClosestBranch();
+                if (railTrack.ConnectOutToClosestJunction() == null)
+                    railTrack.ConnectOutToClosestBranch();
             }
 
-            if (track.outTrack != null)
-            {
-                RailTrack outRailTrack = track.outTrack.GetComponent<RailTrack>();
-                railTrack.outBranch = new Junction.Branch(outRailTrack, track.outTrackFirst);
-            }
-
-            if (track.inSwitch)
-                railTrack.inJunction = track.inSwitch.tracksParent.GetComponentInChildren<Junction>(true);
-
-            if (track.outSwitch)
-                railTrack.outJunction = track.outSwitch.tracksParent.GetComponentInChildren<Junction>(true);
+            Debug.unityLogger.filterLogType = type;
         }
     }
 }

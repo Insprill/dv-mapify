@@ -26,6 +26,7 @@ namespace Mapify.SceneInitializers
             SetupGameScene();
             SetupVanillaAssets();
             SetupStations();
+            CreateWater();
             foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
                 transform.SetParent(WorldMover.Instance.originShiftParent);
         }
@@ -121,8 +122,8 @@ namespace Mapify.SceneInitializers
                 // Warehouse machines
                 stationController.warehouseMachineControllers = station.warehouseMachines.Select(machine =>
                 {
-                    WarehouseMachineController machineController = machine.transform.parent.gameObject.WithComponentT<WarehouseMachineController>();
-                    machineController.warehouseTrackName = machine.warehouseTrackName;
+                    WarehouseMachineController machineController = machine.GetComponentInParent<WarehouseMachineController>();
+                    machineController.warehouseTrackName = machine.LoadingTrack.name;
                     machineController.supportedCargoTypes = machine.supportedCargoTypes.ConvertByName<Cargo, CargoType>();
                     return machineController;
                 }).ToList();
@@ -165,6 +166,7 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.TrashCan:
                     case VanillaAsset.Dumpster:
                     case VanillaAsset.LostAndFoundShed:
+                    case VanillaAsset.WarehouseMachine:
                     case VanillaAsset.StationOffice1:
                     case VanillaAsset.StationOffice2:
                     case VanillaAsset.StationOffice3:
@@ -172,10 +174,15 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.StationOffice5:
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
-                    case VanillaAsset.WarehouseMachine:
                         vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
                         break;
                 }
+        }
+
+        private static void CreateWater()
+        {
+            GameObject water = AssetCopier.Instantiate(VanillaAsset.Water);
+            water.transform.position = new Vector3(0, SingletonBehaviour<LevelInfo>.Instance.waterLevel, 0);
         }
     }
 }

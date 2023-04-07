@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Mapify.Editor.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -35,19 +34,17 @@ namespace Mapify.Editor.Validators
                 station.transferOutTrackNames = new List<string>();
                 foreach (Track track in tracks)
                 {
-                    Match match = RailwaySceneValidator.STATION_TRACK_NAME_PATTERN.Match(track.name);
-                    if (!match.Success) continue;
-                    if (match.Groups[1].Value != station.stationID) continue;
-                    string trackType = match.Groups[4].Value;
-                    switch (trackType)
+                    if (track.stationId != station.stationID)
+                        continue;
+                    switch (track.trackType)
                     {
-                        case "S":
+                        case TrackType.Storage:
                             station.storageTrackNames.Add(track.name);
                             break;
-                        case "I":
+                        case TrackType.In:
                             station.transferInTrackNames.Add(track.name);
                             break;
-                        case "O":
+                        case TrackType.Out:
                             station.transferOutTrackNames.Add(track.name);
                             break;
                     }
@@ -67,7 +64,13 @@ namespace Mapify.Editor.Validators
                 station.outputCargoGroups.ForEach(set => set.ToMonoBehaviour(station.gameObject));
 
                 if (warehouses.TryGetValue(station, out List<WarehouseMachine> machines))
+                {
+                    foreach (WarehouseMachine machine in machines)
+                        if (Track.Find(machine.loadingTrackStationId, machine.loadingTrackYardId, machine.loadingTrackId, TrackType.Loading) == null)
+                            yield return Result.Error("Failed to find track loading track", machine);
+
                     station.warehouseMachines = machines;
+                }
             }
 
             #endregion

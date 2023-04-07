@@ -89,5 +89,10 @@ namespace Mapify.Editor.Utils
             point._curve = curve;
             return curve;
         }
+
+        public static BezierPoint[] GetFirstAndLastPoints(this BezierCurve curve)
+        {
+            return new[] { curve[0], curve.Last() };
+        }
     }
 }

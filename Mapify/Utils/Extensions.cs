@@ -14,6 +14,11 @@ namespace Mapify.Utils
     {
         #region GameObjects & Components
 
+        public static GameObject NewChild(this WorldMover worldMover, string name)
+        {
+            return worldMover.originShiftParent.gameObject.NewChild(name);
+        }
+
         public static GameObject NewChild(this GameObject parent, string name)
         {
             return NewChildWithTransform(parent, name, Vector3.zero, Vector3.zero);

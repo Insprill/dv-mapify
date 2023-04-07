@@ -148,11 +148,11 @@ A vague roadmap roughly in order of priority.
 - [x] Load custom scenes
 - [x] Road tracks
 - [x] Switches
-- [ ] Buffer stops
+- [x] Buffer stops
 - [ ] Stations
     - [ ] Job generation
         - [x] Load/Unload machines
-    - [ ] Locomotive spawners
+    - [x] Locomotive spawners
     - [ ] Service stations
     - [x] Station office
         - [x] Job validator

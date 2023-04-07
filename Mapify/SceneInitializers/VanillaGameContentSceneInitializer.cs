@@ -38,6 +38,9 @@ namespace Mapify.SceneInitializers
             GameObject warehouseMachine = gameObject.FindChildByName("WarehouseMachineHMB");
             gameObjects.Add(VanillaAsset.WarehouseMachine, warehouseMachine);
 
+            GameObject water = gameObject.FindChildByName("water");
+            gameObjects.Add(VanillaAsset.Water, water);
+
             for (int i = 1; i <= 7; i++)
             {
                 GameObject office = gameObject.FindChildByName($"Office_0{i}");

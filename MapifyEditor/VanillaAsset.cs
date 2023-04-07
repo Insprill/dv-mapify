@@ -7,6 +7,7 @@ namespace Mapify.Editor
         TrashCan,
         Dumpster,
         LostAndFoundShed,
+        WarehouseMachine,
         StationOffice1,
         StationOffice2,
         StationOffice3,
@@ -14,10 +15,11 @@ namespace Mapify.Editor
         StationOffice5,
         StationOffice6,
         StationOffice7,
+        BufferStop,
         SwitchLeft,
         SwitchRight,
         SwitchLeftOuterSign,
         SwitchRightOuterSign,
-        WarehouseMachine,
+        Water,
     }
 }

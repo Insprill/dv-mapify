@@ -1,11 +1,14 @@
+using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using Mapify.Editor;
 using Mapify.Patches;
 using Mapify.SceneInitializers;
 using Mapify.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Mapify
 {
@@ -91,6 +94,8 @@ namespace Mapify
                 VanillaGameContentSceneInitializer.SceneLoaded(scene);
                 MonoBehaviourPatch.EnableAllLater();
                 WorldStreamingInit_Awake_Patch.CanInitialize = true;
+                foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
+                    Main.Logger.Error($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
             }
         }
 

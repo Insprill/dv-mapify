@@ -9,6 +9,8 @@ namespace Mapify
     {
         private static readonly Dictionary<VanillaAsset, GameObject> prefabs = new Dictionary<VanillaAsset, GameObject>(4);
 
+        public static IEnumerable<VanillaAsset> InstantiatableAssets => prefabs.Keys;
+
         public static GameObject Instantiate(VanillaAsset asset, bool active = true)
         {
             GameObject go = GameObject.Instantiate(prefabs[asset], WorldMover.Instance.originShiftParent);

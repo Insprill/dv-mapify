@@ -12,14 +12,6 @@ namespace Mapify.Editor.Validators
         {
             GameObject[] roots = terrainScene.GetRootGameObjects();
 
-            #region Distant Terrain
-
-            int distantTerrainCount = roots.Count(go => go.name == "[distant terrain]");
-            if (distantTerrainCount != 1)
-                yield return Result.Error($"There must be exactly one [distant terrain] object in the {GetPrettySceneName()} scene! Found {distantTerrainCount}");
-
-            #endregion
-
             # region Terrain
 
             Terrain[] terrains = roots
@@ -39,7 +31,6 @@ namespace Mapify.Editor.Validators
             GameObject[] objectsWithoutTerrain = allChildObjects.Except(terrains.Select(terrain => terrain.gameObject)).ToArray();
             foreach (GameObject go in objectsWithoutTerrain)
             {
-                if (go.name == "[distant terrain]") continue;
                 Component[] components = go.GetComponents<Component>().Where(comp => comp.GetType() != typeof(Transform)).ToArray();
                 switch (components.Length)
                 {
@@ -47,7 +38,7 @@ namespace Mapify.Editor.Validators
                     case 1 when components[0].GetType().Name == "TerrainGroup":
                         continue;
                     default:
-                        yield return Result.Error($"Found invalid object {go.name} in the {GetPrettySceneName()} scene! It should only contain the [distant terrain] object and Terrain", go);
+                        yield return Result.Error($"Found invalid object {go.name} in the {GetPrettySceneName()} scene! It should only contain terrain", go);
                         break;
                 }
             }

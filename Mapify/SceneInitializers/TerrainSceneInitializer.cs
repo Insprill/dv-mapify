@@ -1,4 +1,3 @@
-using System.Linq;
 using DV.TerrainSystem;
 using DV.WorldTools;
 using Mapify.Utils;
@@ -12,7 +11,7 @@ namespace Mapify.SceneInitializers
         public static void SceneLoaded(Scene scene)
         {
             SetupTerrainGrid();
-            SetupDistantTerrain(scene.GetRootGameObjects().FirstOrDefault(o => o.name == "[distant terrain]"));
+            SetupDistantTerrain();
         }
 
         private static void SetupTerrainGrid()
@@ -28,16 +27,12 @@ namespace Mapify.SceneInitializers
             grid.maxConcurrentLoads = 3;
         }
 
-        private static void SetupDistantTerrain(GameObject gameObject)
+        private static void SetupDistantTerrain()
         {
-            if (gameObject == null)
-            {
-                Main.Logger.Error("Failed to find [distant terrain]!");
-                return;
-            }
+            GameObject distantTerrainObject = new GameObject("[distant terrain]");
+            distantTerrainObject.transform.SetParent(WorldMover.Instance.originShiftParent);
 
-            gameObject.transform.SetParent(WorldMover.Instance.originShiftParent);
-            DistantTerrain distantTerrain = gameObject.gameObject.AddComponent<DistantTerrain>();
+            DistantTerrain distantTerrain = distantTerrainObject.gameObject.AddComponent<DistantTerrain>();
             distantTerrain.worldScale = SingletonBehaviour<LevelInfo>.Instance.worldSize;
             distantTerrain.step = 128; // No idea what this means but this is what it's set to in the game.
         }

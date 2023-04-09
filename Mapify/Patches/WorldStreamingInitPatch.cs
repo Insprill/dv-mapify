@@ -13,7 +13,7 @@ namespace Mapify.Patches
         public static bool CanLoad = false;
         public static bool CanInitialize = false;
 
-        public static bool Prefix(WorldStreamingInit __instance)
+        private static bool Prefix(WorldStreamingInit __instance)
         {
             __instance.StartCoroutine(WaitForLoadingScreen());
             return false;
@@ -39,7 +39,7 @@ namespace Mapify.Patches
             { "<color=\"red\">loading savegame failed, using empty savegame</color>", 14.0f }
         };
 
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
 

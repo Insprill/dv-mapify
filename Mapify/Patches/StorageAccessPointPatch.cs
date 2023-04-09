@@ -6,7 +6,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(StorageAccessPoint), "OnEnable")]
     public static class StorageAccessPoint_OnEnable_Patch
     {
-        public static bool Prefix(StorageAccessPoint __instance)
+        private static bool Prefix(StorageAccessPoint __instance)
         {
             if (__instance is StorageAccessPointLostAndFound)
                 __instance.storage = GameObject.Find("StorageLostAndFound").GetComponent<StorageBase>();

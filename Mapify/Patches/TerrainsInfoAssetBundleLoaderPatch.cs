@@ -14,7 +14,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), MethodType.Constructor, typeof(string), typeof(Func<IEnumerator, Coroutine>))]
     public static class TerrainsInfoAssetBundleLoader_Constructor_Transpiler
     {
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
 
@@ -35,7 +35,7 @@ namespace Mapify.Patches
     {
         private static readonly FieldInfo Field_assBunInfo = AccessTools.DeclaredField(typeof(TerrainsInfoAssetBundleLoader), "assBunInfo");
 
-        public static void Postfix(TerrainsInfoAssetBundleLoader __instance)
+        private static void Postfix(TerrainsInfoAssetBundleLoader __instance)
         {
             // Set our own terrain info
             TerrainsInfoFromAssetBundle bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
@@ -50,7 +50,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), "GetAssetBundleFilePath")]
     public static class TerrainsInfoAssetBundleLoader_GetAssetBundleFilePath_Patch
     {
-        public static bool Prefix(TerrainsInfoAssetBundleLoader __instance, Vector2Int coord, ref string __result)
+        private static bool Prefix(TerrainsInfoAssetBundleLoader __instance, Vector2Int coord, ref string __result)
         {
             __result = Main.GetLoadedMapAssetPath($"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}");
             return false;

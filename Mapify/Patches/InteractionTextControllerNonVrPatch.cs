@@ -6,7 +6,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(InteractionTextControllerNonVr), nameof(InteractionTextControllerNonVr.GetText))]
     public class InteractionTextControllerNonVr_GetText_Patch
     {
-        public static bool Prefix(InteractionInfoType infoType, ref string __result)
+        private static bool Prefix(InteractionInfoType infoType, ref string __result)
         {
             if ((int)infoType < ZoneBlocker_Hover_Patch.OFFSET)
                 return true;

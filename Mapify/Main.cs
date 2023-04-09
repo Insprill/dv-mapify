@@ -25,7 +25,7 @@ namespace Mapify
         private static string MapsFolder;
         private static readonly Dictionary<string, (BasicMapInfo, string)> Maps = new Dictionary<string, (BasicMapInfo, string)>();
 
-        public static bool Load(UnityModManager.ModEntry modEntry)
+        private static bool Load(UnityModManager.ModEntry modEntry)
         {
             ModEntry = modEntry;
             Settings = Settings.Load<Settings>(modEntry);

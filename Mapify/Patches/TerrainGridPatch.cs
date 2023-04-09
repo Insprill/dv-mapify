@@ -10,7 +10,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(TerrainGrid), "Awake")]
     public static class TerrainGrid_Awake_Patch
     {
-        public static void Postfix(TerrainGrid __instance)
+        private static void Postfix(TerrainGrid __instance)
         {
             foreach (GameObject obj in __instance.generatedTerrains)
             {
@@ -20,7 +20,7 @@ namespace Mapify.Patches
             }
         }
 
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
 

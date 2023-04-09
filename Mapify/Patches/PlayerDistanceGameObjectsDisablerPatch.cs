@@ -6,7 +6,7 @@ namespace Mapify.Patches
     public static class PlayerDistanceGameObjectsDisablerPatch
     {
         // Fixes an NRE
-        public static bool Prefix(PlayerDistanceGameObjectsDisabler __instance)
+        private static bool Prefix(PlayerDistanceGameObjectsDisabler __instance)
         {
             if (__instance.optimizingGameObjects != null)
                 return true;

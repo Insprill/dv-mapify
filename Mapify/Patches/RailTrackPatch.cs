@@ -9,7 +9,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(RailTrack), "ConnectToClosestBranch")]
     public static class RailTrack_ConnectToClosestBranch_Patch
     {
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return RailTrack_ConnectX.Transpile(instructions);
         }
@@ -18,7 +18,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(RailTrack), "ConnectInToClosestJunction")]
     public static class RailTrack_ConnectInToClosestJunction_Patch
     {
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return RailTrack_ConnectX.Transpile(instructions);
         }
@@ -27,7 +27,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(RailTrack), "ConnectOutToClosestJunction")]
     public static class RailTrack_ConnectOutToClosestJunction_Patch
     {
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return RailTrack_ConnectX.Transpile(instructions);
         }
@@ -35,7 +35,7 @@ namespace Mapify.Patches
 
     public static class RailTrack_ConnectX
     {
-        public static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+        internal static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
         {
             CodeInstruction[] codes = instructions.ToArray();
             foreach (CodeInstruction code in codes)
@@ -50,7 +50,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(RailTrack), nameof(RailTrack.MovePointToBranchEnd))]
     public static class RailTrack_MovePointToBranchEnd_Patch
     {
-        public static bool Prefix(Junction.Branch branch)
+        private static bool Prefix(Junction.Branch branch)
         {
             return branch != null;
         }

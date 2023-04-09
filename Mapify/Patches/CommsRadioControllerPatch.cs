@@ -12,7 +12,7 @@ namespace Mapify.Patches
     {
         private static readonly FieldInfo CommsRadioController_Field_allModes = AccessTools.DeclaredField(typeof(CommsRadioController), "allModes");
 
-        public static void Postfix(CommsRadioController __instance)
+        private static void Postfix(CommsRadioController __instance)
         {
             List<ICommsRadioMode> modes = (List<ICommsRadioMode>)CommsRadioController_Field_allModes.GetValue(__instance);
             modes = modes.Where(mode => mode.GetType() != typeof(CommsRadioCrewVehicle)).ToList();

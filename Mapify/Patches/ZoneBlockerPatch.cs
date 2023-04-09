@@ -7,7 +7,7 @@ namespace Mapify.Patches
     {
         internal const int OFFSET = short.MaxValue; // Doesn't really matter, just has to be larger than the largest actual enum value
 
-        public static bool Prefix(ZoneBlocker __instance)
+        private static bool Prefix(ZoneBlocker __instance)
         {
             if (!(__instance is StationLicenseZoneBlocker blocker))
                 return true;

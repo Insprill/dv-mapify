@@ -14,7 +14,7 @@ namespace Mapify.Patches
 
         internal static readonly string SaveDirPath = (string)AccessTools.DeclaredProperty(typeof(SaveGameManager), "SaveDirPath").GetValue(null);
 
-        public static bool Prefix(SaveGameManager __instance, ref string __result)
+        private static bool Prefix(SaveGameManager __instance, ref string __result)
         {
             string saveName = GetSavegameName();
             __result = Path.Combine(SaveDirPath, __instance.useEncryption ? saveName : $"{saveName}.json");
@@ -30,7 +30,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(SaveGameManager), "MakeBackupFile")]
     public static class SaveGameManager_MakeBackupFile_Patch
     {
-        public static bool Prefix(string filePath)
+        private static bool Prefix(string filePath)
         {
             string str = Path.Combine(
                 SaveGameManager_GetSavePath_Patch.SaveDirPath,
@@ -47,7 +47,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(SaveGameManager), nameof(SaveGameManager.Load))]
     public static class SaveGameManager_Load_Postfix_Patch
     {
-        public static void Postfix()
+        private static void Postfix()
         {
             // Skip the tutorial since I'm sure it goes up in flames with a custom map
             SaveGameManager.data.SetBool("Tutorial_01_completed", true);

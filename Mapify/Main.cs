@@ -1,21 +1,29 @@
 ﻿using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using HarmonyLib;
 using Mapify.Editor;
+using UnityEngine;
 using UnityModManagerNet;
 
 namespace Mapify
 {
     public static class Main
     {
-        public static UnityModManager.ModEntry ModEntry;
+        public const string DEFAULT_MAP_NAME = "Default";
+        private const string MAPS_FOLDER_NAME = "Maps";
+
+        private static UnityModManager.ModEntry ModEntry;
         public static UnityModManager.ModEntry.ModLogger Logger => ModEntry.Logger;
-        public static Settings Settings;
-        public static MapInfo MapInfo;
-        public static OrderedDictionary MapDirs { get; } = new OrderedDictionary();
-        internal static Harmony Harmony;
+        public static Settings Settings { get; private set; }
+        internal static Harmony Harmony { get; private set; }
+
+        public static MapInfo LoadedMap;
+        private static BasicMapInfo basicMapInfo;
+        public static string[] AllMapNames { get; private set; }
+        private static string MapsFolder;
+        private static readonly Dictionary<string, (BasicMapInfo, string)> Maps = new Dictionary<string, (BasicMapInfo, string)>();
 
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -26,7 +34,10 @@ namespace Mapify
 
             try
             {
-                if (!Settings.IsDefaultMap)
+                MapsFolder = Path.Combine(ModEntry.Path, MAPS_FOLDER_NAME);
+                if (!Directory.Exists(MapsFolder)) Directory.CreateDirectory(MapsFolder);
+
+                if (Settings.MapName != DEFAULT_MAP_NAME)
                 {
                     Logger.Log("Patching...");
                     Harmony = new Harmony(ModEntry.Info.Id);
@@ -42,7 +53,7 @@ namespace Mapify
 
                 Logger.Log("Searching for maps...");
                 FindMaps();
-                Logger.Log($"Found {MapDirs.Count} map(s) {(MapDirs.Count > 0 ? $"({string.Join(", ", MapDirs.Keys.Cast<string>().ToArray())})" : "")}");
+                Logger.Log($"Found {Maps.Count} map(s) {(Maps.Count > 0 ? $"({string.Join(", ", Maps.Keys.ToArray())})" : "")}");
             }
             catch (Exception ex)
             {
@@ -66,13 +77,26 @@ namespace Mapify
 
         private static void FindMaps()
         {
-            MapDirs.Add("Default", null);
-            foreach (string dir in Directory.GetDirectories(ModEntry.Path))
+            Maps.Add(DEFAULT_MAP_NAME, (null, null));
+            foreach (string dir in Directory.GetDirectories(MapsFolder))
             {
-                string[] files = Directory.GetFiles(dir);
-                if (files.Any(file => Path.GetFileName(file) == "assets") && files.Any(file => Path.GetFileName(file) == "scenes"))
-                    MapDirs.Add(Path.GetFileName(dir), dir);
+                string mapInfoPath = GetLoadedMapAssetPath("mapInfo.json", dir);
+                if (!File.Exists(mapInfoPath)) continue;
+                BasicMapInfo mapInfo = JsonUtility.FromJson<BasicMapInfo>(File.ReadAllText(mapInfoPath));
+                Maps.Add(mapInfo.mapName, (mapInfo, dir));
             }
+
+            AllMapNames = Maps.Keys.OrderBy(x => x).ToArray();
+
+            if (!Maps.ContainsKey(Settings.MapName))
+                Logger.Error($"Failed to find selected map {Settings.MapName}! Is it still installed? Was it renamed?");
+            else
+                basicMapInfo = Maps[Settings.MapName].Item1;
+        }
+
+        public static string GetLoadedMapAssetPath(string fileName, string mapDir = null)
+        {
+            return Path.Combine(MapsFolder, mapDir ?? Maps[basicMapInfo.mapName].Item2, fileName);
         }
     }
 }

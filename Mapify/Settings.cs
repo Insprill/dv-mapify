@@ -1,4 +1,4 @@
-using System.Linq;
+using System;
 using UnityEngine;
 using UnityModManagerNet;
 
@@ -7,18 +7,20 @@ namespace Mapify
     public class Settings : UnityModManager.ModSettings
     {
         // ReSharper disable once MemberCanBePrivate.Global
-        public int MapIndex;
-        public bool IsDefaultMap => MapIndex == 0;
-        public string MapName => Main.MapDirs.Keys.Cast<string>().ToArray()[Main.Settings.MapIndex]; // 💀
-        public string MapDir => (string)Main.MapDirs[MapIndex];
+        public string MapName = Main.DEFAULT_MAP_NAME;
 
         public void Draw(UnityModManager.ModEntry modEntry)
         {
-            // Map Name
+            #region Map
+
             GUILayout.BeginHorizontal();
             GUILayout.Label("Map");
-            UnityModManager.UI.PopupToggleGroup(ref MapIndex, Main.MapDirs.Keys.Cast<string>().ToArray());
+            int idx = Array.IndexOf(Main.AllMapNames, MapName);
+            UnityModManager.UI.PopupToggleGroup(ref idx, Main.AllMapNames);
+            MapName = Main.AllMapNames[idx];
             GUILayout.EndHorizontal();
+
+            #endregion
         }
 
         public void OnChange()

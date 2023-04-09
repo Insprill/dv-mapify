@@ -40,7 +40,7 @@ namespace Mapify.Patches
             // Set our own terrain info
             TerrainsInfoFromAssetBundle bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
             bundle.terrainSizeInWorld = SingletonBehaviour<LevelInfo>.Instance.worldSize;
-            bundle.numberOfTerrains = Main.MapInfo.terrainCount;
+            bundle.numberOfTerrains = Main.LoadedMap.terrainCount;
             bundle.hasMicroSplatDiffuse = false;
             bundle.hasMicroSplatNormal = false;
             Field_assBunInfo.SetValue(__instance, bundle);
@@ -52,8 +52,7 @@ namespace Mapify.Patches
     {
         public static bool Prefix(TerrainsInfoAssetBundleLoader __instance, Vector2Int coord, ref string __result)
         {
-            Main.Logger.Log($"Loading bundle {Path.Combine(Main.Settings.MapDir, $"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}")}");
-            __result = Path.Combine(Main.Settings.MapDir, $"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}");
+            __result = Main.GetLoadedMapAssetPath($"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}");
             return false;
         }
     }

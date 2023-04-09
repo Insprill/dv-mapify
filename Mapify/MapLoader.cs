@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.IO;
 using System.Linq;
 using Mapify.Editor;
 using Mapify.Patches;
@@ -26,9 +25,8 @@ namespace Mapify
             yield return null;
 
             // Load asset bundles
-            string mapDir = Main.Settings.MapDir;
-            assets = AssetBundle.LoadFromFile(Path.Combine(mapDir, "assets"));
-            scenes = AssetBundle.LoadFromFile(Path.Combine(mapDir, "scenes"));
+            assets = AssetBundle.LoadFromFile(Main.GetLoadedMapAssetPath("assets"));
+            scenes = AssetBundle.LoadFromFile(Main.GetLoadedMapAssetPath("scenes"));
 
             // Load scenes for us to steal assets from
             wsi.Log("copying vanilla assets", 12);
@@ -39,20 +37,20 @@ namespace Mapify
             originalGameContentScenePath = wsi.gameContentScenePath;
             SceneManager.LoadScene(originalGameContentScenePath, LoadSceneMode.Additive);
 
-            // todo: do we need to hardcode these?
             // Load our scenes, not the vanilla ones
             wsi.terrainsScenePath = "Assets/Scenes/Terrain.unity";
             wsi.railwayScenePath = "Assets/Scenes/Railway.unity";
             wsi.gameContentScenePath = "Assets/Scenes/GameContent.unity";
 
             // Set LevelInfo
-            Main.MapInfo = assets.LoadAllAssets<MapInfo>()[0];
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
-            levelInfo.waterLevel = Main.MapInfo.waterLevel;
-            levelInfo.worldSize = Main.MapInfo.worldSize;
+            // We need to update this so references to other assets aren't broken
+            Main.LoadedMap = assets.LoadAllAssets<MapInfo>()[0];
+            levelInfo.waterLevel = Main.LoadedMap.waterLevel;
+            levelInfo.worldSize = Main.LoadedMap.worldSize;
             levelInfo.worldOffset = Vector3.zero;
-            levelInfo.defaultSpawnPosition = Main.MapInfo.defaultSpawnPosition;
-            levelInfo.defaultSpawnRotation = Main.MapInfo.defaultSpawnRotation;
+            levelInfo.defaultSpawnPosition = Main.LoadedMap.defaultSpawnPosition;
+            levelInfo.defaultSpawnRotation = Main.LoadedMap.defaultSpawnRotation;
 
             // Register scene loaded hook
             SceneManager.sceneLoaded += OnSceneLoad;

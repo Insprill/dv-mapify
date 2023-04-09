@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Mapify.Editor
 {
@@ -7,7 +6,6 @@ namespace Mapify.Editor
     public class MapInfo : ScriptableObject
     {
         public string mapName = "My Custom Map";
-        [FormerlySerializedAs("waterHeight")]
         public float waterLevel;
         public Vector3 defaultSpawnPosition;
         public Vector3 defaultSpawnRotation;

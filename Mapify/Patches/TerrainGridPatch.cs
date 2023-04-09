@@ -15,8 +15,8 @@ namespace Mapify.Patches
             foreach (GameObject obj in __instance.generatedTerrains)
             {
                 Terrain terrain = obj.GetComponent<Terrain>();
-                terrain.materialTemplate = Main.MapInfo.terrainMaterial;
-                terrain.basemapDistance = Main.MapInfo.terrainBasemapDistance;
+                terrain.materialTemplate = Main.LoadedMap.terrainMaterial;
+                terrain.basemapDistance = Main.LoadedMap.terrainBasemapDistance;
             }
         }
 

@@ -17,12 +17,12 @@ namespace Mapify.SceneInitializers
 
         private static void SetupTerrainGrid()
         {
-            GameObject gridObject = WorldMover.Instance.NewChildWithPosition("TerrainGrid", new Vector3(0, Main.MapInfo.terrainHeight, 0));
+            GameObject gridObject = WorldMover.Instance.NewChildWithPosition("TerrainGrid", new Vector3(0, Main.LoadedMap.terrainHeight, 0));
             TerrainGrid grid = gridObject.AddComponent<TerrainGrid>();
             grid.loadingRingSize = 2;
             grid.addToVegetationStudio = false;
-            grid.pixelError = Main.MapInfo.terrainPixelError;
-            grid.drawInstanced = Main.MapInfo.terrainDrawInstanced;
+            grid.pixelError = Main.LoadedMap.terrainPixelError;
+            grid.drawInstanced = Main.LoadedMap.terrainDrawInstanced;
             grid.terrainLayer = 8;
             grid.vegetationReloadWaitFrames = 2;
             grid.maxConcurrentLoads = 3;

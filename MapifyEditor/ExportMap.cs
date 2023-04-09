@@ -136,6 +136,10 @@ namespace Mapify.Editor
 
             Debug.Log("Building AssetBundles");
             BuildPipeline.BuildAssetBundles(exportFolderPath, builds, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
+            using (StreamWriter writer = File.CreateText(Path.Combine(exportFolderPath, "mapInfo.json")))
+            {
+                writer.Write(JsonUtility.ToJson(EditorAssets.FindAsset<MapInfo>()));
+            }
         }
 
         private static AssetBundleBuild[] CreateBuilds()

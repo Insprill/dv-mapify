@@ -43,22 +43,23 @@ namespace Mapify.SceneInitializers
         {
             Main.Logger.Log("Creating SaveLoadController");
             new GameObject("[LicensesAndGarages]").AddComponent<SaveLoadController>();
-            Main.Logger.Log("Creating CarSpawner");
+            Main.Logger.Log("Creating CarSpawnerOriginShiftHandler");
             new GameObject("[CarSpawner]").WithComponent<CarSpawner>().WithComponent<CarSpawnerOriginShiftHandler>();
-            Main.Logger.Log("Creating ItemDisablerGrid");
+            Main.Logger.Log("Creating LogicController");
             new GameObject("[JobLogicController]").AddComponent<LogicController>();
-            Main.Logger.Log("Creating ItemDisablerGrid");
+            Main.Logger.Log("Creating DerailAndDamageObserver");
             new GameObject("[DerailAndDamageObserver]").AddComponent<DerailAndDamageObserver>();
-            Main.Logger.Log("Creating StorageLogic");
+            Main.Logger.Log("Creating StorageBase's");
             GameObject storageLogic = new GameObject("[StorageLogic]");
             storageLogic.NewChild("StorageWorld").WithComponentT<StorageBase>().storageType = StorageType.World;
             storageLogic.NewChild("StorageLostAndFound").WithComponentT<StorageBase>().storageType = StorageType.LostAndFound;
             storageLogic.NewChild("StorageInventory").WithComponentT<StorageBase>().storageType = StorageType.Inventory;
             storageLogic.NewChild("StorageBelt").WithComponentT<StorageBase>().storageType = StorageType.Belt;
+            Main.Logger.Log("Creating StorageController");
             storageLogic.AddComponent<StorageController>(); // Must be added after all StorageBase's
             Main.Logger.Log("Creating ItemDisablerGrid");
             new GameObject("[ItemDisablerGrid]").AddComponent<ItemDisablerGrid>();
-            Main.Logger.Log("Creating ShopLogic");
+            Main.Logger.Log("Creating GlobalShopController");
             GlobalShopController globalShopController = new GameObject("[ShopLogic]").AddComponent<GlobalShopController>();
             globalShopController.globalShopList = new List<Shop>();
             globalShopController.shopItemsData = new List<ShopItemData>();

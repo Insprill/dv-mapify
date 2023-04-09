@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor.Utils;
@@ -44,11 +45,13 @@ namespace Mapify.Editor.Validators
             }
 
             Material m = terrains[0].materialTemplate;
+            float size = terrains[0].terrainData.size.x;
             foreach (Terrain terrain in terrains)
             {
-                if (m == terrain.materialTemplate) continue;
-                yield return Result.Error("All terrains must use the same material", terrain);
-                break;
+                if (m != terrain.materialTemplate)
+                    yield return Result.Error("All terrains must use the same material", terrain);
+                if (Math.Abs(size - terrain.terrainData.size.x) > 0.001 || Math.Abs(size - terrain.terrainData.size.z) > 0.001)
+                    yield return Result.Error("All terrains must be the same size on the X and Z axis", terrain);
             }
 
             MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();

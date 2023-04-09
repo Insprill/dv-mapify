@@ -12,6 +12,7 @@ using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Utils;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 using Station = Mapify.Editor.Station;
@@ -35,6 +36,7 @@ namespace Mapify.SceneInitializers
             SetupStations();
             SetupPitstops();
             CreateWater();
+            SetupPostProcessing();
             foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
                 transform.SetParent(WorldMover.Instance.originShiftParent);
         }
@@ -268,6 +270,17 @@ namespace Mapify.SceneInitializers
 
                 serviceStation.gameObject.Replace(pitStopStationObject).SetActive(true);
             }
+        }
+
+        private static void SetupPostProcessing()
+        {
+            GameObject obj = GameObject.Find("[GlobalPostProcessing]") ?? new GameObject("[GlobalPostProcessing]");
+            PostProcessVolume volume = obj.WithComponentT<PostProcessVolume>();
+            volume.isGlobal = true;
+            PostProcessProfile profile = volume.profile;
+            if (!profile.HasSettings<AmbientOcclusion>()) profile.AddSettings<AmbientOcclusion>();
+            if (!profile.HasSettings<AutoExposure>()) profile.AddSettings<AutoExposure>();
+            if (!profile.HasSettings<Bloom>()) profile.AddSettings<Bloom>();
         }
     }
 }

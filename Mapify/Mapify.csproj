@@ -23,6 +23,7 @@
         <Reference Include="DV.TerrainTools"/>
         <Reference Include="DV.Utils"/>
         <Reference Include="BezierCurves"/>
+        <Reference Include="Unity.Postprocessing.Runtime"/>
         <Reference Include="UnityEngine"/>
         <Reference Include="UnityEngine.AssetBundleModule"/>
         <Reference Include="UnityEngine.CoreModule"/>

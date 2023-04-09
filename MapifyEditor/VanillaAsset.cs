@@ -21,5 +21,17 @@ namespace Mapify.Editor
         SwitchLeftOuterSign,
         SwitchRightOuterSign,
         Water,
+        CashRegister,
+        PitStopStation,
+        RefillMachineFuel,
+        RefillMachineSand,
+        RefillMachineOil,
+        RefillMachineWater,
+        RefillMachineCoal,
+        RefillMachineCarDamage,
+        RefillMachineWheelDamage,
+        RefillMachineEngineDamage,
+        ServiceStationMarkerOpen,
+        ServiceStationMarkerClosed
     }
 }

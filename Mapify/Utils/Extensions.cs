@@ -7,6 +7,7 @@ using CommandTerminal;
 using DV.Logic.Job;
 using HarmonyLib;
 using Mapify.Editor;
+using Mapify.Editor.Utils;
 using UnityEngine;
 
 namespace Mapify.Utils
@@ -65,9 +66,10 @@ namespace Mapify.Utils
 
         public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true)
         {
+            if (gameObject == other) throw new ArgumentException("Cannot replace self with self");
             Transform t = gameObject.transform;
             Transform ot = other.transform;
-            ot.SetParent(t.parent, false);
+            ot.SetParent(t.parent);
             ot.SetPositionAndRotation(t.position, t.rotation);
             ot.SetSiblingIndex(t.GetSiblingIndex());
             if (preserveTypes != null)
@@ -84,20 +86,11 @@ namespace Mapify.Utils
                 }
 
             if (keepChildren)
-                foreach (Transform child in t)
+                foreach (Transform child in t.GetChildren())
                     child.SetParent(ot);
 
             GameObject.DestroyImmediate(gameObject);
             return other;
-        }
-
-        public static GameObject FindChildByName(this GameObject parent, string name)
-        {
-            Transform[] children = parent.GetComponentsInChildren<Transform>(true);
-            foreach (Transform child in children)
-                if (child.gameObject.name == name)
-                    return child.gameObject;
-            return null;
         }
 
         public static void PrintHierarchy(this GameObject gameObject, string indent = "")

@@ -66,14 +66,37 @@ namespace Mapify.Editor.Utils
                 .FirstOrDefault();
         }
 
-        public static T RecordObjectChanges<T>(this List<Object> objects, Func<T> func)
+        public static GameObject FindChildByName(this GameObject parent, string name)
         {
+            Transform child = FindChildByName(parent.transform, name);
+            return child == null ? null : child.gameObject;
+        }
+
+        public static Transform FindChildByName(this Transform parent, string name)
+        {
+            Transform[] children = parent.GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in children)
+                if (child.gameObject.name == name)
+                    return child;
+            return null;
+        }
+
+        public static Transform[] GetChildren(this Transform parent)
+        {
+            Transform[] children = new Transform[parent.childCount];
+            for (int i = 0; i < parent.childCount; i++) children[i] = parent.GetChild(i);
+            return children;
+        }
+
+        public static T RecordObjectChanges<T>(this IEnumerable<Object> objects, Func<T> func)
+        {
+            Object[] nonNullObjects = objects.Where(obj => obj != null).ToArray();
             Undo.IncrementCurrentGroup();
-            Undo.RecordObjects(objects.ToArray(), "Map Validation");
+            Undo.RecordObjects(nonNullObjects, "Map Validation");
 
             T result = func.Invoke();
 
-            foreach (Object o in objects.Where(PrefabUtility.IsPartOfPrefabInstance))
+            foreach (Object o in nonNullObjects.Where(PrefabUtility.IsPartOfPrefabInstance))
                 PrefabUtility.RecordPrefabInstancePropertyModifications(o);
 
             EditorSceneManager.SaveOpenScenes();

@@ -153,7 +153,7 @@ A vague roadmap roughly in order of priority.
     - [x] Job generation
         - [x] Load/Unload machines
     - [x] Locomotive spawners
-    - [ ] Service stations
+    - [x] Service stations
     - [x] Station office
         - [x] Job validator
         - [x] Career manager

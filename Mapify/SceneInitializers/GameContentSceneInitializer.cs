@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using DV;
+using DV.CashRegister;
 using DV.Logic.Job;
 using DV.RenderTextureSystem;
 using DV.Teleporters;
@@ -32,6 +33,7 @@ namespace Mapify.SceneInitializers
             SetupZoneBlockers();
             SetupVanillaAssets();
             SetupStations();
+            SetupPitstops();
             CreateWater();
             foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
                 transform.SetParent(WorldMover.Instance.originShiftParent);
@@ -208,6 +210,63 @@ namespace Mapify.SceneInitializers
         {
             GameObject water = AssetCopier.Instantiate(VanillaAsset.Water);
             water.transform.position = new Vector3(0, SingletonBehaviour<LevelInfo>.Instance.waterLevel, 0);
+        }
+
+        private static void SetupPitstops()
+        {
+            ServiceStation[] pitstops = Object.FindObjectsOfType<ServiceStation>();
+            foreach (ServiceStation serviceStation in pitstops)
+            {
+                GameObject pitStopStationObject = AssetCopier.Instantiate(VanillaAsset.PitStopStation, false);
+                Transform serviceStationTransform = serviceStation.transform;
+                pitStopStationObject.transform.SetPositionAndRotation(serviceStationTransform.position, serviceStationTransform.rotation);
+
+                GameObject manualServiceIndicator = pitStopStationObject.FindChildByName("ManualServiceIndicator");
+                Transform manualServiceIndicatorTransform = manualServiceIndicator.transform;
+
+                Transform msi = serviceStation.ManualServiceIndicator;
+                manualServiceIndicatorTransform.SetPositionAndRotation(msi.position, msi.rotation);
+                Object.Destroy(msi.gameObject);
+
+                //todo: customizable price-per-unit
+                List<LocoResourceModule> resourceModules = new List<LocoResourceModule>(serviceStation.resources.Length);
+                for (int i = 0; i < serviceStation.resources.Length; i++)
+                {
+                    ServiceResource resource = serviceStation.resources[i];
+                    GameObject moduleObj = AssetCopier.Instantiate(resource.ToVanillaAsset());
+                    serviceStation.PositionRefillMachine(manualServiceIndicatorTransform, moduleObj.transform, i);
+                    LocoResourceModule resourceModule = moduleObj.GetComponentInChildren<LocoResourceModule>();
+                    resourceModules.Add(resourceModule);
+                }
+
+                PitStopIndicators pitStopIndicators = pitStopStationObject.GetComponentInChildren<PitStopIndicators>();
+                pitStopIndicators.resourceModules = resourceModules.ToArray();
+
+                PitStop pitStop = pitStopStationObject.GetComponentInChildren<PitStop>();
+
+                VanillaObject[] vanillaObjects = serviceStation.GetComponentsInChildren<VanillaObject>();
+                foreach (VanillaObject vanillaObject in vanillaObjects)
+                {
+                    VanillaAsset asset = vanillaObject.asset;
+                    if (asset == serviceStation.markerType.ToVanillaAsset())
+                    {
+                        BoxCollider vCollider = vanillaObject.GetComponent<BoxCollider>();
+                        BoxCollider collider = pitStop.gameObject.AddComponent<BoxCollider>();
+                        collider.center = vCollider.center;
+                        collider.size = vCollider.size;
+                        collider.isTrigger = true;
+                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(asset));
+                    }
+                    else if (asset == VanillaAsset.CashRegister)
+                    {
+                        GameObject cashRegisterObj = vanillaObject.gameObject.Replace(AssetCopier.Instantiate(asset), keepChildren: false);
+                        CashRegisterResourceModules cashRegister = cashRegisterObj.GetComponentInChildren<CashRegisterResourceModules>();
+                        cashRegister.resourceMachines = resourceModules.Cast<ResourceModule>().ToArray();
+                    }
+                }
+
+                serviceStation.gameObject.Replace(pitStopStationObject).SetActive(true);
+            }
         }
     }
 }

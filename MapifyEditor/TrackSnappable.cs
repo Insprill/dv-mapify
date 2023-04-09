@@ -9,12 +9,13 @@ namespace Mapify.Editor
     {
         [Tooltip("The transform to use as a reference when snapping. Will use self if not set")]
         public Transform referencePoint;
+        public bool onlySnapToEnds = true;
 
         private void OnDrawGizmos()
         {
             if ((transform.position - Camera.current.transform.position).sqrMagnitude >= Track.SNAP_UPDATE_RANGE * Track.SNAP_UPDATE_RANGE)
                 return;
-            BezierPoint[] snapPoints = FindObjectsOfType<BezierCurve>().SelectMany(curve => curve.GetFirstAndLastPoints()).ToArray();
+            BezierPoint[] snapPoints = FindObjectsOfType<BezierCurve>().SelectMany(curve => onlySnapToEnds ? curve.GetFirstAndLastPoints() : curve.GetAnchorPoints()).ToArray();
             TrySnap(snapPoints);
             TrySnap(snapPoints);
         }

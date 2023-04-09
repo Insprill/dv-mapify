@@ -14,41 +14,27 @@ namespace Mapify.SceneInitializers
             AssetCopier.CopyDefaultAssets(scene, ToSave);
         }
 
-        private static Dictionary<VanillaAsset, GameObject> ToSave(GameObject gameObject)
+        private static IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
-            Dictionary<VanillaAsset, GameObject> gameObjects = new Dictionary<VanillaAsset, GameObject>(3);
             if (gameObject.name != "[origin shift content]")
-                return gameObjects;
+                yield break;
 
-            GameObject water = gameObject.FindChildByName("water");
-            gameObjects.Add(VanillaAsset.Water, water);
+            yield return (VanillaAsset.Water, gameObject.FindChildByName("water"));
 
             #region Stations
 
-            GameObject careerManager = gameObject.FindChildByName("CareerManager");
-            gameObjects.Add(VanillaAsset.CareerManager, careerManager);
-
-            GameObject jobValidator = gameObject.FindChildByName("JobValidator");
-            gameObjects.Add(VanillaAsset.JobValidator, jobValidator);
-
-            GameObject trashCan = gameObject.FindChildByName("JobTrashBin");
-            gameObjects.Add(VanillaAsset.TrashCan, trashCan);
-
-            GameObject dumpster = gameObject.FindChildByName("ItemDumpster");
-            gameObjects.Add(VanillaAsset.Dumpster, dumpster);
-
-            GameObject shed = gameObject.FindChildByName("OldShed");
-            gameObjects.Add(VanillaAsset.LostAndFoundShed, shed);
-
-            GameObject warehouseMachine = gameObject.FindChildByName("WarehouseMachineHMB");
-            gameObjects.Add(VanillaAsset.WarehouseMachine, warehouseMachine);
+            yield return (VanillaAsset.CareerManager, gameObject.FindChildByName("CareerManager"));
+            yield return (VanillaAsset.JobValidator, gameObject.FindChildByName("JobValidator"));
+            yield return (VanillaAsset.TrashCan, gameObject.FindChildByName("JobTrashBin"));
+            yield return (VanillaAsset.Dumpster, gameObject.FindChildByName("ItemDumpster"));
+            yield return (VanillaAsset.LostAndFoundShed, gameObject.FindChildByName("OldShed"));
+            yield return (VanillaAsset.WarehouseMachine, gameObject.FindChildByName("WarehouseMachineHMB"));
 
             for (int i = 1; i <= 7; i++)
             {
-                GameObject office = gameObject.FindChildByName($"Office_0{i}");
                 string enumName = $"StationOffice{i}";
                 if (Enum.TryParse(enumName, out VanillaAsset asset))
-                    gameObjects.Add(asset, office);
+                    yield return (asset, gameObject.FindChildByName($"Office_0{i}"));
                 else
                     Main.Logger.Error($"Failed to find {nameof(VanillaAsset)} {enumName}!");
             }
@@ -59,45 +45,20 @@ namespace Mapify.SceneInitializers
 
             GameObject refillStationParent = gameObject.FindChildByName("RefillStations");
 
-            GameObject pitStopStation = refillStationParent.FindChildByName("PitStopStation");
-            gameObjects.Add(VanillaAsset.PitStopStation, pitStopStation);
-
-            GameObject fuel = refillStationParent.FindChildByName("Fuel");
-            gameObjects.Add(VanillaAsset.RefillMachineFuel, fuel);
-
-            GameObject sand = refillStationParent.FindChildByName("Sand");
-            gameObjects.Add(VanillaAsset.RefillMachineSand, sand);
-
-            GameObject oil = refillStationParent.FindChildByName("Oil");
-            gameObjects.Add(VanillaAsset.RefillMachineOil, oil);
-
-            GameObject tenderWater = refillStationParent.FindChildByName("Tender water");
-            gameObjects.Add(VanillaAsset.RefillMachineWater, tenderWater);
-
-            GameObject coal = refillStationParent.FindChildByName("Coal");
-            gameObjects.Add(VanillaAsset.RefillMachineCoal, coal);
-
-            GameObject body = refillStationParent.FindChildByName("Body repair");
-            gameObjects.Add(VanillaAsset.RefillMachineCarDamage, body);
-
-            GameObject wheels = refillStationParent.FindChildByName("Wheels repair");
-            gameObjects.Add(VanillaAsset.RefillMachineWheelDamage, wheels);
-
-            GameObject engine = refillStationParent.FindChildByName("Engine repair");
-            gameObjects.Add(VanillaAsset.RefillMachineEngineDamage, engine);
-
-            GameObject markerOpen = refillStationParent.FindChildByName("ServiceStationMarker-open");
-            gameObjects.Add(VanillaAsset.ServiceStationMarkerOpen, markerOpen);
-
-            GameObject markerClosed = refillStationParent.FindChildByName("ServiceStationMarker-closed");
-            gameObjects.Add(VanillaAsset.ServiceStationMarkerClosed, markerClosed);
-
-            GameObject pitstopCashRegister = refillStationParent.FindChildByName("CashRegisterResourceModules");
-            gameObjects.Add(VanillaAsset.CashRegister, pitstopCashRegister);
+            yield return (VanillaAsset.PitStopStation, refillStationParent.FindChildByName("PitStopStation"));
+            yield return (VanillaAsset.RefillMachineFuel, refillStationParent.FindChildByName("Fuel"));
+            yield return (VanillaAsset.RefillMachineSand, refillStationParent.FindChildByName("Sand"));
+            yield return (VanillaAsset.RefillMachineOil, refillStationParent.FindChildByName("Oil"));
+            yield return (VanillaAsset.RefillMachineWater, refillStationParent.FindChildByName("Tender water"));
+            yield return (VanillaAsset.RefillMachineCoal, refillStationParent.FindChildByName("Coal"));
+            yield return (VanillaAsset.RefillMachineCarDamage, refillStationParent.FindChildByName("Body repair"));
+            yield return (VanillaAsset.RefillMachineWheelDamage, refillStationParent.FindChildByName("Wheels repair"));
+            yield return (VanillaAsset.RefillMachineEngineDamage, refillStationParent.FindChildByName("Engine repair"));
+            yield return (VanillaAsset.ServiceStationMarkerOpen, refillStationParent.FindChildByName("ServiceStationMarker-open"));
+            yield return (VanillaAsset.ServiceStationMarkerClosed, refillStationParent.FindChildByName("ServiceStationMarker-closed"));
+            yield return (VanillaAsset.CashRegister, refillStationParent.FindChildByName("CashRegisterResourceModules"));
 
             #endregion
-
-            return gameObjects;
         }
     }
 }

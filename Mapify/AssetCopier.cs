@@ -33,15 +33,16 @@ namespace Mapify
             {
                 rootObject.SetActive(false);
                 SceneManager.MoveGameObjectToScene(rootObject, SceneManager.GetActiveScene());
-                Dictionary<VanillaAsset, GameObject> objects = func.Invoke(rootObject);
-                if (objects == null) continue;
-                foreach (KeyValuePair<VanillaAsset, GameObject> data in objects)
+
+                IEnumerator<(VanillaAsset, GameObject)> enumerator = func.Invoke(rootObject);
+                while (enumerator.MoveNext())
                 {
-                    GameObject gameObject = data.Value;
+                    (VanillaAsset vanillaAsset, GameObject gameObject) = enumerator.Current;
+                    if (prefabs.ContainsKey(vanillaAsset)) continue;
                     gameObject.SetActive(false);
                     gameObject.transform.SetParent(null);
                     gameObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
-                    prefabs.Add(data.Key, gameObject);
+                    prefabs.Add(vanillaAsset, gameObject);
                 }
 
                 GameObject.Destroy(rootObject);
@@ -54,6 +55,6 @@ namespace Mapify
 #pragma warning restore CS0618
         }
 
-        public delegate Dictionary<VanillaAsset, GameObject> ToSave(GameObject gameObject);
+        public delegate IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject);
     }
 }

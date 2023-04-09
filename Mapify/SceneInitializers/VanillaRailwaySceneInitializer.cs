@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Mapify.Editor;
-using Mapify.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,11 +12,10 @@ namespace Mapify.SceneInitializers
             AssetCopier.CopyDefaultAssets(scene, ToSave);
         }
 
-        private static Dictionary<VanillaAsset, GameObject> ToSave(GameObject gameObject)
+        private static IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
-            Dictionary<VanillaAsset, GameObject> gameObjects = new Dictionary<VanillaAsset, GameObject>(4);
             if (gameObject.name != "[railway]")
-                return gameObjects;
+                yield break;
 
             for (int i = 0; i < gameObject.transform.childCount; i++)
             {
@@ -29,27 +27,25 @@ namespace Mapify.SceneInitializers
                 {
                     case "junc-left":
                         CleanupSwitch(child);
-                        gameObjects.TryAdd(VanillaAsset.SwitchLeft, child);
+                        yield return (VanillaAsset.SwitchLeft, child);
                         break;
                     case "junc-right":
                         CleanupSwitch(child);
-                        gameObjects.TryAdd(VanillaAsset.SwitchRight, child);
+                        yield return (VanillaAsset.SwitchRight, child);
                         break;
                     case "junc-left-outer-sign":
                         CleanupSwitch(child);
-                        gameObjects.TryAdd(VanillaAsset.SwitchLeftOuterSign, child);
+                        yield return (VanillaAsset.SwitchLeftOuterSign, child);
                         break;
                     case "junc-right-outer-sign":
                         CleanupSwitch(child);
-                        gameObjects.TryAdd(VanillaAsset.SwitchRightOuterSign, child);
+                        yield return (VanillaAsset.SwitchRightOuterSign, child);
                         break;
                     case "term-buffer":
-                        gameObjects.TryAdd(VanillaAsset.BufferStop, child);
+                        yield return (VanillaAsset.BufferStop, child);
                         break;
                 }
             }
-
-            return gameObjects;
         }
 
         private static void CleanupSwitch(GameObject gameObject)

@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DV;
 using DV.CashRegister;
 using DV.Logic.Job;
-using DV.RenderTextureSystem;
 using DV.Teleporters;
 using HarmonyLib;
 using Mapify.Editor;
@@ -43,30 +41,16 @@ namespace Mapify.SceneInitializers
 
         private static void SetupGameScene()
         {
-            Main.Logger.Log("Creating SaveLoadController");
-            new GameObject("[LicensesAndGarages]").AddComponent<SaveLoadController>();
-            Main.Logger.Log("Creating CarSpawnerOriginShiftHandler");
-            new GameObject("[CarSpawner]").WithComponent<CarSpawner>().WithComponent<CarSpawnerOriginShiftHandler>();
-            Main.Logger.Log("Creating LogicController");
-            new GameObject("[JobLogicController]").AddComponent<LogicController>();
-            Main.Logger.Log("Creating DerailAndDamageObserver");
-            new GameObject("[DerailAndDamageObserver]").AddComponent<DerailAndDamageObserver>();
-            Main.Logger.Log("Creating StorageBase's");
-            GameObject storageLogic = new GameObject("[StorageLogic]");
-            storageLogic.NewChild("StorageWorld").WithComponentT<StorageBase>().storageType = StorageType.World;
-            storageLogic.NewChild("StorageLostAndFound").WithComponentT<StorageBase>().storageType = StorageType.LostAndFound;
-            storageLogic.NewChild("StorageInventory").WithComponentT<StorageBase>().storageType = StorageType.Inventory;
-            storageLogic.NewChild("StorageBelt").WithComponentT<StorageBase>().storageType = StorageType.Belt;
-            Main.Logger.Log("Creating StorageController");
-            storageLogic.AddComponent<StorageController>(); // Must be added after all StorageBase's
-            Main.Logger.Log("Creating ItemDisablerGrid");
-            new GameObject("[ItemDisablerGrid]").AddComponent<ItemDisablerGrid>();
-            Main.Logger.Log("Creating GlobalShopController");
-            GlobalShopController globalShopController = new GameObject("[ShopLogic]").AddComponent<GlobalShopController>();
-            globalShopController.globalShopList = new List<Shop>();
-            globalShopController.shopItemsData = new List<ShopItemData>();
-            Main.Logger.Log("Creating RenderTextureSystem");
-            new GameObject("[RenderTextureSystem]").AddComponent<RenderTextureSystem>();
+            AssetCopier.Instantiate(VanillaAsset.RenderTextureSystem, false);
+            AssetCopier.Instantiate(VanillaAsset.CarSpawner, false);
+            AssetCopier.Instantiate(VanillaAsset.LicensesAndGarages, false);
+            AssetCopier.Instantiate(VanillaAsset.ItemDisablerGrid, false);
+            AssetCopier.Instantiate(VanillaAsset.JobLogicController, false);
+            AssetCopier.Instantiate(VanillaAsset.StorageLogic, false);
+            GlobalShopController shopController = AssetCopier.Instantiate(VanillaAsset.ShopLogic, false).GetComponent<GlobalShopController>();
+            shopController.globalShopList = new List<Shop>();
+            shopController.shopItemsData = new List<ShopItemData>();
+            AssetCopier.Instantiate(VanillaAsset.DerailAndDamageObserver, false);
             // I'm not sure where vanilla creates this because it doesn't have auto create enabled.
             Main.Logger.Log("Creating YardTracksOrganizer");
             new GameObject("[YardTracksOrganizer]").AddComponent<YardTracksOrganizer>();
@@ -220,7 +204,7 @@ namespace Mapify.SceneInitializers
             ServiceStation[] pitstops = Object.FindObjectsOfType<ServiceStation>();
             foreach (ServiceStation serviceStation in pitstops)
             {
-                GameObject pitStopStationObject = AssetCopier.Instantiate(VanillaAsset.PitStopStation, false);
+                GameObject pitStopStationObject = AssetCopier.Instantiate(VanillaAsset.PitStopStation, active: false);
                 Transform serviceStationTransform = serviceStation.transform;
                 pitStopStationObject.transform.SetPositionAndRotation(serviceStationTransform.position, serviceStationTransform.rotation);
 

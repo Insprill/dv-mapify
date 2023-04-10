@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Mapify.Editor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -11,9 +12,9 @@ namespace Mapify
 
         public static IEnumerable<VanillaAsset> InstantiatableAssets => prefabs.Keys;
 
-        public static GameObject Instantiate(VanillaAsset asset, bool active = true)
+        public static GameObject Instantiate(VanillaAsset asset, bool originShift = true, bool active = true)
         {
-            GameObject go = GameObject.Instantiate(prefabs[asset], WorldMover.Instance.originShiftParent);
+            GameObject go = GameObject.Instantiate(prefabs[asset], originShift ? WorldMover.Instance.originShiftParent : null);
             go.SetActive(active);
             return go;
         }
@@ -45,7 +46,8 @@ namespace Mapify
                     prefabs.Add(vanillaAsset, gameObject);
                 }
 
-                GameObject.Destroy(rootObject);
+                if (!prefabs.Values.Contains(rootObject))
+                    Object.Destroy(rootObject);
             }
 
             Main.Logger.Log($"Unloading vanilla scene {scene.name}");

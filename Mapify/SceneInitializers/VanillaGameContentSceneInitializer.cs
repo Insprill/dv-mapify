@@ -16,6 +16,34 @@ namespace Mapify.SceneInitializers
 
         private static IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
+            switch (gameObject.name)
+            {
+                case "[RenderTextureSystem]":
+                    yield return (VanillaAsset.RenderTextureSystem, gameObject);
+                    yield break;
+                case "[CarSpawner]":
+                    yield return (VanillaAsset.CarSpawner, gameObject);
+                    yield break;
+                case "[LicensesAndGarages]":
+                    yield return (VanillaAsset.LicensesAndGarages, gameObject);
+                    yield break;
+                case "[ItemDisablerGrid]":
+                    yield return (VanillaAsset.ItemDisablerGrid, gameObject);
+                    yield break;
+                case "[JobLogicController]":
+                    yield return (VanillaAsset.JobLogicController, gameObject);
+                    yield break;
+                case "[StorageLogic]":
+                    yield return (VanillaAsset.StorageLogic, gameObject);
+                    yield break;
+                case "[ShopLogic]":
+                    yield return (VanillaAsset.ShopLogic, gameObject);
+                    yield break;
+                case "[DerailAndDamageObserver]":
+                    yield return (VanillaAsset.DerailAndDamageObserver, gameObject);
+                    yield break;
+            }
+
             if (gameObject.name != "[origin shift content]")
                 yield break;
 

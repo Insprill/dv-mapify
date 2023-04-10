@@ -32,6 +32,14 @@ namespace Mapify.Editor
         RefillMachineWheelDamage,
         RefillMachineEngineDamage,
         ServiceStationMarkerOpen,
-        ServiceStationMarkerClosed
+        ServiceStationMarkerClosed,
+        RenderTextureSystem,
+        CarSpawner,
+        LicensesAndGarages,
+        ItemDisablerGrid,
+        JobLogicController,
+        StorageLogic,
+        ShopLogic,
+        DerailAndDamageObserver
     }
 }

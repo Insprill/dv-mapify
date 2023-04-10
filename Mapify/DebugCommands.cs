@@ -1,6 +1,8 @@
 using System;
 using System.Reflection;
 using CommandTerminal;
+using DV.Logic.Job;
+using HarmonyLib;
 using Mapify.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -109,5 +111,87 @@ namespace Mapify
             GameObject instantiated = GameObject.Instantiate(go);
             instantiated.transform.position = PlayerManager.PlayerTransform.position;
         }
+
+        #region we do a little trolling
+
+        [RegisterCommand("mapify.toggleSaving", Help = "Toggles saving", MaxArgCount = 1)]
+        private static void ToggleSaving(CommandArg[] args)
+        {
+            bool on = args.Length == 0 ? SingletonBehaviour<SaveGameManager>.Instance.disableAutosave : args[0].Bool;
+            SingletonBehaviour<SaveGameManager>.Instance.disableAutosave = !on;
+            Debug.Log($"{(on ? "Enabled" : "Disabled")} saving");
+        }
+
+        [RegisterCommand("mapify.damageCar", Help = "Damages a car", MaxArgCount = 1)]
+        private static void DamageCar(CommandArg[] args)
+        {
+            TrainCar trainCar = PlayerManager.Car;
+            if (trainCar == null)
+            {
+                Debug.LogError("You must be on a car to damage it!");
+                return;
+            }
+
+            float amount = args.Length == 0 ? float.MaxValue : args[0].Float;
+            if (amount < 0)
+                trainCar.CarDamage.RepairCar(amount);
+            else
+                trainCar.CarDamage.DamageCar(amount);
+        }
+
+        private static readonly MethodInfo CargoDamageModel_Method_ApplyDamageToCargo = AccessTools.DeclaredMethod(typeof(CargoDamageModel), "ApplyDamageToCargo", new[] { typeof(float) });
+
+        [RegisterCommand("mapify.damageCargo", Help = "Damages a car's cargo", MaxArgCount = 1)]
+        private static void DamageCargo(CommandArg[] args)
+        {
+            TrainCar trainCar = PlayerManager.Car;
+            if (trainCar == null)
+            {
+                Debug.LogError("You must be on a car to damage it's cargo!");
+                return;
+            }
+
+            CargoDamageModel_Method_ApplyDamageToCargo.Invoke(trainCar.CargoDamage, new object[] { args.Length == 0 ? float.MaxValue : args[0].Float });
+        }
+
+        [RegisterCommand("mapify.loadCar", Help = "Loads a car with the specified cargo", MinArgCount = 1, MaxArgCount = 2)]
+        private static void LoadCar(CommandArg[] args)
+        {
+            TrainCar trainCar = PlayerManager.Car;
+            if (trainCar == null)
+            {
+                Debug.LogError("You must be on a car to load it!");
+                return;
+            }
+
+            if (!Enum.TryParse(args[0].String, out CargoType cargoType))
+            {
+                Debug.LogError($"Failed to find cargo type {args[0].String}, Please choose from the following list: {string.Join(", ", Enum.GetNames(typeof(CargoType)))}");
+                return;
+            }
+
+            trainCar.logicCar.LoadCargo(args.Length == 1 ? trainCar.logicCar.capacity : args[1].Float, cargoType);
+        }
+
+        [RegisterCommand("mapify.unloadCar", Help = "Unloads a car", MinArgCount = 1, MaxArgCount = 2)]
+        private static void UnloadCar(CommandArg[] args)
+        {
+            TrainCar trainCar = PlayerManager.Car;
+            if (trainCar == null)
+            {
+                Debug.LogError("You must be on a car to unload it!");
+                return;
+            }
+
+            if (!Enum.TryParse(args[0].String, out CargoType cargoType))
+            {
+                Debug.LogError($"Failed to find cargo type {args[0].String}, Please choose from the following list: {string.Join(", ", Enum.GetNames(typeof(CargoType)))}");
+                return;
+            }
+
+            trainCar.logicCar.UnloadCargo(args.Length == 1 ? trainCar.logicCar.capacity : args[1].Float, cargoType);
+        }
+
+        #endregion
     }
 }

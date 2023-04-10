@@ -275,6 +275,7 @@ namespace Mapify.SceneInitializers
         private static void SetupPostProcessing()
         {
             GameObject obj = GameObject.Find("[GlobalPostProcessing]") ?? new GameObject("[GlobalPostProcessing]");
+            obj.layer = LayerMask.NameToLayer("PostProcessing");
             PostProcessVolume volume = obj.WithComponentT<PostProcessVolume>();
             volume.isGlobal = true;
             PostProcessProfile profile = volume.profile;

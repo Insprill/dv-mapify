@@ -201,9 +201,11 @@ namespace Mapify.SceneInitializers
 
         private static void SetupPitstops()
         {
-            ServiceStation[] pitstops = Object.FindObjectsOfType<ServiceStation>();
-            foreach (ServiceStation serviceStation in pitstops)
+            ServiceStation[] serviceStations = Object.FindObjectsOfType<ServiceStation>();
+            foreach (ServiceStation serviceStation in serviceStations)
             {
+                serviceStation.transform.SetParent(WorldMover.Instance.originShiftParent);
+
                 GameObject pitStopStationObject = AssetCopier.Instantiate(VanillaAsset.PitStopStation, active: false);
                 Transform serviceStationTransform = serviceStation.transform;
                 pitStopStationObject.transform.SetPositionAndRotation(serviceStationTransform.position, serviceStationTransform.rotation);

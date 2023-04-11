@@ -43,7 +43,7 @@ MonoBehaviour:
   m_Script: {fileID: 1182502943, guid: cdfb90765da3ff1eb9b3c19d18c93536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _curve: {fileID: 0}
+  _curve: {fileID: 8002581563509439319}
   handleStyle: 0
   _handle1: {x: 0, y: 0, z: -6}
   _handle2: {x: -0, y: -0, z: 6}
@@ -98,6 +98,7 @@ MonoBehaviour:
   yardId: 0
   trackId: 0
   trackType: 0
+  generateSigns: 0
 --- !u!114 &8002581563509439319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170,6 +171,7 @@ MonoBehaviour:
   yardId: 0
   trackId: 0
   trackType: 0
+  generateSigns: 0
 --- !u!114 &8002581563561950622
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -234,7 +236,7 @@ MonoBehaviour:
   m_Script: {fileID: 1182502943, guid: cdfb90765da3ff1eb9b3c19d18c93536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _curve: {fileID: 0}
+  _curve: {fileID: 8002581563509439319}
   handleStyle: 0
   _handle1: {x: 1.437454, y: 0, z: -10.80206}
   _handle2: {x: -1.437454, y: -0, z: 10.80206}
@@ -341,7 +343,7 @@ MonoBehaviour:
   m_Script: {fileID: 1182502943, guid: cdfb90765da3ff1eb9b3c19d18c93536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _curve: {fileID: 0}
+  _curve: {fileID: 8002581563561950622}
   handleStyle: 0
   _handle1: {x: 0, y: 0, z: -3}
   _handle2: {x: -0, y: -0, z: 3}
@@ -388,7 +390,7 @@ MonoBehaviour:
   m_Script: {fileID: 1182502943, guid: cdfb90765da3ff1eb9b3c19d18c93536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _curve: {fileID: 0}
+  _curve: {fileID: 8002581563561950622}
   handleStyle: 0
   _handle1: {x: 0, y: 0, z: -3}
   _handle2: {x: -0, y: -0, z: 3}

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using Mapify.Editor;
+using Mapify.Editor.Utils;
 using Mapify.Patches;
 using Mapify.SceneInitializers;
 using Mapify.Utils;
@@ -18,6 +19,8 @@ namespace Mapify
         private static AssetBundle assets;
         private static AssetBundle scenes;
 
+        private static int scenesToLoad;
+
         public static IEnumerator LoadMap()
         {
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
@@ -32,6 +35,21 @@ namespace Mapify
             wsi.Log("copying vanilla assets", 12);
             yield return null;
             MonoBehaviourPatch.DisableAll();
+
+            SceneManager.sceneLoaded += OnStreamerSceneLoaded;
+            Streamer streamer = wsi.transform.FindChildByName("[far]").GetComponent<Streamer>();
+            string[] names = streamer.sceneCollection.names;
+            scenesToLoad = names.Length;
+            foreach (string name in names)
+                SceneManager.LoadSceneAsync(name.Replace(".unity", ""), LoadSceneMode.Additive);
+
+            foreach (Streamer s in wsi.GetComponentsInChildren<Streamer>())
+                Object.Destroy(s);
+
+            while (scenesToLoad > 0)
+                yield return null;
+            SceneManager.sceneLoaded -= OnStreamerSceneLoaded;
+
             originalRailwayScenePath = wsi.railwayScenePath;
             SceneManager.LoadScene(originalRailwayScenePath, LoadSceneMode.Additive);
             originalGameContentScenePath = wsi.gameContentScenePath;
@@ -44,7 +62,6 @@ namespace Mapify
 
             // Set LevelInfo
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
-            // We need to update this so references to other assets aren't broken
             Main.LoadedMap = assets.LoadAllAssets<MapInfo>()[0];
             levelInfo.waterLevel = Main.LoadedMap.waterLevel;
             levelInfo.worldSize = Main.LoadedMap.worldSize;
@@ -57,10 +74,12 @@ namespace Mapify
 
             // Register loading finished hook to cleanup
             WorldStreamingInit.LoadingFinished += LoadingFinished;
+        }
 
-            // Destroy world streamers
-            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>())
-                Object.Destroy(streamer);
+        private static void OnStreamerSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            scenesToLoad--;
+            VanillaStreamerSceneInitializer.SceneLoaded(scene);
         }
 
         private static void OnSceneLoad(Scene scene, LoadSceneMode mode)
@@ -97,8 +116,12 @@ namespace Mapify
             }
         }
 
+
         private static void LoadingFinished()
         {
+            Main.Logger.Log("Destroying streamers");
+            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>())
+                Object.Destroy(streamer);
             Main.Logger.Log("Cleaning up unused assets");
             assets.Unload(false);
             scenes.Unload(false);

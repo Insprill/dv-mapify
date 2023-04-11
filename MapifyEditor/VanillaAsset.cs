@@ -40,6 +40,10 @@ namespace Mapify.Editor
         JobLogicController,
         StorageLogic,
         ShopLogic,
-        DerailAndDamageObserver
+        DerailAndDamageObserver,
+        TurntablePit,
+        TurntableTrack,
+        TurntableControlPanel,
+        TurntableRotateLayered,
     }
 }

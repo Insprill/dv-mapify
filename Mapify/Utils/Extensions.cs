@@ -105,6 +105,16 @@ namespace Mapify.Utils
 
         #endregion
 
+        #region Misc. Unity Types
+
+        public static Vector3 AddY(this Vector3 vec, float y)
+        {
+            vec.y += y;
+            return vec;
+        }
+
+        #endregion
+
         #region Mapify -> Vanilla Converters
 
         public static To ConvertByName<From, To>(this From cargo) where From : Enum where To : Enum

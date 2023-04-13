@@ -25,6 +25,13 @@ namespace Mapify.Editor.Validators
                 yield break;
             }
 
+            var duplicateTerrains = terrains.GroupBy(t => t.terrainData)
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g)
+                .ToArray();
+            foreach (Terrain terrain in duplicateTerrains)
+                yield return Result.Error($"Terrain {terrain.name} shares TerrainData {terrain.terrainData.name} with another Terrain!", terrain);
+
             GameObject[] allChildObjects = roots.SelectMany(go => go.GetComponentsInChildren<Transform>())
                 .Select(t => t.gameObject)
                 .ToArray();

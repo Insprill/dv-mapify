@@ -24,12 +24,32 @@ namespace Mapify
         public static IEnumerator LoadMap()
         {
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
-            wsi.Log($"loading map {Main.Settings.MapName}", 0);
+            string loadingMapLogMsg = $"loading map {Main.Settings.MapName}";
+            wsi.Log(loadingMapLogMsg, 0);
             yield return null;
 
             // Load asset bundles
-            assets = AssetBundle.LoadFromFile(Main.GetLoadedMapAssetPath("assets"));
-            scenes = AssetBundle.LoadFromFile(Main.GetLoadedMapAssetPath("scenes"));
+            AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Main.GetLoadedMapAssetPath("assets"));
+            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "assets";
+            do
+            {
+                wsi.Log(loadingMapLogMsg, Mathf.RoundToInt(assetsReq.progress * 100));
+                yield return null;
+            } while (!assetsReq.isDone);
+
+            assets = assetsReq.assetBundle;
+
+            AssetBundleCreateRequest scenesReq = AssetBundle.LoadFromFileAsync(Main.GetLoadedMapAssetPath("scenes"));
+            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "scenes";
+            do
+            {
+                wsi.Log(loadingMapLogMsg, Mathf.RoundToInt(scenesReq.progress * 100));
+                yield return null;
+            } while (!scenesReq.isDone);
+
+            scenes = scenesReq.assetBundle;
+
+            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = null;
 
             // Load scenes for us to steal assets from
             wsi.Log("copying vanilla assets", 12);

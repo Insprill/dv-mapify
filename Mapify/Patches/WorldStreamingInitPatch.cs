@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using UnityEngine;
@@ -61,6 +62,28 @@ namespace Mapify.Patches
                 }
 
             return codes.AsEnumerable();
+        }
+    }
+
+    [HarmonyPatch(typeof(WorldStreamingInit), "Info")]
+    public static class WorldStreamingInit_Info_Patch
+    {
+        private static readonly FieldInfo WorldStreamingInit_Field_logger = AccessTools.DeclaredField(typeof(WorldStreamingInit), "logger");
+        private static string lastMessage;
+
+        private static bool Prefix(WorldStreamingInit __instance, string msg, out bool __state)
+        {
+            Logger logger = (Logger)WorldStreamingInit_Field_logger.GetValue(__instance);
+            __state = logger.logEnabled;
+            logger.logEnabled = lastMessage != msg;
+            lastMessage = msg;
+            return true;
+        }
+
+        private static void Postfix(WorldStreamingInit __instance, bool __state)
+        {
+            Logger logger = (Logger)WorldStreamingInit_Field_logger.GetValue(__instance);
+            logger.logEnabled = __state;
         }
     }
 }

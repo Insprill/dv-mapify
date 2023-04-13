@@ -24,6 +24,7 @@
         <Reference Include="DV.Utils"/>
         <Reference Include="BezierCurves"/>
         <Reference Include="Unity.Postprocessing.Runtime"/>
+        <Reference Include="Unity.TextMeshPro"/>
         <Reference Include="UnityEngine"/>
         <Reference Include="UnityEngine.AssetBundleModule"/>
         <Reference Include="UnityEngine.CoreModule"/>

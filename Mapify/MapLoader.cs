@@ -56,9 +56,9 @@ namespace Mapify
             SceneManager.LoadScene(originalGameContentScenePath, LoadSceneMode.Additive);
 
             // Load our scenes, not the vanilla ones
-            wsi.terrainsScenePath = "Assets/Scenes/Terrain.unity";
-            wsi.railwayScenePath = "Assets/Scenes/Railway.unity";
-            wsi.gameContentScenePath = "Assets/Scenes/GameContent.unity";
+            wsi.terrainsScenePath = Scenes.TERRAIN;
+            wsi.railwayScenePath = Scenes.RAILWAY;
+            wsi.gameContentScenePath = Scenes.GAME_CONTENT;
 
             // Set LevelInfo
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;

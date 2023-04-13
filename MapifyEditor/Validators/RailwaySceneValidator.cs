@@ -168,7 +168,7 @@ namespace Mapify.Editor.Validators
 
         public override string GetScenePath()
         {
-            return "Assets/Scenes/Railway.unity";
+            return Scenes.RAILWAY;
         }
     }
 }

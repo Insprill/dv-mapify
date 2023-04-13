@@ -74,7 +74,7 @@ namespace Mapify.Editor.Validators
 
         public override string GetScenePath()
         {
-            return "Assets/Scenes/Terrain.unity";
+            return Scenes.TERRAIN;
         }
     }
 }

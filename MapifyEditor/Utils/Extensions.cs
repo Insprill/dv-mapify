@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace Mapify.Editor.Utils
@@ -86,6 +87,18 @@ namespace Mapify.Editor.Utils
             Transform[] children = new Transform[parent.childCount];
             for (int i = 0; i < parent.childCount; i++) children[i] = parent.GetChild(i);
             return children;
+        }
+
+        public static T RunInScene<T>(this string scenePath, Func<Scene, T> func)
+        {
+            Scene scene = SceneManager.GetSceneByPath(scenePath);
+            if (!scene.IsValid()) throw new ArgumentException($"Failed to find scene {scenePath}");
+            bool wasLoaded = scene.isLoaded;
+            if (!wasLoaded) EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
+            T result = func.Invoke(scene);
+            if (!wasLoaded)
+                SceneManager.UnloadSceneAsync(scene);
+            return result;
         }
 
         public static T RecordObjectChanges<T>(this IEnumerable<Object> objects, Func<T> func)

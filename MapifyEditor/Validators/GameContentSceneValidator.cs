@@ -113,7 +113,7 @@ namespace Mapify.Editor.Validators
 
         public override string GetScenePath()
         {
-            return "Assets/Scenes/GameContent.unity";
+            return Scenes.GAME_CONTENT;
         }
     }
 }

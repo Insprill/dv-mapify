@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using Mapify.Editor.Utils;
 using Mapify.Editor.Validators;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -132,7 +131,7 @@ namespace Mapify.Editor
                 }
             }
 
-            AssetBundleBuild[] builds = CreateBuilds();
+            AssetBundleBuild[] builds = Scenes.TERRAIN.RunInScene(CreateBuilds);
 
             Debug.Log("Building AssetBundles");
             BuildPipeline.BuildAssetBundles(exportFolderPath, builds, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
@@ -142,14 +141,9 @@ namespace Mapify.Editor
             }
         }
 
-        private static AssetBundleBuild[] CreateBuilds()
+        private static AssetBundleBuild[] CreateBuilds(Scene terrainScene)
         {
             Debug.Log("Gathering assets");
-            const string terrainScenePath = "Assets/Scenes/Terrain.unity";
-            Scene terrainScene = EditorSceneManager.GetSceneByPath(terrainScenePath);
-            bool isTerrainSceneLoaded = terrainScene.isLoaded;
-            if (!isTerrainSceneLoaded)
-                EditorSceneManager.OpenScene(terrainScenePath, OpenSceneMode.Additive);
 
             Terrain[] terrains = terrainScene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Terrain>()).Where(terrain => terrain.gameObject.activeInHierarchy).ToArray();
             Terrain[] sortedTerrain = terrains.OrderBy(go =>
@@ -188,9 +182,6 @@ namespace Mapify.Editor
                 assetBundleName = "scenes",
                 assetNames = scenePaths.ToArray()
             });
-
-            if (!isTerrainSceneLoaded)
-                EditorSceneManager.UnloadSceneAsync(terrainScenePath);
 
             return builds.ToArray();
         }

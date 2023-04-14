@@ -35,6 +35,12 @@ namespace Mapify.Editor
                 )
                 .ToDictionary(obj => obj, obj => obj.GetComponentsInChildren<Renderer>());
 
+            if (renderers.Count == 0)
+            {
+                EditorUtility.ClearProgressBar();
+                return new SceneSplitData();
+            }
+
             (float minX, float minZ, float maxX, float maxZ) = renderers.Values.SelectMany(r => r).GroupedBounds();
 
             int chunkSize = mapInfo.chunkSize;

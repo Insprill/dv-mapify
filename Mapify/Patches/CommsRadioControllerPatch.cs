@@ -6,7 +6,10 @@ using HarmonyLib;
 
 namespace Mapify.Patches
 {
-    // This is a temporary patch since the crew vehicle mode is broken
+    /// <summary>
+    ///     A temporary patch to remove the Crew Vehicle mode from the comms radio.
+    ///     Once garages are implemented, this will only have to be applied if the map doesn't have any.
+    /// </summary>
     [HarmonyPatch(typeof(CommsRadioController), "Awake")]
     public static class CommsRadioController_Awake_Patch
     {

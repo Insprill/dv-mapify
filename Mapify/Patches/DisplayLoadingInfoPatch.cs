@@ -4,6 +4,10 @@ using TMPro;
 
 namespace Mapify.Patches
 {
+    /// <summary>
+    ///     Signals that the loading screen is being shown, and loading can proceed.
+    /// </summary>
+    /// <seealso cref="WorldStreamingInit_Awake_Patch" />
     [HarmonyPatch(typeof(DisplayLoadingInfo), "Start")]
     public static class DisplayLoadingInfo_Start_Patch
     {
@@ -13,6 +17,12 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Part of dynamic loading percentages.
+    ///     Prevents the same message from being listed twice, while also allowing
+    ///     for something to be specified before the percentage.
+    /// </summary>
+    /// <seealso cref="WorldStreamingInit_Info_Patch" />
     [HarmonyPatch(typeof(DisplayLoadingInfo), "OnLoadingStatusChanged")]
     public static class DisplayLoadingInfo_OnLoadingStatusChanged_Patch
     {

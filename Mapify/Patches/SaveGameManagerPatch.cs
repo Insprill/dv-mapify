@@ -7,6 +7,10 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
+    /// <summary>
+    ///     Appends our map name to the default savegame name to keep them separate from vanilla.
+    /// </summary>
+    /// <seealso cref="SaveGameManager_MakeBackupFile_Patch" />
     [HarmonyPatch(typeof(SaveGameManager), nameof(SaveGameManager.GetSavePath))]
     public static class SaveGameManager_GetSavePath_Patch
     {
@@ -27,6 +31,10 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Fixes the backup file's for custom maps not being named separately from vanilla.
+    /// </summary>
+    /// <seealso cref="SaveGameManager_GetSavePath_Patch" />
     [HarmonyPatch(typeof(SaveGameManager), "MakeBackupFile")]
     public static class SaveGameManager_MakeBackupFile_Patch
     {
@@ -44,6 +52,9 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Skips the tutorial.
+    /// </summary>
     [HarmonyPatch(typeof(SaveGameManager), nameof(SaveGameManager.Load))]
     public static class SaveGameManager_Load_Postfix_Patch
     {

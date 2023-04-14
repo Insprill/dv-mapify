@@ -12,12 +12,21 @@ namespace Mapify.Editor
         public const float SNAP_RANGE = 1.0f;
         public const float SNAP_UPDATE_RANGE = 500f;
 
+        [Header("Visuals")]
+        [Tooltip("The age of the track. Older tracks are rougher and more rusted, newer tracks are smoother and cleaner")]
         public TrackAge age;
-        public string stationId;
-        public char yardId;
-        public byte trackId;
-        public TrackType trackType;
+        [Tooltip("Whether speed limit, grade, and marker signs should be generated. Shouldn't be set on yard tracks.")]
         public bool generateSigns;
+
+        [Header("Job Generation")]
+        [Tooltip("The ID of the station this track belongs to")]
+        public string stationId;
+        [Tooltip("The ID of the yard this track belongs to")]
+        public char yardId;
+        [Tooltip("The numerical ID of this track in it's respective yard")]
+        public byte trackId;
+        [Tooltip("The purpose of this track")]
+        public TrackType trackType;
 
         public bool isInSnapped { get; private set; }
         public bool isOutSnapped { get; private set; }

@@ -47,6 +47,10 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Fixes a NullReferenceException when the provided branch is null.
+    ///     This can happen when RailTrack#ConnectToClosestBranch fails to find a branch.
+    /// </summary>
     [HarmonyPatch(typeof(RailTrack), nameof(RailTrack.MovePointToBranchEnd))]
     public static class RailTrack_MovePointToBranchEnd_Patch
     {

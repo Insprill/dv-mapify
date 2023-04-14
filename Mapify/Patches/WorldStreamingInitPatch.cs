@@ -8,6 +8,11 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
+    /// <summary>
+    ///     Pauses loading our custom map, and the rest of the game, until it's ready.
+    /// </summary>
+    /// <seealso cref="DisplayLoadingInfo_Start_Patch" />
+    /// <seealso cref="MapLoader.LoadMap" />
     [HarmonyPatch(typeof(WorldStreamingInit), "Awake")]
     public static class WorldStreamingInit_Awake_Patch
     {
@@ -30,6 +35,13 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Sets custom loading percentages.
+    ///     This allows us to show our own during loading while keeping it in numerical order.
+    ///     <br />
+    ///     <br />
+    ///     Also prevents the the WorldStreamingInit's vegetationStudioPrefab from being added to the scene"/>
+    /// </summary>
     [HarmonyPatch(typeof(WorldStreamingInit), "LoadingRoutine", MethodType.Enumerator)]
     public static class WorldStreamingInit_LoadingRoutine_Patch
     {
@@ -65,6 +77,11 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Part of dynamic loading percentages.
+    ///     Prevents the same message from being logged to console twice.
+    /// </summary>
+    /// <seealso cref="DisplayLoadingInfo_OnLoadingStatusChanged_Patch" />
     [HarmonyPatch(typeof(WorldStreamingInit), "Info")]
     public static class WorldStreamingInit_Info_Patch
     {

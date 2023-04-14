@@ -16,6 +16,7 @@ namespace Mapify.Editor
             DIVERGING
         }
 
+        [Tooltip("Which side of the switch the stand will appear on")]
         public StandSide standSide;
 
         public Transform ThroughTrack => transform.Find("[track through]");

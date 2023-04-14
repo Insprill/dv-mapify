@@ -152,6 +152,7 @@ namespace Mapify.SceneInitializers
                     {
                         GameObject gameObject = stationObject.NewChild("LocomotiveSpawner");
                         StationLocoSpawner locoSpawner = gameObject.AddComponent<StationLocoSpawner>();
+                        locoSpawner.spawnRotationFlipped = locomotiveSpawner.flipOrientation;
                         locoSpawner.locoSpawnTrackName = locomotiveSpawner.Track.name;
                         locoSpawner.locoTypeGroupsToSpawn = locomotiveSpawner.condensedLocomotiveTypes
                             .Select(rollingStockTypes =>

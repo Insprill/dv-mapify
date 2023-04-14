@@ -7,6 +7,12 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
+    /// <summary>
+    ///     When initializing, the two default streamers ([near] and [far]) are hard referenced by name.
+    ///     If they aren't found, this warning message is printed, and a flag is set so ItemDisablerGrid#IsSceneAndTerrainLoaded always return true.
+    ///     This patch removes the warning message, and the other patch replaces the functionality of that method, using our own streamers.
+    /// </summary>
+    /// <seealso cref="ItemDisablerGrid_IsSceneAndTerrainLoaded_Patch" />
     [HarmonyPatch(typeof(ItemDisablerGrid), "Awake")]
     public class ItemDisablerGrid_Awake_Patch
     {
@@ -23,6 +29,10 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Replaces the functionality of ItemDisablerGrid#IsSceneAndTerrainLoaded to use our own streamers, ignoring the usesTerrainsAndStreamers flag.
+    /// </summary>
+    /// <seealso cref="ItemDisablerGrid_Awake_Patch" />
     [HarmonyPatch(typeof(ItemDisablerGrid), nameof(ItemDisablerGrid.IsSceneAndTerrainLoaded))]
     public class ItemDisablerGrid_IsSceneAndTerrainLoaded_Patch
     {

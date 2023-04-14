@@ -2,6 +2,8 @@ namespace Mapify.Editor
 {
     public enum VanillaAsset
     {
+        # region Stations
+
         CareerManager,
         JobValidator,
         TrashCan,
@@ -15,13 +17,24 @@ namespace Mapify.Editor
         StationOffice5,
         StationOffice6,
         StationOffice7,
+
+        # endregion
+
+        #region Trackage
+
         BufferStop,
         SwitchLeft,
         SwitchRight,
         SwitchLeftOuterSign,
         SwitchRightOuterSign,
+
+        #endregion
+
         Water,
         CashRegister,
+
+        #region Service Stations
+
         PitStopStation,
         RefillMachineFuel,
         RefillMachineSand,
@@ -33,6 +46,11 @@ namespace Mapify.Editor
         RefillMachineEngineDamage,
         ServiceStationMarkerOpen,
         ServiceStationMarkerClosed,
+
+        #endregion
+
+        #region Required Scene Components
+
         RenderTextureSystem,
         CarSpawner,
         LicensesAndGarages,
@@ -41,9 +59,16 @@ namespace Mapify.Editor
         StorageLogic,
         ShopLogic,
         DerailAndDamageObserver,
+
+        #endregion
+
+        #region Turntables
+
         TurntablePit,
         TurntableTrack,
         TurntableControlPanel,
         TurntableRotateLayered,
+
+        #endregion
     }
 }

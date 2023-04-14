@@ -7,14 +7,15 @@ namespace Mapify.Editor
     public class Station : MonoBehaviour
     {
         [Header("Station Info")]
+        [Tooltip("The display name of the station")]
         public string stationName;
-        [FormerlySerializedAs("yardID")]
-        [Tooltip("The 2-character ID of the station")]
+        [Tooltip("The 2-3 character ID of the station (e.g. HB for Harbor, SM for Steel Mill, etc)")]
         public string stationID;
+        [Tooltip("The color of the station shown on job booklets")]
         public Color color;
-        [Tooltip("The location where the player will be teleport to when fast travelling")]
+        [Tooltip("The location where the player will be teleported to when fast travelling")]
         public Transform teleportLocation;
-        [Tooltip("The rough center of the yard. Used at the reference point for generating jobs")]
+        [Tooltip("The rough center of the yard. Used at the reference point for generating jobs. Will use the station if unset")]
         public Transform yardCenter;
 
         [HideInInspector]

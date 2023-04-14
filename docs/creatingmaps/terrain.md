@@ -3,15 +3,16 @@
 Derail Valley makes use of terrain streaming to dynamically load in terrain that's around the player.
 Due to this, you have to follow some rules when making terrain.
 
-- Terrain can only go in the terrain scene.
+- Terrain can *only* go in the terrain scene.
+- All terrains must have unique TerrainData.
 - All terrains must use the same material.
 - All terrains must be the same size.
 - All terrains must be a square.
-- All terrains must have the same Pixel Error.
-- All terrains must have the same Basemap Distance.
-- All terrains must have the same Draw Instanced state.
+- All terrains must have the same Pixel Error*.
+- All terrains must have the same Basemap Distance*.
+- All terrains must have the same Draw Instanced state*.
 
-For the last three, if each piece of terrain has a different setting, only the setting from the first one will be used.
+&#42; If each piece of terrain has a different setting, only the setting from the first one in the hierarchy will be used.
 
 ## Terrain Size
 
@@ -20,4 +21,13 @@ You should try to keep each chunk of your terrain around the same size.
 
 ## Terrain Shape & Position
 
-Due to the way Derail Valley handles maps, your map ***must*** be a perfect square, with the bottom left corner at 0, 0.
+Due to the way Derail Valley handles maps, your map ***must*** be a perfect square, originating from 0, 0 expanding positively on the X and Z axis.
+
+## Streaming Settings
+
+You can customize how terrain is streamed in around the player in the "Terrain Streaming" section of the MapInfo asset.
+
+`Terrain Loading Ring Size` is the amount of terrain assets to load around the player.
+The value of this highly depends on the size of your terrain assets.
+The smaller each terrain piece, the larger this should be.
+

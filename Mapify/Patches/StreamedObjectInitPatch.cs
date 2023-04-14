@@ -5,8 +5,11 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
+    /// <summary>
+    ///     We can't reference the Streamer component from the editor module,
+    ///     so we instead patch this method and put the functionality here.
+    /// </summary>
     [HarmonyPatch(typeof(StreamedObjectInit), nameof(StreamedObjectInit.Start))]
-    // We can't reference the Streamer component from the editor module, so we have to patch this method.
     public static class StreamedObjectInitPatch
     {
         private static Streamer[] streamers;

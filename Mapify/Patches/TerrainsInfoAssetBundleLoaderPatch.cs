@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -11,6 +10,10 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
+    /// <summary>
+    ///     Prevents TerrainsInfoFromAssetBundle's constructor from trying to load vanilla's info AssetBundle.
+    /// </summary>
+    /// <seealso cref="TerrainsInfoAssetBundleLoader_Constructor_Patch" />
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), MethodType.Constructor, typeof(string), typeof(Func<IEnumerator, Coroutine>))]
     public static class TerrainsInfoAssetBundleLoader_Constructor_Transpiler
     {
@@ -30,6 +33,11 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Sets our own TerrainsInfoFromAssetBundle.
+    ///     We must create a new one since we transpiled out the original set in the constructor.
+    /// </summary>
+    /// <seealso cref="TerrainsInfoAssetBundleLoader_Constructor_Transpiler" />
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), MethodType.Constructor, typeof(string), typeof(Func<IEnumerator, Coroutine>))]
     public static class TerrainsInfoAssetBundleLoader_Constructor_Patch
     {
@@ -47,6 +55,9 @@ namespace Mapify.Patches
         }
     }
 
+    /// <summary>
+    ///     Redirects requests to load new terrain to our map installation location.
+    /// </summary>
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), "GetAssetBundleFilePath")]
     public static class TerrainsInfoAssetBundleLoader_GetAssetBundleFilePath_Patch
     {

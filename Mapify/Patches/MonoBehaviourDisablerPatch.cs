@@ -13,6 +13,10 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
+    /// <summary>
+    ///     A utility for disabling MonoBehaviours with setup logic in the GameContent scene.
+    ///     This allows us to load it to copy assets from, without worrying about invalid states being created.
+    /// </summary>
     public static class MonoBehaviourPatch
     {
         private static readonly Type[] disableTypes = {

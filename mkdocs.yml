@@ -39,8 +39,9 @@ nav:
   - Creating Maps:
         - Project Setup: creatingmaps/project-setup.md
         - Terrain: creatingmaps/terrain.md
+        - Decoration: creatingmaps/decoration.md
         - Railway: creatingmaps/railway.md
-        - Stations & Job Generation: creatingmaps/stations.md
+        - Job Generation: creatingmaps/jobs.md
         - Service Stations: creatingmaps/service-stations.md
         - Lighting & Post Processing: creatingmaps/lighting.md
         - Area Blockers: creatingmaps/area-blockers.md

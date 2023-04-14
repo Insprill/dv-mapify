@@ -2,6 +2,12 @@ using HarmonyLib;
 
 namespace Mapify.Patches
 {
+    /// <summary>
+    ///     Allows us to show any license when looking at a ZoneBlocker since
+    ///     vanilla hard-codes the strings for the military licenses and locomotives.
+    ///     This patch applies an offset to the license enum, making it greater than the InteractionInfoType, so we can decode it later.
+    /// </summary>
+    /// <seealso cref="InteractionTextControllerNonVr_GetText_Patch" />
     [HarmonyPatch(typeof(ZoneBlocker), nameof(ZoneBlocker.Hover))]
     public static class ZoneBlocker_Hover_Patch
     {

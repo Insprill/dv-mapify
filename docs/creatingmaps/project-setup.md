@@ -63,6 +63,17 @@ Mapify requires a bit of a unique scene setup to be compatible with Derail Valle
 In your project's `Scenes` folder, create four scenes named `Terrain`, `Railway`, `GameContent`, and `Streaming`.
 Each of these scenes have a very specific purpose, and you must respect what each scene is for.
 
+- `Terrain`  
+  The Terrain scene is strictly for holding terrain.
+- `Railway`  
+  The Railway scene is only for holding trackage.
+  This includes tracks, switches, turntable, and buffer stops.
+- `GameContent`  
+  The GameContent scene is for holding most functional objects.
+  This includes stations, lost & founds, dumpsters, service centers, lights, post processing, and area blockers.
+- `Streaming`
+  The Streaming scene is for holding visual-only objects that get streamed in around the player.
+
 You can view and edit all scenes at the same time by opening one, and dragging the others into the hierarchy.
 
 You can delete the default `SampleScene` scene.

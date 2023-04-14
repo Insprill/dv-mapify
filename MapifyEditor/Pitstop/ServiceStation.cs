@@ -12,7 +12,9 @@ namespace Mapify.Editor
         private const float REFILL_MACHINE_OFFSET = -0.34f;
         internal const string MANUAL_SERVICE_INDICATOR_NAME = "Manual Service Indicator";
 
+        [Tooltip("Which service marker should be used. Open has metal grates in the center, closed is solid concrete")]
         public ServiceMarkerType markerType;
+        [Tooltip("What all resources are available at this service station")]
         public ServiceResource[] resources;
 
         [Header("Editor Visualization")]

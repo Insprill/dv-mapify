@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mapify.Editor.Procedural;
 using Mapify.Editor.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -29,7 +30,7 @@ namespace Mapify.Editor.Validators
             if (sortedTerrain[0].transform.position.x != 0 || sortedTerrain[0].transform.position.z != 0)
                 yield return Result.Error("Terrain must start at 0, 0", sortedTerrain[0]);
 
-            var duplicateTerrains = terrains.GroupBy(t => t.terrainData)
+            Terrain[] duplicateTerrains = terrains.GroupBy(t => t.terrainData)
                 .Where(g => g.Count() > 1)
                 .SelectMany(g => g)
                 .ToArray();
@@ -76,6 +77,7 @@ namespace Mapify.Editor.Validators
                 mapInfo.terrainPixelError = terrains[0].heightmapPixelError;
                 mapInfo.terrainBasemapDistance = terrains[0].basemapDistance;
                 mapInfo.terrainDrawInstanced = terrains[0].drawInstanced;
+                MapRenderer.RenderMap(terrains, mapInfo);
             }
 
             foreach (Terrain terrain in terrains)

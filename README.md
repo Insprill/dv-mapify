@@ -83,7 +83,8 @@ A vague roadmap roughly in order of priority.
 - [x] License-based zone blocking
 - [ ] Garages
 - [x] Player homes
-- [ ] Custom map items
+- [x] Custom map items
+- [ ] Custom station schematic maps
 - [x] Terrain streaming
 - [x] World streaming
 - [ ] Custom skyboxes

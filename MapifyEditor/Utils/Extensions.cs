@@ -166,5 +166,24 @@ namespace Mapify.Editor.Utils
         {
             return new[] { curve[0], curve.Last() };
         }
+
+        public static Texture2D Resize(this Texture2D source, int width, int height, FilterMode filterMode)
+        {
+            RenderTexture rt = new RenderTexture(width, height, 0);
+            Graphics.Blit(source, rt, new Material(Shader.Find("Hidden/BlitCopy")));
+            RenderTexture.active = rt;
+
+            Texture2D result = new Texture2D(width, height) {
+                filterMode = filterMode,
+                wrapMode = TextureWrapMode.Clamp
+            };
+            result.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            result.Apply();
+
+            RenderTexture.active = null;
+            Object.DestroyImmediate(rt);
+
+            return result;
+        }
     }
 }

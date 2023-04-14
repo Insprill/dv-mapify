@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using CommandTerminal;
 using DV.Logic.Job;
+using DV.PointSet;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -113,6 +114,16 @@ namespace Mapify.Utils
             return vec;
         }
 
+        public static Vector2 Scale(this Vector2 vec, float minValue, float maxValue, float newMinValue, float newMaxValue)
+        {
+            return new Vector2(vec.x.ScaleNumber(minValue, maxValue, newMinValue, newMaxValue), vec.y.ScaleNumber(minValue, maxValue, newMinValue, newMaxValue));
+        }
+
+        public static Vector2 ToXZ(this Vector3 vec)
+        {
+            return new Vector2(vec.x, vec.z);
+        }
+
         #endregion
 
         #region Mapify -> Vanilla Converters
@@ -166,6 +177,13 @@ namespace Mapify.Utils
             return spacedStringBuilder.ToString();
         }
 
+        public static float ScaleNumber(this float value, float minValue, float maxValue, float newMinValue, float newMaxValue)
+        {
+            float percentage = (value - minValue) / (maxValue - minValue);
+            float newValue = (newMaxValue - newMinValue) * percentage + newMinValue;
+            return newValue;
+        }
+
         #endregion
 
         #region DV
@@ -181,10 +199,18 @@ namespace Mapify.Utils
             return 0;
         }
 
-
         public static void Log(this WorldStreamingInit wsi, string message, float percentLoaded)
         {
             WorldStreamingInit_Method_Info.Invoke(wsi, new object[] { message, percentLoaded });
+        }
+
+        public static IEnumerable<Vector2> GetCurvePositions(this RailTrack track, float resolution)
+        {
+            EquiPointSet pointSet = track.GetPointSet();
+            EquiPointSet simplified = EquiPointSet.ResampleEquidistant(pointSet, Mathf.Min(resolution, (float)pointSet.span / 3));
+
+            foreach (EquiPointSet.Point point in simplified.points)
+                yield return new Vector2((float)point.position.x, (float)point.position.z);
         }
 
         #endregion

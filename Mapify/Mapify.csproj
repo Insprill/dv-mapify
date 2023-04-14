@@ -23,11 +23,13 @@
         <Reference Include="DV.TerrainTools"/>
         <Reference Include="DV.Utils"/>
         <Reference Include="BezierCurves"/>
+        <Reference Include="net.smkd.vector3d"/>
         <Reference Include="Unity.Postprocessing.Runtime"/>
         <Reference Include="Unity.TextMeshPro"/>
         <Reference Include="UnityEngine"/>
         <Reference Include="UnityEngine.AssetBundleModule"/>
         <Reference Include="UnityEngine.CoreModule"/>
+        <Reference Include="UnityEngine.ImageConversionModule"/>
         <Reference Include="UnityEngine.IMGUIModule"/>
         <Reference Include="UnityEngine.JSONSerializeModule"/>
         <Reference Include="UnityEngine.PhysicsModule"/>

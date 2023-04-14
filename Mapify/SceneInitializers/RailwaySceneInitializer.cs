@@ -30,10 +30,24 @@ namespace Mapify.SceneInitializers
                     continue;
                 }
 
+                int age = 0;
+                switch (track.age)
+                {
+                    case TrackAge.New:
+                        age = 0;
+                        break;
+                    case TrackAge.Medium:
+                        age = 50;
+                        break;
+                    case TrackAge.Old:
+                        age = 100;
+                        break;
+                }
+
                 track.gameObject.SetActive(false);
                 RailTrack railTrack = track.gameObject.AddComponent<RailTrack>();
                 railTrack.dontChange = false;
-                railTrack.age = track.age;
+                railTrack.age = age;
                 railTrack.ApplyRailType();
             }
 

@@ -12,7 +12,7 @@ namespace Mapify.Editor
         public const float SNAP_RANGE = 1.0f;
         public const float SNAP_UPDATE_RANGE = 500f;
 
-        public float age;
+        public TrackAge age;
         public string stationId;
         public char yardId;
         public byte trackId;

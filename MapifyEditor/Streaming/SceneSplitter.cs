@@ -114,7 +114,7 @@ namespace Mapify.Editor
                 chunkScenes = null;
             }
 
-            if (deleteScenes)
+            if (deleteScenes && Directory.Exists(saveDir))
             {
                 Directory.Delete(saveDir, true);
                 File.Delete($"{saveDir}.meta");

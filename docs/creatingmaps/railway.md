@@ -9,7 +9,7 @@ This must be the only root object in that scene, and all tracks will go under it
 
 ## Creating Track
 
-All prefabs mentioned are located in the `Mapify/Prefabs` folder.
+All prefabs mentioned are located in the `Mapify/Prefabs/Trackage` folder.
 
 ### Basic Track
 The easiest way to create track is to use the `Track` prefab.

@@ -1,6 +1,6 @@
 # Service Stations
 
-Services stations can be created using the `Service Station` prefab in the `Mapify/Prefabs` folder.
+Services stations can be created using the `Service Station` prefab in the `Mapify/Prefabs/Service Station` folder.
 They must be located in the `GameContent` scene.
 
 ## Configuration

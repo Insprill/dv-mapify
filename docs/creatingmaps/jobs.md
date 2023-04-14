@@ -3,7 +3,7 @@
 ## Station Setup
 
 To get job generation working, you'll need to have at least two stations.
-Stations can be created using the prefabs in `Mapify/Prefabs`, or you can use your own.
+Stations can be created using the prefabs in `Mapify/Prefabs/Station`, or you can use your own.
 
 ### Input/Output Cargo Groups
 

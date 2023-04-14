@@ -1,0 +1,32 @@
+using System.Linq;
+using HarmonyLib;
+using Mapify.Editor;
+using UnityEngine;
+
+namespace Mapify.Patches
+{
+    [HarmonyPatch(typeof(StreamedObjectInit), nameof(StreamedObjectInit.Start))]
+    // We can't reference the Streamer component from the editor module, so we have to patch this method.
+    public static class StreamedObjectInitPatch
+    {
+        private static Streamer[] streamers;
+
+        private static void Postfix(StreamedObjectInit __instance)
+        {
+            if (streamers == null)
+                streamers = GameObject.FindGameObjectsWithTag(Streamer.STREAMERTAG)
+                    .Select(go => go.GetComponent<Streamer>())
+                    .Where(s => s != null)
+                    .ToArray();
+
+            Streamer streamer = streamers.FirstOrDefault(s => s.sceneCollection.names.Contains(__instance.sceneName));
+            if (streamer == null)
+            {
+                Main.Logger.Error($"Failed to find streamer for scene {__instance.sceneName}");
+                return;
+            }
+
+            streamer.AddSceneGO(__instance.sceneName, __instance.gameObject);
+        }
+    }
+}

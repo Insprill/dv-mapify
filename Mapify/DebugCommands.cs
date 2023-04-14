@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using CommandTerminal;
 using DV.Logic.Job;
@@ -94,6 +95,26 @@ namespace Mapify
                 str += $"+-- Yard ID: '{stationInfo.YardID}'\n";
                 str += $"+-- Color: '{ColorUtility.ToHtmlStringRGBA(stationInfo.StationColor)}'";
                 Debug.Log(str);
+            }
+        }
+
+        [RegisterCommand("mapify.streamerInfo", Help = "Prints information about all streamers", MaxArgCount = 0)]
+        private static void PrintStreamerInfo(CommandArg[] args)
+        {
+            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>())
+            {
+                Debug.Log($"--------------- {streamer.name} ---------------");
+                streamer.gameObject.PrintHierarchy();
+                Debug.Log("Scene GO's");
+                foreach (KeyValuePair<int[], SceneSplit> data in streamer.scenesArray)
+                {
+                    if (data.Value.sceneGo == null) continue;
+                    Debug.Log($"{data.Key[0]} {data.Key[1]} {data.Key[2]}");
+                    data.Value.sceneGo.PrintHierarchy();
+                }
+
+                Debug.Log("Scene Collection");
+                Debug.Log(JsonUtility.ToJson(streamer.sceneCollection, true));
             }
         }
 

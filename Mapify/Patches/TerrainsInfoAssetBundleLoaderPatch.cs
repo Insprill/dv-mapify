@@ -39,7 +39,7 @@ namespace Mapify.Patches
         {
             // Set our own terrain info
             TerrainsInfoFromAssetBundle bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
-            bundle.terrainSizeInWorld = SingletonBehaviour<LevelInfo>.Instance.worldSize;
+            bundle.terrainSizeInWorld = Main.LoadedMap.terrainSize;
             bundle.numberOfTerrains = Main.LoadedMap.terrainCount;
             bundle.hasMicroSplatDiffuse = false;
             bundle.hasMicroSplatNormal = false;

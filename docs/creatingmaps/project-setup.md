@@ -60,7 +60,7 @@ When you get the importing prompt, ***only*** select the `Editor` folder, and th
 ### Scenes
 Mapify requires a bit of a unique scene setup to be compatible with Derail Valley.
 
-In your project's `Scenes` folder, create three scenes named `Terrain`, `Railway`, and `GameContent`.
+In your project's `Scenes` folder, create four scenes named `Terrain`, `Railway`, `GameContent`, and `Streaming`.
 Each of these scenes have a very specific purpose, and you must respect what each scene is for.
 
 You can view and edit all scenes at the same time by opening one, and dragging the others into the hierarchy.

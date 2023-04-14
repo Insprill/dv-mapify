@@ -66,7 +66,7 @@ A vague roadmap roughly in order of priority.
 - [x] Road tracks
 - [x] Switches
 - [x] Buffer stops
-- [ ] Turntables
+- [x] Turntables
 - [ ] Stations
     - [x] Job generation
         - [x] Load/Unload machines
@@ -85,6 +85,7 @@ A vague roadmap roughly in order of priority.
 - [ ] Player homes
 - [ ] Custom map items
 - [x] Terrain streaming
+- [x] World streaming
 - [ ] Custom skyboxes
 - [x] Better savegame handling
 

@@ -41,6 +41,15 @@ namespace Mapify.Editor.Utils
             return Mathf.Max(maxX, maxZ);
         }
 
+        public static Terrain[] Sort(this Terrain[] terrains)
+        {
+            return terrains.OrderBy(go =>
+            {
+                Vector3 pos = go.transform.position;
+                return pos.z * terrains.Length + pos.x;
+            }).ToArray();
+        }
+
         public static T GetComponentInSelfOrParent<T>(this Component component)
         {
             return component.gameObject.GetComponentInSelfOrParent<T>();
@@ -50,6 +59,24 @@ namespace Mapify.Editor.Utils
         {
             T self = gameObject.GetComponent<T>();
             return self != null ? self : gameObject.GetComponentInParent<T>();
+        }
+
+        public static T[] GetFirstComponentInChildren<T>(this GameObject gameObject, bool includeInactive = false) where T : Component
+        {
+            return gameObject.GetComponentsInChildren<T>(includeInactive)
+                .GroupBy(c => c.gameObject)
+                .Select(g => g.First())
+                .ToArray();
+        }
+
+        public static (float, float, float, float) GroupedBounds(this IEnumerable<Renderer> renderers)
+        {
+            Bounds[] allBounds = renderers.Select(r => r.bounds).ToArray();
+            float minX = allBounds.Min(b => b.min.x);
+            float minZ = allBounds.Min(b => b.min.z);
+            float maxX = allBounds.Max(b => b.max.x);
+            float maxZ = allBounds.Max(b => b.max.z);
+            return (minX, minZ, maxX, maxZ);
         }
 
         public static Dictionary<Station, List<T>> MapToClosestStation<T>(this IEnumerable<T> arr) where T : Component
@@ -89,7 +116,16 @@ namespace Mapify.Editor.Utils
             return children;
         }
 
-        public static T RunInScene<T>(this string scenePath, Func<Scene, T> func)
+        public static void RunInScene(this string scenePath, Action<Scene> action)
+        {
+            RunInScene(scenePath, scene =>
+            {
+                action.Invoke(scene);
+                return true;
+            }, true);
+        }
+
+        public static T RunInScene<T>(this string scenePath, Func<Scene, T> func, T defaultValue = default)
         {
             Scene scene = SceneManager.GetSceneByPath(scenePath);
             if (!scene.IsValid()) throw new ArgumentException($"Failed to find scene {scenePath}");
@@ -98,7 +134,7 @@ namespace Mapify.Editor.Utils
             T result = func.Invoke(scene);
             if (!wasLoaded)
                 SceneManager.UnloadSceneAsync(scene);
-            return result;
+            return EqualityComparer<T>.Default.Equals(result, default) ? defaultValue : result;
         }
 
         public static T RecordObjectChanges<T>(this IEnumerable<Object> objects, Func<T> func)

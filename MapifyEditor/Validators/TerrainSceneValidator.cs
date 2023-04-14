@@ -25,6 +25,10 @@ namespace Mapify.Editor.Validators
                 yield break;
             }
 
+            Terrain[] sortedTerrain = terrains.Sort();
+            if (sortedTerrain[0].transform.position.x != 0 || sortedTerrain[0].transform.position.z != 0)
+                yield return Result.Error("Terrain must start at 0, 0", sortedTerrain[0]);
+
             var duplicateTerrains = terrains.GroupBy(t => t.terrainData)
                 .Where(g => g.Count() > 1)
                 .SelectMany(g => g)
@@ -64,6 +68,7 @@ namespace Mapify.Editor.Validators
             MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
             if (mapInfo != null)
             {
+                mapInfo.terrainSize = size;
                 mapInfo.terrainMaterial = m;
                 mapInfo.terrainHeight = terrains[0].transform.position.y;
                 mapInfo.terrainCount = terrains.Length;

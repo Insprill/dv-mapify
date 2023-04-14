@@ -14,7 +14,7 @@ namespace Mapify.Editor
 {
     public class ExportMap : EditorWindow
     {
-        private const string STEAM_MOD_PATH = "Steam/steamapps/common/Derail Valley/Mods/Mapify/Map";
+        private const string STEAM_MOD_PATH = "Steam/steamapps/common/Derail Valley/Mods/Mapify/Maps";
         private static ExportMap window;
         private static bool openFolderAfterExport;
 
@@ -131,26 +131,45 @@ namespace Mapify.Editor
                 }
             }
 
+            Debug.Log("Splitting streaming scene");
+            Scenes.STREAMING.RunInScene(SplitStreamingScene);
+
+            Debug.Log("Gathering assets");
             AssetBundleBuild[] builds = Scenes.TERRAIN.RunInScene(CreateBuilds);
 
             Debug.Log("Building AssetBundles");
-            BuildPipeline.BuildAssetBundles(exportFolderPath, builds, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
-            using (StreamWriter writer = File.CreateText(Path.Combine(exportFolderPath, "mapInfo.json")))
+            string mapInfoPath = Path.Combine(exportFolderPath, "mapInfo.json");
+
+            AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(exportFolderPath, builds, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
+
+            // Prevents the mod from loading an incomplete asset bundle
+            if (manifest == null)
             {
-                writer.Write(JsonUtility.ToJson(EditorAssets.FindAsset<MapInfo>()));
+                Debug.LogWarning("Build was canceled or failed!");
+                File.Delete(mapInfoPath);
             }
+            else
+            {
+                using (StreamWriter writer = File.CreateText(mapInfoPath))
+                {
+                    writer.Write(JsonUtility.ToJson(EditorAssets.FindAsset<MapInfo>()));
+                }
+            }
+
+            SceneSplitter.Cleanup();
+        }
+
+        private static void SplitStreamingScene(Scene scene)
+        {
+            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
+            SceneSplitData splitData = SceneSplitter.SplitScene(scene, Scenes.STREAMING_DIR, mapInfo);
+            mapInfo.sceneSplitData = JsonUtility.ToJson(splitData);
         }
 
         private static AssetBundleBuild[] CreateBuilds(Scene terrainScene)
         {
-            Debug.Log("Gathering assets");
-
             Terrain[] terrains = terrainScene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Terrain>()).Where(terrain => terrain.gameObject.activeInHierarchy).ToArray();
-            Terrain[] sortedTerrain = terrains.OrderBy(go =>
-            {
-                Vector3 pos = go.transform.position;
-                return pos.y * terrains.Length + pos.x;
-            }).ToArray();
+            Terrain[] sortedTerrain = terrains.Sort();
 
             List<AssetBundleBuild> builds = new List<AssetBundleBuild>(sortedTerrain.Length + 2);
             for (int i = 0; i < sortedTerrain.Length; i++)
@@ -160,19 +179,22 @@ namespace Mapify.Editor
                 });
 
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            // There should be 3 scenes for Terrain, Railway and Game Content.
-            const byte sceneCount = 3;
-            List<string> assetPaths = new List<string>(allAssetPaths.Length - sortedTerrain.Length - sceneCount);
-            List<string> scenePaths = new List<string>(sceneCount);
-            foreach (string assetPath in allAssetPaths)
+            List<string> assetPaths = new List<string>(allAssetPaths.Length - sortedTerrain.Length);
+            List<string> scenePaths = new List<string>();
+            for (int i = 0; i < allAssetPaths.Length; i++)
             {
+                string assetPath = allAssetPaths[i];
                 if (!assetPath.StartsWith("Assets/")) continue;
                 AssetImporter importer = AssetImporter.GetAtPath(assetPath);
                 if (importer == null || importer.GetType() == typeof(MonoImporter)) continue;
                 Object obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
                 if (obj is TerrainData) continue;
                 (obj is SceneAsset ? scenePaths : assetPaths).Add(assetPath);
+
+                EditorUtility.DisplayProgressBar("Mapify", "Gathering assets", i / (float)allAssetPaths.Length);
             }
+
+            EditorUtility.ClearProgressBar();
 
             builds.Add(new AssetBundleBuild {
                 assetBundleName = "assets",

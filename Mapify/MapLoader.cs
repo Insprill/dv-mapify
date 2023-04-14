@@ -82,24 +82,41 @@ namespace Mapify
 
             // Set LevelInfo
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
-            Main.LoadedMap = assets.LoadAllAssets<MapInfo>()[0];
-            levelInfo.waterLevel = Main.LoadedMap.waterLevel;
-            levelInfo.worldSize = Main.LoadedMap.worldSize;
+            MapInfo mapInfo = Main.LoadedMap = assets.LoadAllAssets<MapInfo>()[0];
+            levelInfo.waterLevel = mapInfo.waterLevel;
+            levelInfo.worldSize = mapInfo.worldSize;
             levelInfo.worldOffset = Vector3.zero;
-            levelInfo.defaultSpawnPosition = Main.LoadedMap.defaultSpawnPosition;
-            levelInfo.defaultSpawnRotation = Main.LoadedMap.defaultSpawnRotation;
+            levelInfo.defaultSpawnPosition = mapInfo.defaultSpawnPosition;
+            levelInfo.defaultSpawnRotation = mapInfo.defaultSpawnRotation;
+
+            SetupStreamer(wsi.gameObject, mapInfo);
 
             // Register scene loaded hook
             SceneManager.sceneLoaded += OnSceneLoad;
-
-            // Register loading finished hook to cleanup
-            WorldStreamingInit.LoadingFinished += LoadingFinished;
         }
 
         private static void OnStreamerSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             scenesToLoad--;
             VanillaStreamerSceneInitializer.SceneLoaded(scene);
+        }
+
+        private static void SetupStreamer(GameObject parent, MapInfo mapInfo)
+        {
+            GameObject streamerObj = parent.NewChild("Streamer");
+            streamerObj.tag = Streamer.STREAMERTAG;
+            streamerObj.SetActive(false);
+            Streamer streamer = streamerObj.AddComponent<Streamer>();
+            streamer.streamerActive = false;
+            ushort size = mapInfo.worldLoadingRingSize;
+            streamer.loadingRange = new Vector3(size, 0, size);
+            streamer.deloadingRange = new Vector3(size, 0, size);
+            streamer.destroyTileDelay = 1.3f;
+            streamer.sceneLoadWaitFrames = 1;
+            SceneCollection collection = streamerObj.AddComponent<SceneCollection>();
+            JsonUtility.FromJsonOverwrite(mapInfo.sceneSplitData, collection);
+            streamer.sceneCollection = collection;
+            streamerObj.SetActive(true);
         }
 
         private static void OnSceneLoad(Scene scene, LoadSceneMode mode)
@@ -134,17 +151,6 @@ namespace Mapify
                 foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
                     Main.Logger.Error($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
             }
-        }
-
-
-        private static void LoadingFinished()
-        {
-            Main.Logger.Log("Destroying streamers");
-            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>())
-                Object.Destroy(streamer);
-            Main.Logger.Log("Cleaning up unused assets");
-            assets.Unload(false);
-            scenes.Unload(false);
         }
     }
 }

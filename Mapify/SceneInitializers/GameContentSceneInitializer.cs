@@ -189,6 +189,7 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.StationOffice5:
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
+                    case VanillaAsset.PlayerHouse:
                         vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
                         break;
                 }

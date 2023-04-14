@@ -82,7 +82,7 @@ A vague roadmap roughly in order of priority.
     - [ ] Shops
 - [x] License-based zone blocking
 - [ ] Garages
-- [ ] Player homes
+- [x] Player homes
 - [ ] Custom map items
 - [x] Terrain streaming
 - [x] World streaming

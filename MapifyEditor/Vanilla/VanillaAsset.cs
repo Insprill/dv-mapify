@@ -70,5 +70,11 @@ namespace Mapify.Editor
         TurntableRotateLayered,
 
         #endregion
+
+        #region Misc
+
+        PlayerHouse,
+
+        #endregion
     }
 }

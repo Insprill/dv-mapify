@@ -67,7 +67,7 @@ A vague roadmap roughly in order of priority.
 - [x] Switches
 - [x] Buffer stops
 - [x] Turntables
-- [ ] Stations
+- [x] Stations
     - [x] Job generation
         - [x] Load/Unload machines
     - [x] Locomotive spawners

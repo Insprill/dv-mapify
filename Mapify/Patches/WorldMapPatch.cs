@@ -34,7 +34,7 @@ namespace Mapify.Patches
 
             float worldSize = Main.LoadedMap.worldSize;
 
-            IEnumerable<Vector2[]> points = Object.FindObjectsOfType<RailTrack>().Select(rt => rt.GetCurvePositions(TRACK_SAMPLE_RESOLUTION).ToArray());
+            IEnumerable<Vector2[]> points = RailTrackRegistry.AllTracks.Select(rt => rt.GetCurvePositions(TRACK_SAMPLE_RESOLUTION).ToArray());
             (Vector2, Vector2)[] pairs = points.SelectMany(trackPoints =>
                 Enumerable.Range(1, trackPoints.Length - 1)
                     .Select(i => (

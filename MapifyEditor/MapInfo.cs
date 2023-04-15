@@ -9,6 +9,7 @@ namespace Mapify.Editor
         [Tooltip("The display name of the map")]
         public string mapName = "My Custom Map";
         [Tooltip("The height at which water will appear")]
+        [Min(0)]
         public float waterLevel;
         [Tooltip("The player's initial spawn position")]
         public Vector3 defaultSpawnPosition;

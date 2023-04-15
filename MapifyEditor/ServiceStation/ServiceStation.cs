@@ -1,78 +1,49 @@
 using System.Collections;
 using System.Linq;
 using Mapify.Editor.Utils;
-using UnityEditor;
-using UnityEditor.Experimental.SceneManagement;
 using UnityEngine;
 
 namespace Mapify.Editor
 {
-    public class ServiceStation : MonoBehaviour
+    public class ServiceStation : VisualizableMonoBehaviour
     {
         private const float REFILL_MACHINE_OFFSET = -0.34f;
         internal const string MANUAL_SERVICE_INDICATOR_NAME = "Manual Service Indicator";
 
-        [Tooltip("Which service marker should be used. Open has metal grates in the center, closed is solid concrete")]
-        public ServiceMarkerType markerType;
+        [Header("Service Station")]
         [Tooltip("What all resources are available at this service station")]
         public ServiceResource[] resources;
-
-        [Header("Editor Visualization")]
-#pragma warning disable CS0649
-        [SerializeField]
-        private GameObject refillMachinePrefab;
-#pragma warning restore CS0649
+        [Tooltip("Which service marker should be used. Open has metal grates in the center, closed is solid concrete")]
+        public ServiceMarkerType markerType;
 
         public Transform ManualServiceIndicator => transform.FindChildByName(MANUAL_SERVICE_INDICATOR_NAME);
 
         private void OnValidate()
         {
-            if (PrefabStageUtility.GetCurrentPrefabStage() != null || EditorUtility.IsPersistent(gameObject) || refillMachinePrefab == null)
-                return;
-            StartCoroutine(UpdateVisualRefillMachines());
-            UpdateServiceStationMarker();
-        }
-
-        private IEnumerator UpdateVisualRefillMachines()
-        {
-            yield return null;
-            DestroyRefillMachines();
-
-            Transform reference = ManualServiceIndicator;
-            if (reference == null)
+            if (ManualServiceIndicator == null)
             {
                 Debug.LogError($"Failed to find child {MANUAL_SERVICE_INDICATOR_NAME}", this);
-                yield break;
+                return;
             }
 
-            for (int i = 0; i < resources.Length; i++)
-            {
-                GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(refillMachinePrefab);
-                PositionRefillMachine(reference, go.transform, i);
-                go.tag = "EditorOnly";
-            }
+            UpdateVisuals(resources, ManualServiceIndicator);
+            StartCoroutine(UpdateServiceStationMarker());
         }
 
-        private void DestroyRefillMachines()
+        private IEnumerator UpdateServiceStationMarker()
         {
-            foreach (Transform child in transform.GetChildren())
-                if (child.name == refillMachinePrefab.name)
-                    DestroyImmediate(child.gameObject);
-        }
-
-        private void UpdateServiceStationMarker()
-        {
+            yield return null;
             VanillaObject vanillaObject = GetComponentsInChildren<VanillaObject>().First(vo => vo.asset == VanillaAsset.ServiceStationMarkerOpen || vo.asset == VanillaAsset.ServiceStationMarkerClosed);
             if (vanillaObject == null)
             {
                 Debug.LogError($"Failed to find VanillaObject with a {VanillaAsset.ServiceStationMarkerOpen} or {VanillaAsset.ServiceStationMarkerClosed}!", this);
-                return;
+                yield break;
             }
 
             vanillaObject.asset = markerType.ToVanillaAsset();
         }
 
-        public void PositionRefillMachine(Transform reference, Transform toMove, int count)
+        public override void PositionThing(Transform reference, Transform toMove, int count)
         {
             toMove.SetParent(reference.parent);
             toMove.SetPositionAndRotation(reference.position, reference.rotation);

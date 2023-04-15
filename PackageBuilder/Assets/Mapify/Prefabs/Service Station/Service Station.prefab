@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6584377352624942544}
   - component: {fileID: 3957153289511670403}
   m_Layer: 0
-  m_Name: Pitstop
+  m_Name: Service Station
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,10 +47,10 @@ MonoBehaviour:
   m_Script: {fileID: 1105011188, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  markerType: 0
-  resources: 0000000001000000020000000300000004000000050000000600000007000000
-  refillMachinePrefab: {fileID: 1892469159478824445, guid: 7b55aea8105f1fb7f92134bef0f7796a,
+  visualPrefab: {fileID: 1892469159478824445, guid: 7b55aea8105f1fb7f92134bef0f7796a,
     type: 3}
+  resources: 0000000001000000020000000300000004000000050000000600000007000000
+  markerType: 0
 --- !u!114 &3957153289511670403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76,6 +76,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Pitstop Marker
+      objectReference: {fileID: 0}
+    - target: {fileID: 4738871985841206669, guid: 8f33f975dc124371da98ebff4b48554e,
+        type: 3}
+      propertyPath: asset
+      value: 29
       objectReference: {fileID: 0}
     - target: {fileID: 4738871985841206670, guid: 8f33f975dc124371da98ebff4b48554e,
         type: 3}

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using DV.Shops;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Mapify.SceneInitializers
 {
@@ -83,6 +85,29 @@ namespace Mapify.SceneInitializers
             yield return (VanillaAsset.ServiceStationMarkerOpen, refillStationParent.FindChildByName("ServiceStationMarker-open"));
             yield return (VanillaAsset.ServiceStationMarkerClosed, refillStationParent.FindChildByName("ServiceStationMarker-closed"));
             yield return (VanillaAsset.CashRegister, refillStationParent.FindChildByName("CashRegisterResourceModules"));
+
+            #endregion
+
+            #region Stores
+
+            GameObject shopsParent = gameObject.FindChildByName("Shops");
+
+            foreach (ScanItemResourceModule module in shopsParent.GetComponentsInChildren<ScanItemResourceModule>())
+            {
+                string itemName = module.sellingItemSpec.name.Replace("_", "");
+                if (itemName.StartsWith("Key")) continue;
+                if (VanillaAsset.TryParse($"StoreItem{itemName}", true, out VanillaAsset asset))
+                    yield return (asset, module.gameObject);
+                else
+                    Main.Logger.Error($"Failed to find VanillaAsset for {itemName}");
+            }
+
+            GameObject shop = shopsParent.FindChildByName("[ItemShop] Harbor");
+            foreach (ScanItemResourceModule module in shop.GetComponentsInChildren<ScanItemResourceModule>())
+                Object.Destroy(module.gameObject);
+            Object.Destroy(shop.FindChildByName("Stopwatch"));
+
+            yield return (VanillaAsset.Store, shop);
 
             #endregion
 

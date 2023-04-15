@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using DV.CashRegister;
 using DV.Logic.Job;
+using DV.Printers;
+using DV.Shops;
 using DV.Teleporters;
 using HarmonyLib;
 using Mapify.Editor;
@@ -19,6 +21,12 @@ namespace Mapify.SceneInitializers
 {
     public static class GameContentSceneInitializer
     {
+        #region Store Values
+
+        private const float STORE_Y_ROT_OFFSET = 90;
+
+        #endregion
+
         private static readonly FieldInfo StationController_Field_jobBookletSpawnSurface = AccessTools.DeclaredField(typeof(StationController), "jobBookletSpawnSurface");
         private static readonly MethodInfo LogicController_Method_GetContainerTypesThatStationUses = AccessTools.DeclaredMethod(
             typeof(LogicController),
@@ -33,6 +41,7 @@ namespace Mapify.SceneInitializers
             SetupVanillaAssets();
             SetupStations();
             SetupPitstops();
+            SetupStores();
             CreateWater();
             SetupPostProcessing();
             foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
@@ -47,9 +56,7 @@ namespace Mapify.SceneInitializers
             AssetCopier.Instantiate(VanillaAsset.ItemDisablerGrid, false);
             AssetCopier.Instantiate(VanillaAsset.JobLogicController, false);
             AssetCopier.Instantiate(VanillaAsset.StorageLogic, false);
-            GlobalShopController shopController = AssetCopier.Instantiate(VanillaAsset.ShopLogic, false).GetComponent<GlobalShopController>();
-            shopController.globalShopList = new List<Shop>();
-            shopController.shopItemsData = new List<ShopItemData>();
+            AssetCopier.Instantiate(VanillaAsset.ShopLogic, false, false);
             AssetCopier.Instantiate(VanillaAsset.DerailAndDamageObserver, false);
             // I'm not sure where vanilla creates this because it doesn't have auto create enabled.
             Main.Logger.Log("Creating YardTracksOrganizer");
@@ -225,7 +232,7 @@ namespace Mapify.SceneInitializers
                 {
                     ServiceResource resource = serviceStation.resources[i];
                     GameObject moduleObj = AssetCopier.Instantiate(resource.ToVanillaAsset());
-                    serviceStation.PositionRefillMachine(manualServiceIndicatorTransform, moduleObj.transform, i);
+                    serviceStation.PositionThing(manualServiceIndicatorTransform, moduleObj.transform, i);
                     LocoResourceModule resourceModule = moduleObj.GetComponentInChildren<LocoResourceModule>();
                     resourceModules.Add(resourceModule);
                 }
@@ -258,6 +265,54 @@ namespace Mapify.SceneInitializers
 
                 serviceStation.gameObject.Replace(pitStopStationObject).SetActive(true);
             }
+        }
+
+        private static void SetupStores()
+        {
+            GlobalShopController gsc = SingletonBehaviour<GlobalShopController>.Instance;
+            gsc.globalShopList = new List<Shop>();
+
+            foreach (Store store in Object.FindObjectsOfType<Store>())
+            {
+                store.transform.SetParent(WorldMover.Instance.originShiftParent);
+
+                Transform shopTransform = AssetCopier.Instantiate(VanillaAsset.Store).transform;
+
+                foreach (Transform child in store.cashRegister.GetChildren())
+                {
+                    Renderer r = child.GetComponent<Renderer>();
+                    if (r != null) Object.Destroy(r);
+                    child.SetParent(shopTransform, false);
+                }
+
+                store.itemSpawnReference.localPosition = store.itemSpawnReference.localPosition.SwapAndInvertXZ();
+
+                Transform meshTransform = AssetCopier.Instantiate(VanillaAsset.StoreMesh, active: false).transform;
+                shopTransform.SetParent(meshTransform, false);
+                shopTransform.localPosition += store.cashRegister.localPosition;
+                shopTransform.eulerAngles = shopTransform.eulerAngles.AddY(STORE_Y_ROT_OFFSET);
+
+                Shop shop = shopTransform.GetComponent<Shop>();
+                shop.itemSpawnTransform = store.itemSpawnReference;
+                gsc.globalShopList.Add(shop);
+
+                shop.scanItemResourceModules = new ScanItemResourceModule[store.itemTypes.Length];
+                for (int i = 0; i < store.itemTypes.Length; i++)
+                {
+                    Transform t = AssetCopier.Instantiate(store.itemTypes[i].ToVanillaAsset()).transform;
+                    t.SetParent(store.moduleReference, false);
+                    store.PositionThing(store.moduleReference, t, i);
+                    shop.scanItemResourceModules[i] = t.GetComponent<ScanItemResourceModule>();
+                }
+
+                CashRegisterResourceModules cashRegister = shopTransform.GetComponentInChildren<CashRegisterResourceModules>();
+                cashRegister.resourceMachines = shop.scanItemResourceModules.Cast<ResourceModule>().ToArray();
+                cashRegister.GetComponent<PrinterController>().spawnAnchor = store.itemSpawnReference;
+
+                store.gameObject.Replace(meshTransform.gameObject).SetActive(true);
+            }
+
+            gsc.gameObject.SetActive(true);
         }
 
         private static void SetupPostProcessing()

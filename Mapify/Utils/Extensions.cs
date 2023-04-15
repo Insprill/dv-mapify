@@ -124,6 +124,11 @@ namespace Mapify.Utils
             return new Vector2(vec.x, vec.z);
         }
 
+        public static Vector3 SwapAndInvertXZ(this Vector3 vec)
+        {
+            return new Vector3(-vec.z, vec.y, -vec.x);
+        }
+
         #endregion
 
         #region Mapify -> Vanilla Converters

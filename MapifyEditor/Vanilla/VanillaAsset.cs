@@ -76,5 +76,47 @@ namespace Mapify.Editor
         PlayerHouse,
 
         #endregion
+
+        #region Stores
+
+        Store,
+        StoreMesh,
+        StoreItemBoombox,
+        StoreItemCassetteAlbum01,
+        StoreItemCassetteAlbum02,
+        StoreItemCassetteAlbum03,
+        StoreItemCassetteAlbum04,
+        StoreItemCassetteAlbum05,
+        StoreItemCassetteAlbum06,
+        StoreItemCassetteAlbum07,
+        StoreItemCassetteAlbum08,
+        StoreItemCassetteAlbum09,
+        StoreItemCassetteAlbum10,
+        StoreItemCassetteAlbum11,
+        StoreItemCassetteAlbum12,
+        StoreItemCassetteAlbum13,
+        StoreItemCassetteAlbum14,
+        StoreItemCassetteAlbum15,
+        StoreItemCassetteAlbum16,
+        StoreItemCassettePlaylist01,
+        StoreItemCassettePlaylist02,
+        StoreItemCassettePlaylist03,
+        StoreItemCassettePlaylist04,
+        StoreItemCassettePlaylist05,
+        StoreItemCassettePlaylist06,
+        StoreItemCassettePlaylist07,
+        StoreItemCassettePlaylist08,
+        StoreItemCassettePlaylist09,
+        StoreItemCassettePlaylist10,
+        StoreItemExpertShovel,
+        StoreItemGoldenShovel,
+        StoreItemLighter,
+        StoreItemManualShunterBooklet,
+        StoreItemManualSteamBooklet,
+        StoreItemRemoteController,
+        StoreItemShovel,
+        StoreItemStopwatch
+
+        #endregion
     }
 }

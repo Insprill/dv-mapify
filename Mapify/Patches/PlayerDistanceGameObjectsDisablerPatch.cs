@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using UnityEngine;
 
 namespace Mapify.Patches
 {
@@ -10,9 +11,12 @@ namespace Mapify.Patches
     {
         private static bool Prefix(PlayerDistanceGameObjectsDisabler __instance)
         {
-            if (__instance.optimizingGameObjects != null)
-                return true;
             __instance.StopAllCoroutines();
+            if (__instance.optimizingGameObjects == null)
+                return false;
+            foreach (GameObject gameObject in __instance.optimizingGameObjects)
+                if (gameObject != null)
+                    gameObject.SetActive(true);
             return false;
         }
     }

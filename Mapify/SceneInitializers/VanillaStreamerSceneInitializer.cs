@@ -16,9 +16,17 @@ namespace Mapify.SceneInitializers
         {
             foreach (MeshFilter filter in gameObject.GetComponentsInChildren<MeshFilter>(true))
             {
-                if (filter.sharedMesh.name != "TurntablePit") continue;
-                yield return (VanillaAsset.TurntablePit, filter.transform.parent.gameObject);
-                break;
+                Mesh mesh = filter.sharedMesh;
+                if (mesh == null) continue;
+                switch (mesh.name)
+                {
+                    case "TurntablePit":
+                        yield return (VanillaAsset.TurntablePit, filter.transform.parent.gameObject);
+                        break;
+                    case "ItemShop":
+                        yield return (VanillaAsset.StoreMesh, filter.transform.parent.gameObject);
+                        break;
+                }
             }
         }
     }

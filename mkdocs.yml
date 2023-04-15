@@ -42,9 +42,10 @@ nav:
         - Decoration: creatingmaps/decoration.md
         - Railway: creatingmaps/railway.md
         - Job Generation: creatingmaps/jobs.md
-        - Service Stations: creatingmaps/service-stations.md
-        - Lighting & Post Processing: creatingmaps/lighting.md
         - Area Blockers: creatingmaps/area-blockers.md
+        - Service Stations: creatingmaps/service-stations.md
+        - Stores: creatingmaps/stores.md
+        - Lighting & Post Processing: creatingmaps/lighting.md
   - Contributing:
       - contributing/index.md
       - Building The Project: contributing/building.md

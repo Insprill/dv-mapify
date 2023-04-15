@@ -79,7 +79,7 @@ A vague roadmap roughly in order of priority.
         - [x] Dumpster
         - [x] Trash Can
         - [x] Teleport point
-    - [ ] Shops
+    - [x] Shops
 - [x] License-based zone blocking
 - [ ] Garages
 - [x] Player homes

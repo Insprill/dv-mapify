@@ -102,11 +102,12 @@ namespace Mapify.Editor.Utils
 
         public static Transform FindChildByName(this Transform parent, string name)
         {
-            Transform[] children = parent.GetComponentsInChildren<Transform>(true);
-            foreach (Transform child in children)
-                if (child.gameObject.name == name)
-                    return child;
-            return null;
+            return FindChildrenByName(parent, name).FirstOrDefault();
+        }
+
+        public static Transform[] FindChildrenByName(this Transform parent, string name)
+        {
+            return parent.GetComponentsInChildren<Transform>(true).Where(t => t.name == name).ToArray();
         }
 
         public static Transform[] GetChildren(this Transform parent)

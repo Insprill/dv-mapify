@@ -80,7 +80,8 @@ namespace Mapify
         [RegisterCommand("mapify.money", Help = "Sets the amount of money you have", MinArgCount = 0, MaxArgCount = 1)]
         private static void SetMoney(CommandArg[] args)
         {
-            SingletonBehaviour<Inventory>.Instance.SetMoney(args.Length == 0 ? double.MaxValue : args[0].Double());
+            // Money is saved as a float, not a double
+            SingletonBehaviour<Inventory>.Instance.SetMoney(args.Length == 0 ? float.MaxValue : args[0].Double());
         }
 
         [RegisterCommand("mapify.stationInfo", Help = "Prints information about all stations", MaxArgCount = 0)]

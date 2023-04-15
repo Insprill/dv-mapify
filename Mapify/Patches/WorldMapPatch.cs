@@ -11,8 +11,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(WorldMap), "Awake")]
     public static class WorldMap_Awake_Patch
     {
-        private const float TRACK_WIDTH = 4.0f;
-        private static readonly Color TRACK_COLOR = Color.black;
+        private const float TRACK_SAMPLE_RESOLUTION = 40f;
 
         private static bool modified;
 
@@ -35,14 +34,21 @@ namespace Mapify.Patches
 
             float worldSize = Main.LoadedMap.worldSize;
 
-            IEnumerable<Vector2[]> points = Object.FindObjectsOfType<RailTrack>().Select(rt => rt.GetCurvePositions(40f).ToArray());
-            foreach (Vector2[] trackPoints in points)
-                for (int i = 1; i < trackPoints.Length; i++)
-                {
-                    Vector2 startPoint = trackPoints[i - 1].Scale(0, worldSize, 0, textureSize[0]);
-                    Vector2 endPoint = trackPoints[i].Scale(0, worldSize, 0, textureSize[1]);
-                    drawer.DrawLineOnTexture(startPoint, endPoint, TRACK_WIDTH, TRACK_COLOR);
-                }
+            IEnumerable<Vector2[]> points = Object.FindObjectsOfType<RailTrack>().Select(rt => rt.GetCurvePositions(TRACK_SAMPLE_RESOLUTION).ToArray());
+            (Vector2, Vector2)[] pairs = points.SelectMany(trackPoints =>
+                Enumerable.Range(1, trackPoints.Length - 1)
+                    .Select(i => (
+                        trackPoints[i - 1].Scale(0, worldSize, 0, textureSize[0]),
+                        trackPoints[i].Scale(0, worldSize, 0, textureSize[1]))
+                    )
+            ).ToArray();
+
+            // The borders must be draw first, otherwise you'll see it dividing each segment of the rail
+            if (Main.LoadedMap.trackBorderWidth > 0)
+                foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
+                    drawer.DrawLineOnTexture(startPoint, endPoint, Main.LoadedMap.trackWidth + Main.LoadedMap.trackBorderWidth, Main.LoadedMap.trackBorderColor);
+            foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
+                drawer.DrawLineOnTexture(startPoint, endPoint, Main.LoadedMap.trackWidth, Main.LoadedMap.trackColor);
 
             drawer.Apply();
 
@@ -60,7 +66,7 @@ namespace Mapify.Patches
                 Object.DestroyImmediate(child.gameObject);
             }
 
-            foreach (StationController controller in Object.FindObjectsOfType<StationController>())
+            foreach (StationController controller in StationController.allStations)
             {
                 GameObject clone = Object.Instantiate(copy, names);
                 RectTransform rect = clone.GetComponent<RectTransform>();

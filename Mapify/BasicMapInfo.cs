@@ -1,6 +1,6 @@
 using System;
 
-namespace Mapify.Editor
+namespace Mapify
 {
     [Serializable]
     public class BasicMapInfo

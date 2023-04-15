@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Mapify.Editor.Utils;
 using UnityEngine;
 
-namespace Mapify.Editor.Procedural
+namespace Mapify.Editor
 {
     public static class MapRenderer
     {

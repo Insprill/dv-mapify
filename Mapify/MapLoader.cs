@@ -49,26 +49,30 @@ namespace Mapify
 
             scenes = scenesReq.assetBundle;
 
-            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = null;
 
             // Load scenes for us to steal assets from
-            wsi.Log("copying vanilla assets", 12);
-            yield return null;
             MonoBehaviourPatch.DisableAll();
 
             SceneManager.sceneLoaded += OnStreamerSceneLoaded;
             Streamer streamer = wsi.transform.FindChildByName("[far]").GetComponent<Streamer>();
             string[] names = streamer.sceneCollection.names;
             scenesToLoad = names.Length;
+            int totalScenesToLoad = scenesToLoad;
             foreach (string name in names)
                 SceneManager.LoadSceneAsync(name.Replace(".unity", ""), LoadSceneMode.Additive);
 
             foreach (Streamer s in wsi.GetComponentsInChildren<Streamer>())
                 Object.Destroy(s);
 
+            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "vanilla assets";
             while (scenesToLoad > 0)
+            {
+                wsi.Log(loadingMapLogMsg, Mathf.RoundToInt((totalScenesToLoad - (float)scenesToLoad) / totalScenesToLoad * 100));
                 yield return null;
+            }
+
             SceneManager.sceneLoaded -= OnStreamerSceneLoaded;
+            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = null;
 
             originalRailwayScenePath = wsi.railwayScenePath;
             SceneManager.LoadScene(originalRailwayScenePath, LoadSceneMode.Additive);

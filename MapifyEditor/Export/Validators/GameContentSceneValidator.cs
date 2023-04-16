@@ -28,6 +28,11 @@ namespace Mapify.Editor.Validators
             Track[] tracks = railwayScene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<Track>()).ToArray();
             foreach (Station station in roots.SelectMany(go => go.GetComponentsInChildren<Station>()))
             {
+                if (string.IsNullOrWhiteSpace(station.stationName))
+                    yield return Result.Error($"Station '{station.name}' must have a name", station);
+                if (string.IsNullOrWhiteSpace(station.stationID))
+                    yield return Result.Error($"Station '{station.name}' must have an ID", station);
+
                 // Tracks
                 station.storageTrackNames = new List<string>();
                 station.transferInTrackNames = new List<string>();

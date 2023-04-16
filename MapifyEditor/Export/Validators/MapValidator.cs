@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor.Utils;
 using Mapify.Editor.Validators;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,6 +20,9 @@ namespace Mapify.Editor
 
         public static IEnumerator<Result> Validate()
         {
+            Cleanup();
+            EditorUtility.DisplayProgressBar("Mapify", "Validating map", 0);
+
             validators = new Validator[] {
                 new ProjectValidator(),
                 new RailwaySceneValidator(),
@@ -26,11 +30,13 @@ namespace Mapify.Editor
                 new GameContentSceneValidator()
             };
 
-            sceneStates = new Dictionary<Scene, bool>(validators.Length);
+            int validatorCount = validators.Length;
+            sceneStates = new Dictionary<Scene, bool>(validatorCount);
 
             gameObjectsToUndo = new List<Object>();
-            foreach (Validator validator in validators)
+            for (int i = 0; i < validators.Length; i++)
             {
+                Validator validator = validators[i];
                 if (!(validator is SceneValidator sceneValidator)) continue;
                 string scenePath = sceneValidator.GetScenePath();
                 Scene scene = EditorSceneManager.GetSceneByPath(scenePath);
@@ -46,27 +52,35 @@ namespace Mapify.Editor
                 sceneStates.Add(scene, isSceneLoaded);
 
                 gameObjectsToUndo.AddRange(scene.GetRootGameObjects().SelectMany(x => x.GetComponentsInChildren<Component>(true)));
+                EditorUtility.DisplayProgressBar("Mapify", "Validating map", i / (validatorCount * 2f));
             }
 
             List<Result> results = gameObjectsToUndo.RecordObjectChanges(() =>
             {
                 List<Result> tmp = new List<Result>();
-                foreach (Validator validator in validators)
+                for (int i = 0; i < validators.Length; i++)
                 {
+                    Validator validator = validators[i];
                     List<Scene> scenes = sceneStates.Keys.ToList();
                     IEnumerator<Result> validation = validator.Validate(scenes);
                     while (validation.MoveNext()) tmp.Add(validation.Current);
+                    EditorUtility.DisplayProgressBar("Mapify", "Validating map", i / (float)validatorCount);
                 }
 
                 return tmp;
             });
 
             foreach (Result result in results)
-                yield return result;
+                if (result != null)
+                    yield return result;
+
+            EditorUtility.ClearProgressBar();
         }
 
         public static void Cleanup()
         {
+            if (gameObjectsToUndo == null)
+                return;
             gameObjectsToUndo.RecordObjectChanges<object>(() =>
             {
                 if (validators != null)
@@ -79,6 +93,7 @@ namespace Mapify.Editor
                             EditorSceneManager.UnloadSceneAsync(data.Key);
                 return null;
             });
+            gameObjectsToUndo = null;
         }
     }
 }

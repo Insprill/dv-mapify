@@ -1,115 +1,108 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Mapify.Editor.Utils;
-using Mapify.Editor.Validators;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using CompressionLevel = System.IO.Compression.CompressionLevel;
 using Object = UnityEngine.Object;
 
 namespace Mapify.Editor
 {
-    public class ExportMap : EditorWindow
+    public static class MapExporter
     {
-        private const string STEAM_MOD_PATH = "Steam/steamapps/common/Derail Valley/Mods/Mapify/Maps";
-        private static ExportMap window;
-        private static bool openFolderAfterExport;
+        private const string DEFAULT_MAPS_FOLDER_PATH = "/Steam/steamapps/common/Derail Valley/Mods/Mapify/Maps";
 
-        private List<Result> lastResults;
-        private bool cleanedUp;
-
-        private static string LastExportPath {
-            get => EditorPrefs.GetString("Mapify_LastExportPath");
-            set => EditorPrefs.SetString("Mapify_LastExportPath", value);
+        private static string LastReleaseExportPath {
+            get => EditorPrefs.GetString("Mapify.Export.Release.LastExportPath");
+            set => EditorPrefs.SetString("Mapify.Export.Release.LastExportPath", value);
         }
 
-        // Graphic design is my passion
-        private void OnGUI()
+        private static string LastDebugExportPath {
+            get => EditorPrefs.GetString("Mapify.Export.Debug.LastExportPath");
+            set => EditorPrefs.SetString("Mapify.Export.Debug.LastExportPath", value);
+        }
+
+        public static void OpenExportPrompt(bool releaseMode, bool openFolderAfterExport)
         {
-            if (lastResults.Count > 0)
+            string mapName = EditorAssets.FindAsset<MapInfo>()?.mapName;
+            if (releaseMode)
+                ExportRelease(mapName, openFolderAfterExport);
+            else
+                ExportDebug(mapName, openFolderAfterExport);
+        }
+
+        private static void ExportRelease(string mapName, bool openFolderAfterExport)
+        {
+            string startingPath;
+            string name;
+            if (!string.IsNullOrEmpty(LastReleaseExportPath) && Directory.GetParent(LastReleaseExportPath)?.Exists == true)
             {
-                GUIStyle style = new GUIStyle(GUI.skin.label) {
-                    richText = true
-                };
+                startingPath = Path.GetDirectoryName(LastReleaseExportPath);
+                name = Path.GetFileName(LastReleaseExportPath);
+            }
+            else
+            {
+                startingPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                name = $"{mapName}.zip";
+            }
 
-                GUILayout.Label("Your map has errors!");
-                GUILayout.Space(5);
-
-                GUILayout.BeginVertical();
-                foreach (Result result in lastResults)
-                {
-                    GUILayout.Label($"• <color=red>{result.message}</color>", style);
-                    GUILayout.Space(5);
-                }
-
-                GUILayout.EndVertical();
-                GUILayout.Label("Check console for more information.");
+            string exportFilePath = EditorUtility.SaveFilePanel("Export Map", startingPath, name, "zip");
+            if (string.IsNullOrWhiteSpace(exportFilePath))
                 return;
-            }
+            LastReleaseExportPath = exportFilePath;
 
-            GUILayout.Label("Your map is ready to export!");
+            string tmpFolder = Path.Combine(Path.GetTempPath(), mapName);
+            if (Directory.Exists(tmpFolder))
+                Directory.Delete(tmpFolder, true);
+            Directory.CreateDirectory(tmpFolder);
 
-            openFolderAfterExport = GUILayout.Toggle(openFolderAfterExport, "Open Folder After Export");
+            bool success = Export(tmpFolder, false);
 
-            if (GUILayout.Button("Export Map"))
+            if (success)
             {
-                string startingPath;
-                string folderName;
-
-                string lastExport = LastExportPath;
-                if (!string.IsNullOrEmpty(lastExport) && Directory.Exists(lastExport))
-                {
-                    startingPath = Path.GetDirectoryName(lastExport);
-                    folderName = Path.GetFileName(lastExport.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-                }
-                else
-                {
-                    startingPath = GetDefaultSavePath();
-                    folderName = EditorAssets.FindAsset<MapInfo>()?.mapName;
-                }
-
-                string exportFolderPath = EditorUtility.SaveFolderPanel("Export Map", startingPath, folderName);
-
-                if (!string.IsNullOrWhiteSpace(exportFolderPath))
-                {
-                    LastExportPath = exportFolderPath;
-
-                    Export(exportFolderPath);
-
-                    if (openFolderAfterExport)
-                        EditorUtility.RevealInFinder(exportFolderPath);
-
-                    Close();
-                    return;
-                }
+                EditorUtility.DisplayProgressBar("Mapify", "Creating zip file", 0);
+                ZipFile.CreateFromDirectory(tmpFolder, exportFilePath, CompressionLevel.NoCompression, true);
+                EditorUtility.ClearProgressBar();
+                if (openFolderAfterExport)
+                    EditorUtility.RevealInFinder(exportFilePath);
             }
 
-            if (GUILayout.Button("Close")) Close();
+            if (Directory.Exists(tmpFolder))
+                Directory.Delete(tmpFolder, true);
         }
 
-        [MenuItem("Mapify/Export Map")]
-        public static void ShowWindow()
+        private static void ExportDebug(string mapName, bool openFolderAfterExport)
         {
-            bool wasOpen = HasOpenInstances<ExportMap>();
-            window = GetWindow<ExportMap>();
-            window.Show();
-            if (wasOpen) return;
-            window.titleContent = new GUIContent("Export Map");
-            window.lastResults = MapValidator.Validate().ToList().Where(x => x != null).ToList();
-            foreach (Result result in window.lastResults) Debug.LogError(result.message, result.context);
+            string startingPath;
+            string name;
+            if (!string.IsNullOrEmpty(LastDebugExportPath) && Directory.Exists(LastDebugExportPath))
+            {
+                startingPath = Path.GetDirectoryName(LastDebugExportPath);
+                name = Path.GetFileName(LastDebugExportPath);
+            }
+            else
+            {
+                startingPath = GetMapsFolder();
+                name = mapName;
+            }
+
+            string exportFolderPath = EditorUtility.SaveFolderPanel("Export Map", startingPath, name);
+            if (string.IsNullOrWhiteSpace(exportFolderPath))
+                return;
+            LastDebugExportPath = exportFolderPath;
+
+            Export(exportFolderPath, true);
+
+            if (openFolderAfterExport)
+                EditorUtility.RevealInFinder(exportFolderPath);
         }
 
-        private void OnDestroy()
-        {
-            if (cleanedUp) return;
-            MapValidator.Cleanup();
-            cleanedUp = true;
-        }
-
-        private void Export(string exportFolderPath)
+        private static bool Export(string exportFolderPath, bool uncompressed)
         {
             DirectoryInfo directory = new DirectoryInfo(exportFolderPath);
 
@@ -127,7 +120,7 @@ namespace Mapify.Editor
                             file.Delete();
                         break;
                     case 1:
-                        return;
+                        return false;
                 }
             }
 
@@ -140,10 +133,13 @@ namespace Mapify.Editor
             Debug.Log("Building AssetBundles");
             string mapInfoPath = Path.Combine(exportFolderPath, "mapInfo.json");
 
-            AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(exportFolderPath, builds, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
+            AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(exportFolderPath, builds, uncompressed ? BuildAssetBundleOptions.UncompressedAssetBundle : BuildAssetBundleOptions.None,
+                BuildTarget.StandaloneWindows64);
+
+            bool success = manifest != null;
 
             // Prevents the mod from loading an incomplete asset bundle
-            if (manifest == null)
+            if (!success)
             {
                 Debug.LogWarning("Build was canceled or failed!");
                 File.Delete(mapInfoPath);
@@ -157,6 +153,8 @@ namespace Mapify.Editor
             }
 
             SceneSplitter.Cleanup();
+
+            return success;
         }
 
         private static void SplitStreamingScene(Scene scene)
@@ -208,15 +206,15 @@ namespace Mapify.Editor
             return builds.ToArray();
         }
 
-        private static string GetDefaultSavePath()
+        private static string GetMapsFolder()
         {
             // search for the user's DV install
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    return GetWindowsDefaultSavePath();
+                    return GetWindowsMapsFolder();
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    return GetLinuxDefaultSavePath();
+                    return GetLinuxMapsFolder();
             }
             catch (Exception e)
             {
@@ -227,25 +225,25 @@ namespace Mapify.Editor
             return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         }
 
-        private static string GetWindowsDefaultSavePath()
+        private static string GetWindowsMapsFolder()
         {
             foreach (DriveInfo drive in DriveInfo.GetDrives())
             {
                 string driveRoot = drive.RootDirectory.FullName;
-                string potentialPath = Path.Combine(driveRoot, "Program Files", STEAM_MOD_PATH);
+                string potentialPath = Path.Combine(driveRoot, "Program Files", DEFAULT_MAPS_FOLDER_PATH);
                 if (Directory.Exists(potentialPath)) return potentialPath;
 
-                potentialPath = Path.Combine(driveRoot, "Program Files (x86)", STEAM_MOD_PATH);
+                potentialPath = Path.Combine(driveRoot, "Program Files (x86)", DEFAULT_MAPS_FOLDER_PATH);
                 if (Directory.Exists(potentialPath)) return potentialPath;
             }
 
             return null;
         }
 
-        private static string GetLinuxDefaultSavePath()
+        private static string GetLinuxMapsFolder()
         {
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string potentialPath = Path.Combine(homePath, ".local", "share", STEAM_MOD_PATH);
+            string potentialPath = Path.Combine(homePath, ".local", "share", DEFAULT_MAPS_FOLDER_PATH);
             return Directory.Exists(potentialPath) ? potentialPath : null;
         }
     }

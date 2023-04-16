@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -42,8 +43,10 @@ namespace Mapify.Editor.Validators
             foreach (Track track in tracks)
             {
                 track.Snap();
-                if (track.IsSwitch)
+                if (track.IsSwitch || track.IsTurntable)
                     continue;
+                if (PrefabUtility.IsPartOfPrefabInstance(track))
+                    yield return Result.Warning("Track prefabs should be unpacked completely before being used", track);
                 switch (track.trackType)
                 {
                     case TrackType.Road:

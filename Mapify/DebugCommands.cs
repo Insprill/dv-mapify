@@ -84,41 +84,6 @@ namespace Mapify
             SingletonBehaviour<Inventory>.Instance.SetMoney(args.Length == 0 ? float.MaxValue : args[0].Double());
         }
 
-        [RegisterCommand("mapify.stationInfo", Help = "Prints information about all stations", MaxArgCount = 0)]
-        private static void PrintStationInfo(CommandArg[] args)
-        {
-            foreach (StationController station in Object.FindObjectsOfType<StationController>())
-            {
-                StationInfo stationInfo = station.stationInfo;
-                string str = "\n";
-                str += $"{stationInfo.Name}\n";
-                str += $"+-- Type: '{stationInfo.Type}'\n";
-                str += $"+-- Yard ID: '{stationInfo.YardID}'\n";
-                str += $"+-- Color: '{ColorUtility.ToHtmlStringRGBA(stationInfo.StationColor)}'";
-                Debug.Log(str);
-            }
-        }
-
-        [RegisterCommand("mapify.streamerInfo", Help = "Prints information about all streamers", MaxArgCount = 0)]
-        private static void PrintStreamerInfo(CommandArg[] args)
-        {
-            foreach (Streamer streamer in Object.FindObjectsOfType<Streamer>())
-            {
-                Debug.Log($"--------------- {streamer.name} ---------------");
-                streamer.gameObject.PrintHierarchy();
-                Debug.Log("Scene GO's");
-                foreach (KeyValuePair<int[], SceneSplit> data in streamer.scenesArray)
-                {
-                    if (data.Value.sceneGo == null) continue;
-                    Debug.Log($"{data.Key[0]} {data.Key[1]} {data.Key[2]}");
-                    data.Value.sceneGo.PrintHierarchy();
-                }
-
-                Debug.Log("Scene Collection");
-                Debug.Log(JsonUtility.ToJson(streamer.sceneCollection, true));
-            }
-        }
-
         [RegisterCommand("mapify.spawnItem", Help = "Spawns an item at your feet", MaxArgCount = 1)]
         private static void GiveItem(CommandArg[] args)
         {

@@ -24,6 +24,7 @@
         <Reference Include="DV.Utils"/>
         <Reference Include="BezierCurves"/>
         <Reference Include="net.smkd.vector3d"/>
+        <Reference Include="PassengerJobs"/>
         <Reference Include="Unity.Postprocessing.Runtime"/>
         <Reference Include="Unity.TextMeshPro"/>
         <Reference Include="UnityEngine"/>

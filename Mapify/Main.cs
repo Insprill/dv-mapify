@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using HarmonyLib;
 using Mapify.Editor;
+using Mapify.Patches.Mods;
 using UnityEngine;
 using UnityModManagerNet;
 
@@ -18,6 +19,9 @@ namespace Mapify
         public static UnityModManager.ModEntry.ModLogger Logger => ModEntry.Logger;
         public static Settings Settings { get; private set; }
         internal static Harmony Harmony { get; private set; }
+
+        public static readonly UnityModManager.ModEntry PassengerJobs = UnityModManager.FindMod("PassengerJobs");
+        public static bool IsPassengerJobsEnabled => PassengerJobs != null && PassengerJobs.Enabled;
 
         public static MapInfo LoadedMap;
         private static BasicMapInfo basicMapInfo;
@@ -43,6 +47,12 @@ namespace Mapify
                     Harmony = new Harmony(ModEntry.Info.Id);
                     Harmony.PatchAll();
                     Logger.Log("Successfully patched");
+                    if (IsPassengerJobsEnabled)
+                    {
+                        Logger.Log($"Found {PassengerJobs.Info.DisplayName}, patching...");
+                        PassengerJobsPatch.Patch(Harmony);
+                        Logger.Log("Successfully patched");
+                    }
                 }
                 else
                 {

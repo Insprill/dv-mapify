@@ -148,7 +148,9 @@ namespace Mapify.Editor
             {
                 using (StreamWriter writer = File.CreateText(mapInfoPath))
                 {
-                    writer.Write(JsonUtility.ToJson(EditorAssets.FindAsset<MapInfo>()));
+                    MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
+                    string version = File.ReadLines("Assets/Mapify/version.txt").First().Trim();
+                    writer.Write(JsonUtility.ToJson(new BasicMapInfo(mapInfo.mapName, version)));
                 }
             }
 

@@ -15,8 +15,6 @@ namespace Mapify.Editor
         public Color color;
         [Tooltip("The location where the player will be teleported to when fast travelling")]
         public Transform teleportLocation;
-        [Tooltip("The rough center of the yard. Used at the reference point for generating jobs. Will use the station if unset")]
-        public Transform yardCenter;
 
         [HideInInspector]
         public List<string> storageTrackNames;
@@ -28,6 +26,14 @@ namespace Mapify.Editor
         [Header("Jobs")]
         [Tooltip("The area where job booklets should spawn. Not required when using a vanilla station")]
         public BoxCollider bookletSpawnArea;
+        [Tooltip("The rough center of the yard. Used at the reference point for generating jobs. Will use the station if unset")]
+        public Transform yardCenter;
+        [Tooltip("The distance, in meters, the player has to be relative to the station for job overview booklets to generate")]
+        public float bookletGenerationDistance = 150;
+        [Tooltip("The distance, in meters, the player has to be relative to the yard center for jobs to generate")]
+        public float jobGenerationDistance = 500;
+        [Tooltip("The distance, in meters, the player has to be relative to the yard center for jobs to despawn")]
+        public float jobDestroyDistance = 600;
         [Range(1, 30)]
         public int jobsCapacity = 30;
         public int maxShuntingStorageTracks = 3;

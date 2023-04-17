@@ -36,6 +36,8 @@ namespace Mapify.SceneInitializers
 
         public static void SceneLoaded(Scene scene)
         {
+            foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
+                transform.SetParent(WorldMover.Instance.originShiftParent);
             SetupGameScene();
             SetupZoneBlockers();
             SetupVanillaAssets();
@@ -44,8 +46,6 @@ namespace Mapify.SceneInitializers
             SetupStores();
             CreateWater();
             SetupPostProcessing();
-            foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
-                transform.SetParent(WorldMover.Instance.originShiftParent);
         }
 
         private static void SetupGameScene()
@@ -216,8 +216,6 @@ namespace Mapify.SceneInitializers
             ServiceStation[] serviceStations = Object.FindObjectsOfType<ServiceStation>();
             foreach (ServiceStation serviceStation in serviceStations)
             {
-                serviceStation.transform.SetParent(WorldMover.Instance.originShiftParent);
-
                 GameObject pitStopStationObject = AssetCopier.Instantiate(VanillaAsset.PitStopStation, active: false);
                 Transform serviceStationTransform = serviceStation.transform;
                 pitStopStationObject.transform.SetPositionAndRotation(serviceStationTransform.position, serviceStationTransform.rotation);
@@ -277,8 +275,6 @@ namespace Mapify.SceneInitializers
 
             foreach (Store store in Object.FindObjectsOfType<Store>())
             {
-                store.transform.SetParent(WorldMover.Instance.originShiftParent);
-
                 Transform shopTransform = AssetCopier.Instantiate(VanillaAsset.Store).transform;
 
                 foreach (Transform child in store.cashRegister.GetChildren())

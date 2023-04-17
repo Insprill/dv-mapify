@@ -79,7 +79,6 @@ namespace Mapify.Editor.Validators
                 mapInfo.terrainPixelError = terrains[0].heightmapPixelError;
                 mapInfo.terrainBasemapDistance = terrains[0].basemapDistance;
                 mapInfo.terrainDrawInstanced = terrains[0].drawInstanced;
-                MapRenderer.RenderMap(terrains, mapInfo);
             }
 
             foreach (Terrain terrain in terrains)

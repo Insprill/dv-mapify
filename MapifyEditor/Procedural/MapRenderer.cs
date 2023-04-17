@@ -8,8 +8,9 @@ namespace Mapify.Editor
     {
         private const int TEXTURE_SIZE = 2048;
 
-        public static void RenderMap(Terrain[] terrains, MapInfo mapInfo)
+        public static void RenderMap(Terrain[] terrains)
         {
+            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
             Texture2D combinedHeightmap = CreateHeightmap(terrains, mapInfo);
             Texture2D scaledHeightmap = combinedHeightmap.Resize(TEXTURE_SIZE, TEXTURE_SIZE, FilterMode.Bilinear);
             mapInfo.mapTextureSerialized = scaledHeightmap.EncodeToJPG();

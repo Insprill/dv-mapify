@@ -169,6 +169,8 @@ namespace Mapify.Editor
             Terrain[] terrains = terrainScene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Terrain>()).Where(terrain => terrain.gameObject.activeInHierarchy).ToArray();
             Terrain[] sortedTerrain = terrains.Sort();
 
+            MapRenderer.RenderMap(sortedTerrain);
+
             List<AssetBundleBuild> builds = new List<AssetBundleBuild>(sortedTerrain.Length + 2);
             for (int i = 0; i < sortedTerrain.Length; i++)
                 builds.Add(new AssetBundleBuild {

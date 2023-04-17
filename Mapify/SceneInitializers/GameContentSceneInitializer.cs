@@ -296,6 +296,9 @@ namespace Mapify.SceneInitializers
                 shop.itemSpawnTransform = store.itemSpawnReference;
                 gsc.globalShopList.Add(shop);
 
+                PlayerDistanceMultipleGameObjectsOptimizer optimizer = shopTransform.GetComponent<PlayerDistanceMultipleGameObjectsOptimizer>();
+                optimizer.gameObjectsToDisable = new List<GameObject>();
+
                 shop.scanItemResourceModules = new ScanItemResourceModule[store.itemTypes.Length];
                 for (int i = 0; i < store.itemTypes.Length; i++)
                 {
@@ -303,11 +306,15 @@ namespace Mapify.SceneInitializers
                     t.SetParent(store.moduleReference, false);
                     store.PositionThing(store.moduleReference, t, i);
                     shop.scanItemResourceModules[i] = t.GetComponent<ScanItemResourceModule>();
+                    optimizer.gameObjectsToDisable.Add(t.gameObject);
                 }
 
                 CashRegisterResourceModules cashRegister = shopTransform.GetComponentInChildren<CashRegisterResourceModules>();
                 cashRegister.resourceMachines = shop.scanItemResourceModules.Cast<ResourceModule>().ToArray();
+                optimizer.gameObjectsToDisable.Add(cashRegister.gameObject);
                 cashRegister.GetComponent<PrinterController>().spawnAnchor = store.itemSpawnReference;
+
+                optimizer.gameObjectsToDisable.Add(shopTransform.FindChildByName("ScannerAnchor").gameObject);
 
                 store.gameObject.Replace(meshTransform.gameObject).SetActive(true);
             }

@@ -45,7 +45,9 @@ namespace Mapify.Patches
             typeof(CashRegisterResourceModules),
             typeof(GarageLogic),
             typeof(GarageCarSpawner),
-            typeof(ControlSpec)
+            typeof(ControlSpec),
+            typeof(PlayerDistanceMultipleGameObjectsOptimizer),
+            typeof(PlayerDistanceGameObjectsDisabler)
         };
         private static HashSet<MethodInfo> patchedMethods;
         private static readonly string[] methodNames = {

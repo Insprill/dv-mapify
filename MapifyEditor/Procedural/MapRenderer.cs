@@ -29,6 +29,7 @@ namespace Mapify.Editor
 
             int currentX = 0;
             int currentY = 0;
+            Color[] colors = new Color[terrainWidth * terrainWidth];
             for (int i = 0; i < terrainCount; i++)
             {
                 Terrain terrain = terrains[i];
@@ -45,8 +46,10 @@ namespace Mapify.Editor
                     Color color = worldHeight <= mapInfo.waterLevel
                         ? mapInfo.waterColor.Evaluate(worldHeight / mapInfo.waterLevel)
                         : mapInfo.terrainColor.Evaluate(worldHeight / (terrainY + terrainHeight));
-                    combinedTexture.SetPixel(currentX + x, currentY + y, color);
+                    colors[y * terrainWidth + x] = color;
                 }
+
+                combinedTexture.SetPixels(currentX, currentY, terrainWidth, terrainWidth, colors);
 
                 currentX += terrainWidth;
 

@@ -44,9 +44,9 @@ namespace Mapify.Patches
             ).ToArray();
 
             // The borders must be draw first, otherwise you'll see it dividing each segment of the rail
-            if (Main.LoadedMap.trackBorderWidth > 0)
+            if (Main.LoadedMap.trackBackgroundWidth > 0)
                 foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
-                    drawer.DrawLineOnTexture(startPoint, endPoint, Main.LoadedMap.trackWidth + Main.LoadedMap.trackBorderWidth, Main.LoadedMap.trackBorderColor);
+                    drawer.DrawLineOnTexture(startPoint + Main.LoadedMap.trackBackgroundOffset, endPoint + Main.LoadedMap.trackBackgroundOffset, Main.LoadedMap.trackWidth + Main.LoadedMap.trackBackgroundWidth, Main.LoadedMap.trackBackgroundColor);
             foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
                 drawer.DrawLineOnTexture(startPoint, endPoint, Main.LoadedMap.trackWidth, Main.LoadedMap.trackColor);
 

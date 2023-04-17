@@ -18,13 +18,15 @@ namespace Mapify.Editor
 
         [Header("Procedural Maps")]
         [Tooltip("How large tracks should be on the map")]
-        public float trackWidth = 4;
+        public float trackWidth = 5;
         [Tooltip("The color of tracks on the map")]
-        public Color trackColor;
+        public Color trackColor = new Color32(206, 195, 148, 255);
         [Tooltip("How large of a border tracks should have on the map")]
-        public float trackBorderWidth = 1;
+        public float trackBackgroundWidth = 17;
+        [Tooltip("How large of a border tracks should have on the map")]
+        public Vector2 trackBackgroundOffset = new Vector2(0, -4);
         [Tooltip("The color of track borders on the map")]
-        public Color trackBorderColor;
+        public Color trackBackgroundColor = new Color32(57, 48, 33, 255);
         [Tooltip("The color of water on the map. 0% represents the lowest your terrain can go, and 100% represents water level")]
         public Gradient waterColor;
         [Tooltip("The color of terrain on the map. 0% represents water level, and 100% represents the highest your terrain can go")]

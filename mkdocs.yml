@@ -46,6 +46,7 @@ nav:
         - Service Stations: creatingmaps/service-stations.md
         - Stores: creatingmaps/stores.md
         - Lighting & Post Processing: creatingmaps/lighting.md
+        - Updating Mapify: creatingmaps/updating.md
   - Contributing:
       - contributing/index.md
       - Building The Project: contributing/building.md

@@ -117,7 +117,6 @@ namespace Mapify.SceneInitializers
                 StationController_Field_jobBookletSpawnSurface.SetValue(stationController, jobBookletSpawnSurface);
 
                 // Job generation ranges
-                // todo: should these be customizable?
                 StationJobGenerationRange jobGenerationRange = stationObject.AddComponent<StationJobGenerationRange>();
                 jobGenerationRange.stationCenterAnchor = station.yardCenter != null ? station.yardCenter : station.transform;
                 jobGenerationRange.generateJobsSqrDistance = station.jobGenerationDistance * station.jobGenerationDistance;

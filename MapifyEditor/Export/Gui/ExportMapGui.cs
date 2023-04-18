@@ -8,7 +8,6 @@ namespace Mapify.Editor
         private const string WINDOW_TITLE = "Export Map";
 
         private static ExportMapGui window;
-        private static bool openFolderAfterExport;
 
         private bool validationRun;
         private bool validationPassed;
@@ -49,8 +48,6 @@ namespace Mapify.Editor
                 GUILayout.Label(validationPassed ? "<color=green>Your map is ready to export!</color>" : "<color=maroon>Validation failed! Please fix all errors before exporting.</color>", style);
             }
 
-            openFolderAfterExport = GUILayout.Toggle(openFolderAfterExport, "Open Folder After Export");
-
             GUI.enabled = validationPassed;
 
             if (GUILayout.Button("Export Map (Release)"))
@@ -60,7 +57,7 @@ namespace Mapify.Editor
                         "Proceed?",
                         "Yes",
                         "No"))
-                    MapExporter.OpenExportPrompt(true, openFolderAfterExport);
+                    MapExporter.OpenExportPrompt(true);
 
             if (GUILayout.Button("Export Map (Debug)"))
                 if (EditorUtility.DisplayDialog("Export Map",
@@ -70,8 +67,7 @@ namespace Mapify.Editor
                         "Proceed?",
                         "Yes",
                         "No"))
-                    MapExporter.OpenExportPrompt(false, openFolderAfterExport);
-
+                    MapExporter.OpenExportPrompt(false);
 
             GUI.enabled = true;
 

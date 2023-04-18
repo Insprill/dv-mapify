@@ -27,16 +27,16 @@ namespace Mapify.Editor
             set => EditorPrefs.SetString("Mapify.Export.Debug.LastExportPath", value);
         }
 
-        public static void OpenExportPrompt(bool releaseMode, bool openFolderAfterExport)
+        public static void OpenExportPrompt(bool releaseMode)
         {
             string mapName = EditorAssets.FindAsset<MapInfo>()?.mapName;
             if (releaseMode)
-                ExportRelease(mapName, openFolderAfterExport);
+                ExportRelease(mapName);
             else
-                ExportDebug(mapName, openFolderAfterExport);
+                ExportDebug(mapName);
         }
 
-        private static void ExportRelease(string mapName, bool openFolderAfterExport)
+        private static void ExportRelease(string mapName)
         {
             string startingPath;
             string name;
@@ -68,7 +68,7 @@ namespace Mapify.Editor
                 EditorUtility.DisplayProgressBar("Mapify", "Creating zip file", 0);
                 ZipFile.CreateFromDirectory(tmpFolder, exportFilePath, CompressionLevel.NoCompression, true);
                 EditorUtility.ClearProgressBar();
-                if (openFolderAfterExport)
+                if (EditorUtility.DisplayDialog("Mapify", "Export complete!", "Open Folder", "Ok"))
                     EditorUtility.RevealInFinder(exportFilePath);
             }
 
@@ -76,7 +76,7 @@ namespace Mapify.Editor
                 Directory.Delete(tmpFolder, true);
         }
 
-        private static void ExportDebug(string mapName, bool openFolderAfterExport)
+        private static void ExportDebug(string mapName)
         {
             string startingPath;
             string name;
@@ -96,9 +96,9 @@ namespace Mapify.Editor
                 return;
             LastDebugExportPath = exportFolderPath;
 
-            Export(exportFolderPath, true);
+            bool success = Export(exportFolderPath, true);
 
-            if (openFolderAfterExport)
+            if (success && EditorUtility.DisplayDialog("Mapify", "Export complete!", "Open Folder", "Ok"))
                 EditorUtility.RevealInFinder(exportFolderPath);
         }
 
@@ -193,7 +193,7 @@ namespace Mapify.Editor
                 if (obj is TerrainData) continue;
                 (obj is SceneAsset ? scenePaths : assetPaths).Add(assetPath);
 
-                EditorUtility.DisplayProgressBar("Mapify", "Gathering assets", i / (float)allAssetPaths.Length);
+                EditorUtility.DisplayProgressBar("Gathering assets", assetPath, i / (float)allAssetPaths.Length);
             }
 
             EditorUtility.ClearProgressBar();

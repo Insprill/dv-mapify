@@ -20,8 +20,13 @@ namespace Mapify.Patches
             UpdateStationNames(__instance.transform);
             if (modified) return;
             Material material = __instance.transform.FindChildByName("Map_LOD0").GetComponent<Renderer>().sharedMaterial;
-            material.mainTexture = DrawTracksOnMap();
+            Texture2D mapTexture = DrawTracksOnMap();
+            material.mainTexture = mapTexture;
             modified = true;
+
+            GameObject mapPoster = GameObject.Find("MapPoster");
+            if (mapPoster == null) return;
+            mapPoster.GetComponent<Renderer>().sharedMaterial.mainTexture = mapTexture;
         }
 
         private static Texture2D DrawTracksOnMap()
@@ -46,7 +51,12 @@ namespace Mapify.Patches
             // The borders must be draw first, otherwise you'll see it dividing each segment of the rail
             if (Main.LoadedMap.trackBackgroundWidth > 0)
                 foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
-                    drawer.DrawLineOnTexture(startPoint + Main.LoadedMap.trackBackgroundOffset, endPoint + Main.LoadedMap.trackBackgroundOffset, Main.LoadedMap.trackWidth + Main.LoadedMap.trackBackgroundWidth, Main.LoadedMap.trackBackgroundColor);
+                    drawer.DrawLineOnTexture(
+                        startPoint + Main.LoadedMap.trackBackgroundOffset,
+                        endPoint + Main.LoadedMap.trackBackgroundOffset,
+                        Main.LoadedMap.trackWidth + Main.LoadedMap.trackBackgroundWidth,
+                        Main.LoadedMap.trackBackgroundColor
+                    );
             foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
                 drawer.DrawLineOnTexture(startPoint, endPoint, Main.LoadedMap.trackWidth, Main.LoadedMap.trackColor);
 

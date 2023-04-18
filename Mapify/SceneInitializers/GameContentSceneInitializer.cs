@@ -275,6 +275,8 @@ namespace Mapify.SceneInitializers
             foreach (Store store in Object.FindObjectsOfType<Store>())
             {
                 Transform shopTransform = AssetCopier.Instantiate(VanillaAsset.Store).transform;
+                PlayerDistanceMultipleGameObjectsOptimizer optimizer = shopTransform.GetComponent<PlayerDistanceMultipleGameObjectsOptimizer>();
+                optimizer.gameObjectsToDisable = new List<GameObject>();
 
                 foreach (Transform child in store.cashRegister.GetChildren())
                 {
@@ -294,8 +296,6 @@ namespace Mapify.SceneInitializers
                 shop.itemSpawnTransform = store.itemSpawnReference;
                 gsc.globalShopList.Add(shop);
 
-                PlayerDistanceMultipleGameObjectsOptimizer optimizer = shopTransform.GetComponent<PlayerDistanceMultipleGameObjectsOptimizer>();
-                optimizer.gameObjectsToDisable = new List<GameObject>();
 
                 shop.scanItemResourceModules = new ScanItemResourceModule[store.itemTypes.Length];
                 for (int i = 0; i < store.itemTypes.Length; i++)

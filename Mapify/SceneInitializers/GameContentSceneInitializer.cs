@@ -191,6 +191,9 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.Dumpster:
                     case VanillaAsset.LostAndFoundShed:
                     case VanillaAsset.WarehouseMachine:
+                    case VanillaAsset.PlayerHouse:
+                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
+                        break;
                     case VanillaAsset.StationOffice1:
                     case VanillaAsset.StationOffice2:
                     case VanillaAsset.StationOffice3:
@@ -198,8 +201,10 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.StationOffice5:
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
-                    case VanillaAsset.PlayerHouse:
-                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
+                        GameObject go = vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
+                        Transform youAreHereFlag = go.transform.FindChildByName("youarehere_flag");
+                        if (youAreHereFlag != null)
+                            Object.Destroy(youAreHereFlag.gameObject);
                         break;
                 }
         }

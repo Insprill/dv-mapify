@@ -110,6 +110,17 @@ namespace Mapify
             GameObject streamerObj = parent.NewChild("Streamer");
             streamerObj.tag = Streamer.STREAMERTAG;
             streamerObj.SetActive(false);
+
+            SceneCollection collection = streamerObj.AddComponent<SceneCollection>();
+            JsonUtility.FromJsonOverwrite(mapInfo.sceneSplitData, collection);
+            if (collection.names.Length == 0)
+            {
+                // A streamer with no scenes will mark all positions as unloaded, and the game will get stuck on the loading screen.
+                Object.Destroy(streamerObj);
+                return;
+            }
+
+
             Streamer streamer = streamerObj.AddComponent<Streamer>();
             streamer.streamerActive = false;
             ushort size = mapInfo.worldLoadingRingSize;
@@ -117,8 +128,6 @@ namespace Mapify
             streamer.deloadingRange = new Vector3(size, 0, size);
             streamer.destroyTileDelay = 1.3f;
             streamer.sceneLoadWaitFrames = 1;
-            SceneCollection collection = streamerObj.AddComponent<SceneCollection>();
-            JsonUtility.FromJsonOverwrite(mapInfo.sceneSplitData, collection);
             streamer.sceneCollection = collection;
             streamerObj.SetActive(true);
         }

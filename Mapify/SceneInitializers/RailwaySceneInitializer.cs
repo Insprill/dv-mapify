@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using DV.Signs;
+using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Utils;
 using UnityEngine;
@@ -10,6 +12,8 @@ namespace Mapify.SceneInitializers
     public static class RailwaySceneInitializer
     {
         private const float TURNTABLE_HEIGHT_OFFSET = 2.5f;
+
+        private static readonly FieldInfo TurntableRailTrack_Field__track = AccessTools.DeclaredField(typeof(TurntableRailTrack), "_track");
 
         public static void SceneLoaded()
         {
@@ -118,6 +122,12 @@ namespace Mapify.SceneInitializers
             TurntableRailTrack[] turntableTracks = Object.FindObjectsOfType<TurntableRailTrack>();
             foreach (TurntableRailTrack track in turntableTracks)
             {
+                if (track.Track != null)
+                    Object.Destroy(track.Track);
+                RailTrack newTrack = track.gameObject.AddComponent<RailTrack>();
+                newTrack.generateMeshes = false;
+                newTrack.generateColliders = false;
+                TurntableRailTrack_Field__track.SetValue(track, newTrack);
                 track.uniqueID = $"{track.transform.position.GetHashCode()}";
                 track.trackEnds = track.FindTrackEnds();
             }

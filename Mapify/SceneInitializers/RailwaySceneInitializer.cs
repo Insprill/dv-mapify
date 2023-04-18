@@ -21,15 +21,9 @@ namespace Mapify.SceneInitializers
         {
             Main.Logger.Log("Creating RailTracks");
 
-            Track[] tracks = Object.FindObjectsOfType<Track>();
+            Track[] tracks = Object.FindObjectsOfType<Track>().Where(t => !t.IsSwitch && !t.IsTurntable).ToArray();
             foreach (Track track in tracks)
             {
-                if (track.IsTurntable)
-                {
-                    Object.DestroyImmediate(track);
-                    continue;
-                }
-
                 int age = 0;
                 switch (track.age)
                 {
@@ -50,8 +44,6 @@ namespace Mapify.SceneInitializers
                 railTrack.age = age;
                 railTrack.ApplyRailType();
             }
-
-            tracks = tracks.Where(t => t != null).ToArray();
 
             Main.Logger.Log("Creating Junctions");
             foreach (Switch sw in Object.FindObjectsOfType<Switch>())
@@ -79,7 +71,6 @@ namespace Mapify.SceneInitializers
         {
             Transform swTransform = sw.transform;
             VanillaAsset vanillaAsset = sw.GetComponent<VanillaObject>().asset;
-            bool isDivergingLeft = $"{vanillaAsset}".Contains("Left");
             GameObject prefabClone = AssetCopier.Instantiate(vanillaAsset, active: false);
             Transform prefabCloneTransform = prefabClone.transform;
             Transform inJunction = prefabCloneTransform.Find("in_junction");
@@ -87,30 +78,11 @@ namespace Mapify.SceneInitializers
             foreach (Transform child in prefabCloneTransform)
                 child.transform.position += offset;
             prefabCloneTransform.SetPositionAndRotation(swTransform.position, swTransform.rotation);
-            GameObject throughTrack = sw.ThroughTrack.gameObject;
-            GameObject divergingTrack = sw.DivergingTrack.gameObject;
-            throughTrack.transform.SetParent(prefabCloneTransform, false);
-            divergingTrack.transform.SetParent(prefabCloneTransform, false);
-            Junction junction = inJunction.gameObject.AddComponent<Junction>();
+            Junction junction = inJunction.gameObject.GetComponent<Junction>();
             junction.selectedBranch = 1;
-            prefabClone.GetComponentInChildren<VisualSwitch>().junction = junction;
-            RailTrack throughRailTrack = throughTrack.GetComponent<RailTrack>();
-            throughRailTrack.generateMeshes = false;
-            throughRailTrack.inJunction = junction;
-            throughRailTrack.overrideDefaultJointsSpan = true;
-            throughRailTrack.jointsSpan = 5.1f;
-            RailTrack divergingRailTrack = divergingTrack.GetComponent<RailTrack>();
-            divergingRailTrack.generateMeshes = false;
-            divergingRailTrack.inJunction = junction;
-            divergingRailTrack.overrideDefaultJointsSpan = true;
-            divergingRailTrack.jointsSpan = 5.1f;
-            junction.outBranches = new List<Junction.Branch>(2) {
-                new Junction.Branch(isDivergingLeft ? divergingRailTrack : throughRailTrack, true),
-                new Junction.Branch(isDivergingLeft ? throughRailTrack : divergingRailTrack, true)
-            };
+            foreach (Junction.Branch branch in junction.outBranches)
+                branch.track.generateColliders = true;
             prefabClone.SetActive(true);
-            throughRailTrack.gameObject.SetActive(true);
-            divergingRailTrack.gameObject.SetActive(true);
         }
 
         private static void ConnectTracks(IEnumerable<Track> tracks)

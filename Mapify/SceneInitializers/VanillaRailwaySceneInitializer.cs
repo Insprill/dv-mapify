@@ -41,29 +41,19 @@ namespace Mapify.SceneInitializers
                 switch (name)
                 {
                     case "junc-left":
-                        CleanupSwitch(child);
                         yield return (VanillaAsset.SwitchLeft, child);
                         continue;
                     case "junc-right":
-                        CleanupSwitch(child);
                         yield return (VanillaAsset.SwitchRight, child);
                         continue;
                     case "junc-left-outer-sign":
-                        CleanupSwitch(child);
                         yield return (VanillaAsset.SwitchLeftOuterSign, child);
                         continue;
                     case "junc-right-outer-sign":
-                        CleanupSwitch(child);
                         yield return (VanillaAsset.SwitchRightOuterSign, child);
                         continue;
                 }
             }
-        }
-
-        private static void CleanupSwitch(GameObject gameObject)
-        {
-            foreach (Junction junction in gameObject.GetComponentsInChildren<Junction>()) Object.Destroy(junction);
-            foreach (BezierCurve curve in gameObject.GetComponentsInChildren<BezierCurve>()) GameObject.Destroy(curve.gameObject);
         }
     }
 }

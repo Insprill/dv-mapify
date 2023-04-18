@@ -51,9 +51,9 @@ namespace Mapify.SceneInitializers
 
             #region Stations
 
-            yield return (VanillaAsset.CareerManager, gameObject.FindChildByName("CareerManager"));
-            yield return (VanillaAsset.JobValidator, gameObject.FindChildByName("JobValidator"));
-            yield return (VanillaAsset.TrashCan, gameObject.FindChildByName("JobTrashBin"));
+            yield return (VanillaAsset.CareerManager, GameObject.Instantiate(gameObject.FindChildByName("CareerManager")));
+            yield return (VanillaAsset.JobValidator, GameObject.Instantiate(gameObject.FindChildByName("JobValidator")));
+            yield return (VanillaAsset.TrashCan, GameObject.Instantiate(gameObject.FindChildByName("JobTrashBin")));
             yield return (VanillaAsset.Dumpster, gameObject.FindChildByName("ItemDumpster"));
             yield return (VanillaAsset.LostAndFoundShed, gameObject.FindChildByName("OldShed"));
             yield return (VanillaAsset.WarehouseMachine, gameObject.FindChildByName("WarehouseMachineHMB"));

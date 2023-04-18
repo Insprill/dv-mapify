@@ -93,15 +93,32 @@ namespace Mapify.Editor
             Vector3 pos = point.transform.position;
             Vector3 closestPos = Vector3.zero;
             float closestDist = float.MaxValue;
-            foreach (BezierPoint otherBp in snapPoints)
+
+            Collider[] colliders = new Collider[1];
+            // Turntables will search for track within 0.05m, so set it a little lower to be safe.
+            if (Physics.OverlapSphereNonAlloc(pos, 0.04f, colliders) != 0)
             {
-                if (otherBp.Curve() == point.Curve()) continue;
-                Vector3 otherPos = otherBp.transform.position;
-                float dist = Mathf.Abs(Vector3.Distance(otherPos, pos));
-                if (dist > SNAP_RANGE || dist >= closestDist) continue;
-                closestPos = otherPos;
-                closestDist = dist;
+                Collider collider = colliders[0];
+                Track track = collider.GetComponent<Track>();
+                if (collider is CapsuleCollider capsule && track != null && track.IsTurntable)
+                {
+                    Vector3 center = capsule.transform.TransformPoint(capsule.center);
+                    closestPos = pos + (Vector3.Distance(pos, center) - capsule.radius) * -(pos - center).normalized;
+                    closestPos.y = center.y;
+                    closestDist = Vector3.Distance(pos, closestPos);
+                }
             }
+
+            if (closestDist >= float.MaxValue)
+                foreach (BezierPoint otherBp in snapPoints)
+                {
+                    if (otherBp.Curve() == point.Curve()) continue;
+                    Vector3 otherPos = otherBp.transform.position;
+                    float dist = Mathf.Abs(Vector3.Distance(otherPos, pos));
+                    if (dist > SNAP_RANGE || dist >= closestDist) continue;
+                    closestPos = otherPos;
+                    closestDist = dist;
+                }
 
             if (closestDist >= float.MaxValue) return;
 

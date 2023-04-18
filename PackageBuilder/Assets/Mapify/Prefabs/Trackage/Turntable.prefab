@@ -118,7 +118,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1064339291531514542}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.6, z: -12.324}
+  m_LocalPosition: {x: 0, y: 2.75, z: -12.324}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7204868927935704082}
@@ -165,7 +165,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5971945600974469576}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.6, z: 12.324}
+  m_LocalPosition: {x: 0, y: 2.75, z: 12.324}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7204868927935704082}
@@ -339,6 +339,7 @@ GameObject:
   - component: {fileID: 4955977980161142000}
   - component: {fileID: 3220464524741620013}
   - component: {fileID: 3399244875753579229}
+  - component: {fileID: 2375173402292069618}
   - component: {fileID: 7204868927935704093}
   - component: {fileID: 7204868927935704092}
   m_Layer: 0
@@ -390,11 +391,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   age: 0
+  generateSigns: 0
   stationId: 
   yardId: 0
   trackId: 0
   trackType: 0
-  generateSigns: 0
 --- !u!114 &3399244875753579229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -416,6 +417,20 @@ MonoBehaviour:
   points:
   - {fileID: 3597698046191484099}
   - {fileID: 6112537684033130485}
+--- !u!136 &2375173402292069618
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7204868927935704081}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  m_Radius: 12.324
+  m_Height: 0
+  m_Direction: 1
+  m_Center: {x: 0, y: 2.75, z: 0}
 --- !u!33 &7204868927935704093
 MeshFilter:
   m_ObjectHideFlags: 0

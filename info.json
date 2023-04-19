@@ -6,6 +6,5 @@
   "EntryMethod": "Mapify.Main.Load",
   "LoadAfter": [
     "PassengerJobs"
-  ],
-  "ManagerVersion": "0.25.0"
+  ]
 }

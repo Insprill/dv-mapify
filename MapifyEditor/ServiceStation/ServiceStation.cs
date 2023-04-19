@@ -36,7 +36,7 @@ namespace Mapify.Editor
         private IEnumerator UpdateServiceStationMarker()
         {
             yield return null;
-            VanillaObject vanillaObject = GetComponentsInChildren<VanillaObject>().First(vo => vo.asset == VanillaAsset.ServiceStationMarkerOpen || vo.asset == VanillaAsset.ServiceStationMarkerClosed);
+            VanillaObject vanillaObject = GetComponentsInChildren<VanillaObject>().FirstOrDefault(vo => vo.asset == VanillaAsset.ServiceStationMarkerOpen || vo.asset == VanillaAsset.ServiceStationMarkerClosed);
             if (vanillaObject == null)
             {
                 Debug.LogError($"Failed to find VanillaObject with a {VanillaAsset.ServiceStationMarkerOpen} or {VanillaAsset.ServiceStationMarkerClosed}!", this);

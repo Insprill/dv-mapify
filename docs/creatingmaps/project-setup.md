@@ -47,14 +47,6 @@ Then, back in Unity, go to `Assets > Import Package > Custom Package` and select
 When the import prompt comes up, import everything.
 
 
-## Downloading Assets
-
-After importing the map creation package, you'll need to install the free [Bezier Curve Editor][bezier-curve-editor] asset from the Unity Asset Store.
-Once you add it to your library, you can click "Open in Unity" to install it.
-When you get the importing prompt, ***only*** select the `Editor` folder, and the two scripts inside it.
-
-![Bezier Curve Editor Import Prompt](../assets/bezier-import.png)
-
 ## Creating The Required Assets
 
 ### Scenes

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Mapify.Editor
 {
@@ -17,10 +16,13 @@ namespace Mapify.Editor
         public Transform teleportLocation;
 
         [HideInInspector]
+        [SerializeField]
         public List<string> storageTrackNames;
         [HideInInspector]
+        [SerializeField]
         public List<string> transferInTrackNames;
         [HideInInspector]
+        [SerializeField]
         public List<string> transferOutTrackNames;
 
         [Header("Jobs")]

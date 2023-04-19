@@ -117,42 +117,19 @@ namespace Mapify.Editor.Utils
             return children;
         }
 
-        public static void RunInScene(this string scenePath, Action<Scene> action)
-        {
-            RunInScene(scenePath, scene =>
-            {
-                action.Invoke(scene);
-                return true;
-            }, true);
-        }
-
-        public static T RunInScene<T>(this string scenePath, Func<Scene, T> func, T defaultValue = default)
-        {
-            Scene scene = SceneManager.GetSceneByPath(scenePath);
-            if (!scene.IsValid()) throw new ArgumentException($"Failed to find scene {scenePath}");
-            bool wasLoaded = scene.isLoaded;
-            if (!wasLoaded) EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
-            T result = func.Invoke(scene);
-            if (!wasLoaded)
-                SceneManager.UnloadSceneAsync(scene);
-            return EqualityComparer<T>.Default.Equals(result, default) ? defaultValue : result;
-        }
-
-        public static T RecordObjectChanges<T>(this IEnumerable<Object> objects, Func<T> func)
+        public static void RecordObjectChanges(this IEnumerable<Object> objects, Action func)
         {
             Object[] nonNullObjects = objects.Where(obj => obj != null).ToArray();
             Undo.IncrementCurrentGroup();
             Undo.RecordObjects(nonNullObjects, "Map Validation");
 
-            T result = func.Invoke();
+            func.Invoke();
 
             foreach (Object o in nonNullObjects.Where(PrefabUtility.IsPartOfPrefabInstance))
                 PrefabUtility.RecordPrefabInstancePropertyModifications(o);
 
             EditorSceneManager.SaveOpenScenes();
             Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
-
-            return result;
         }
 
         public static BezierCurve Curve(this BezierPoint point)
@@ -185,6 +162,21 @@ namespace Mapify.Editor.Utils
             Object.DestroyImmediate(rt);
 
             return result;
+        }
+
+        public static T[] GetAllComponents<T>(this Scene scene, bool includeInactive = false)
+        {
+            return scene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<T>(includeInactive)).ToArray();
+        }
+
+        public static GameObject[] GetAllGameObjects(this Scene scene)
+        {
+            return scene.GetAllComponents<Transform>().Select(t => t.gameObject).ToArray();
+        }
+
+        public static string PrettySceneName(this string sceneName)
+        {
+            return sceneName.Split('/').Last().Split('.').First();
         }
     }
 }

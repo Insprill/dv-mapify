@@ -7,6 +7,6 @@ namespace Mapify.Editor
         Tender = 21,
         LocoSteamHeavyBlue = 22,
         TenderBlue = 23,
-        LocoDiesel = 40,
+        LocoDiesel = 40
     }
 }

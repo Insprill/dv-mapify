@@ -51,6 +51,39 @@ namespace Mapify.Editor
         public bool IsSwitch => ParentSwitch != null;
         public bool IsTurntable => GetComponent<VanillaObject>()?.asset == VanillaAsset.TurntableTrack;
 
+        private void OnValidate()
+        {
+            if (IsSwitch || IsTurntable)
+                return;
+            switch (trackType)
+            {
+                case TrackType.Road:
+                    Curve.drawColor = new Color32(255, 255, 255, 255);
+                    break;
+                case TrackType.Storage:
+                    Curve.drawColor = new Color32(255, 127, 80, 255);
+                    break;
+                case TrackType.Loading:
+                    Curve.drawColor = new Color32(0, 0, 128, 255);
+                    break;
+                case TrackType.In:
+                    Curve.drawColor = new Color32(50, 240, 50, 255);
+                    break;
+                case TrackType.Out:
+                    Curve.drawColor = new Color32(106, 90, 205, 255);
+                    break;
+                case TrackType.Parking:
+                    Curve.drawColor = new Color32(200, 235, 0, 255);
+                    break;
+                case TrackType.PassengerStorage:
+                    Curve.drawColor = new Color32(0, 128, 128, 255);
+                    break;
+                case TrackType.PassengerLoading:
+                    Curve.drawColor = new Color32(0, 255, 255, 255);
+                    break;
+            }
+        }
+
         private void OnDrawGizmos()
         {
             if ((transform.position - Camera.current.transform.position).sqrMagnitude >= SNAP_UPDATE_RANGE * SNAP_UPDATE_RANGE)

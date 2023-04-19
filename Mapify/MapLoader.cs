@@ -143,7 +143,7 @@ namespace Mapify
             else if (scene.path == wsi.railwayScenePath)
             {
                 Main.Logger.Log($"Loaded railway scene at {wsi.railwayScenePath}");
-                RailwaySceneInitializer.SceneLoaded();
+                RailwaySceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == wsi.gameContentScenePath)
             {

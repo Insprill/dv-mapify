@@ -4,7 +4,7 @@ namespace Mapify.Editor.Validators
 {
     public class Result
     {
-        public ResultType type;
+        public readonly ResultType type;
         public readonly Object context;
         public readonly string message;
 

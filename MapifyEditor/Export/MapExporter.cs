@@ -4,8 +4,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Mapify.Editor.StateUpdaters;
 using Mapify.Editor.Utils;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
@@ -124,25 +126,25 @@ namespace Mapify.Editor
                 }
             }
 
-            Debug.Log("Splitting streaming scene");
-            Scenes.STREAMING.RunInScene(SplitStreamingScene);
+            BuildUpdater.Update();
 
-            Debug.Log("Gathering assets");
-            AssetBundleBuild[] builds = Scenes.TERRAIN.RunInScene(CreateBuilds);
+            AssetBundleBuild[] builds = CreateBuilds(EditorSceneManager.GetSceneByPath(Scenes.TERRAIN));
 
-            Debug.Log("Building AssetBundles");
-            string mapInfoPath = Path.Combine(exportFolderPath, "mapInfo.json");
-
-            AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(exportFolderPath, builds, uncompressed ? BuildAssetBundleOptions.UncompressedAssetBundle : BuildAssetBundleOptions.None,
-                BuildTarget.StandaloneWindows64);
-
+            AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(
+                exportFolderPath,
+                builds,
+                uncompressed ? BuildAssetBundleOptions.UncompressedAssetBundle : BuildAssetBundleOptions.None,
+                BuildTarget.StandaloneWindows64
+            );
             bool success = manifest != null;
 
-            // Prevents the mod from loading an incomplete asset bundle
+            BuildUpdater.Cleanup();
+
+            string mapInfoPath = Path.Combine(exportFolderPath, "mapInfo.json");
             if (!success)
             {
                 Debug.LogWarning("Build was canceled or failed!");
-                File.Delete(mapInfoPath);
+                File.Delete(mapInfoPath); // Prevents the mod from loading an incomplete asset bundle
             }
             else
             {
@@ -154,16 +156,7 @@ namespace Mapify.Editor
                 }
             }
 
-            SceneSplitter.Cleanup();
-
             return success;
-        }
-
-        private static void SplitStreamingScene(Scene scene)
-        {
-            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
-            SceneSplitData splitData = SceneSplitter.SplitScene(scene, Scenes.STREAMING_DIR, mapInfo);
-            mapInfo.sceneSplitData = JsonUtility.ToJson(splitData);
         }
 
         private static AssetBundleBuild[] CreateBuilds(Scene terrainScene)

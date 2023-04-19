@@ -4,16 +4,13 @@ Creating trackage may seem a little complicated at first, but you'll get used to
 
 ## The Railway Parent
 
-To begin, you must create an object called `[railway]` in the Railway scene.
-This must be the only root object in that scene, and all tracks will go under it.
-
 ## Creating Track
 
 All prefabs mentioned are located in the `Mapify/Prefabs/Trackage` folder.
 
 ### Basic Track
 The easiest way to create track is to use the `Track` prefab.
-Simply grab it and drag it into the scene under the `[railway]` object.
+Simply grab it and drag it into the scene.
 
 To avoid issues, it's best to unpack the Track prefab. This does not apply to other prefabs.
 You can unpack it by right-clicking on it in the scene hierarchy, and clicking "Unpack Prefab Completely".

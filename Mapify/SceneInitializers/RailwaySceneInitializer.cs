@@ -6,6 +6,7 @@ using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Mapify.SceneInitializers
 {
@@ -15,8 +16,11 @@ namespace Mapify.SceneInitializers
 
         private static readonly FieldInfo TurntableRailTrack_Field__track = AccessTools.DeclaredField(typeof(TurntableRailTrack), "_track");
 
-        public static void SceneLoaded()
+        public static void SceneLoaded(Scene scene)
         {
+            Transform railwayParent = WorldMover.Instance.NewChild("[railway]").transform;
+            foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
+                transform.SetParent(railwayParent);
             SetupRailTracks();
             CreateSigns();
         }

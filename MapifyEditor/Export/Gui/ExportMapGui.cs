@@ -23,11 +23,6 @@ namespace Mapify.Editor
             window.titleContent = new GUIContent(WINDOW_TITLE);
         }
 
-        private void OnDestroy()
-        {
-            MapValidator.Cleanup();
-        }
-
         private void OnGUI()
         {
             GUIStyle style = new GUIStyle(GUI.skin.label) {
@@ -43,34 +38,32 @@ namespace Mapify.Editor
                 validationPassed = MapValidationGui.OpenAndValidate();
             }
 
-            if (validationRun)
-            {
-                GUILayout.Label(validationPassed ? "<color=green>Your map is ready to export!</color>" : "<color=maroon>Validation failed! Please fix all errors before exporting.</color>", style);
-            }
+            if (validationRun) GUILayout.Label(validationPassed ? "<color=green>Your map is ready to export!</color>" : "<color=maroon>Validation failed! Please fix all errors before exporting.</color>", style);
 
             GUI.enabled = validationPassed;
+            EditorStyles.label.wordWrap = true;
 
+            GUILayout.Space(20);
+            EditorGUILayout.LabelField(
+                "Exporting a map in release mode creates a smaller file size, and zips it up for distribution. " +
+                "If you want to test your map locally, export it in debug mode. "
+            );
             if (GUILayout.Button("Export Map (Release)"))
-                if (EditorUtility.DisplayDialog("Export Map",
-                        "Exporting a map in release mode allows creates a smaller file size, and zips it up for distribution. " +
-                        "If you want to test your map locally, export it in debug mode. " +
-                        "Proceed?",
-                        "Yes",
-                        "No"))
-                    MapExporter.OpenExportPrompt(true);
+                MapExporter.OpenExportPrompt(true);
 
+            GUILayout.Space(10);
+            EditorGUILayout.LabelField(
+                "Exporting a map in debug mode is useful when testing your map locally. " +
+                "It will create uncompressed AssetBundles that are much larger, but build & load faster. " +
+                "If you're exporting your map to distribute to others, export it in release mode. "
+            );
             if (GUILayout.Button("Export Map (Debug)"))
-                if (EditorUtility.DisplayDialog("Export Map",
-                        "Exporting a map in debug mode is useful when testing your map locally. " +
-                        "It will create uncompressed AssetBundles that are much larger, but build & load faster. " +
-                        "If you're exporting your map to distribute to others, export it in release mode. " +
-                        "Proceed?",
-                        "Yes",
-                        "No"))
-                    MapExporter.OpenExportPrompt(false);
+                MapExporter.OpenExportPrompt(false);
 
             GUI.enabled = true;
 
+
+            GUILayout.FlexibleSpace();
             if (GUILayout.Button("Close"))
                 Close();
         }

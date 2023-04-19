@@ -5,6 +5,10 @@ To light your scene, you must add a single Directional Light to the `GameContent
 
 The light *must* be set to Realtime mode, but the rest of the settings are up to you to customize.
 
+If you want to use the default directional light so that it aligns with the skybox, you can use the `Directional Light` prefab in the `Mapify/Prefabs/Misc` folder.
+Once you've added it to the scene, ensure it's position is at 0, 0, 0 and leave the rotation as set by the prefab.
+
+
 ## Post Processing
 
 ### Importing The Package

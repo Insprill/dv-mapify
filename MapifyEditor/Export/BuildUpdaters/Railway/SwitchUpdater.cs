@@ -6,16 +6,16 @@ namespace Mapify.Editor.StateUpdaters
     {
         protected override void Update(Scenes scenes)
         {
-            foreach (Switch sw in scenes.gameContentScene.GetAllComponents<Switch>())
+            foreach (Switch sw in scenes.railwayScene.GetAllComponents<Switch>())
             {
                 VanillaObject vanillaObject = sw.GetComponent<VanillaObject>();
                 vanillaObject.asset = sw.DivergingTrack.GetComponent<BezierCurve>().Last().localPosition.x < 0
                     ? sw.standSide == Switch.StandSide.DIVERGING
-                        ? VanillaAsset.SwitchLeftOuterSign
-                        : VanillaAsset.SwitchLeft
+                        ? VanillaAsset.SwitchLeft
+                        : VanillaAsset.SwitchLeftOuterSign
                     : sw.standSide == Switch.StandSide.DIVERGING
-                        ? VanillaAsset.SwitchRightOuterSign
-                        : VanillaAsset.SwitchRight;
+                        ? VanillaAsset.SwitchRight
+                        : VanillaAsset.SwitchRightOuterSign;
             }
         }
     }

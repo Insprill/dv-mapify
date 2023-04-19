@@ -113,7 +113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 2
   resolution: 0.5
-  drawColor: {r: 1, g: 1, b: 1, a: 1}
+  drawColor: {r: 0.9019608, g: 0.4627451, b: 0.09019608, a: 1}
   _close: 0
   _mirror: 0
   _axis: 0
@@ -186,7 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 2
   resolution: 0.5
-  drawColor: {r: 1, g: 1, b: 1, a: 1}
+  drawColor: {r: 0, g: 0.58431375, b: 1, a: 1}
   _close: 0
   _mirror: 0
   _axis: 0

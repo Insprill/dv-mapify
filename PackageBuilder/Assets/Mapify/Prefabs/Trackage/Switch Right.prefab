@@ -7,6 +7,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 8002581563509439318, guid: 46194fd5210dd13018d0765833a8648a,
+        type: 3}
+      propertyPath: generateSigns
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8002581563570378884, guid: 46194fd5210dd13018d0765833a8648a,
         type: 3}
       propertyPath: _handle1.x

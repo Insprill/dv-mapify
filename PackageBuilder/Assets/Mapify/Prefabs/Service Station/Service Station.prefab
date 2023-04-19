@@ -77,11 +77,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Pitstop Marker
       objectReference: {fileID: 0}
-    - target: {fileID: 4738871985841206669, guid: 8f33f975dc124371da98ebff4b48554e,
-        type: 3}
-      propertyPath: asset
-      value: 29
-      objectReference: {fileID: 0}
     - target: {fileID: 4738871985841206670, guid: 8f33f975dc124371da98ebff4b48554e,
         type: 3}
       propertyPath: m_RootOrder

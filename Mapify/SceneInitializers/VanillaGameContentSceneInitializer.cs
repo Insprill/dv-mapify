@@ -49,6 +49,13 @@ namespace Mapify.SceneInitializers
             if (gameObject.name != "[origin shift content]")
                 yield break;
 
+            #region Misc
+
+            yield return (VanillaAsset.Water, gameObject.FindChildByName("water"));
+            yield return (VanillaAsset.PlayerHouse, gameObject.FindChildByName("PlayerHouse01"));
+
+            #endregion
+
             #region Stations
 
             yield return (VanillaAsset.CareerManager, GameObject.Instantiate(gameObject.FindChildByName("CareerManager")));
@@ -108,13 +115,6 @@ namespace Mapify.SceneInitializers
             Object.Destroy(shop.FindChildByName("Stopwatch"));
 
             yield return (VanillaAsset.Store, shop);
-
-            #endregion
-
-            #region Misc
-
-            yield return (VanillaAsset.Water, gameObject.FindChildByName("water"));
-            yield return (VanillaAsset.PlayerHouse, gameObject.FindChildByName("PlayerHouse01"));
 
             #endregion
         }

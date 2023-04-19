@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Script: {fileID: 1200406428, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: 13
+  asset: 30
 --- !u!114 &7635579125911502294
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,6 +91,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   referencePoint: {fileID: 3514755574652454948}
+  onlySnapToEnds: 1
 --- !u!33 &3686145638353369880
 MeshFilter:
   m_ObjectHideFlags: 0

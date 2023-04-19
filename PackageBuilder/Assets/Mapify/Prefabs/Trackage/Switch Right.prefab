@@ -80,7 +80,7 @@ PrefabInstance:
     - target: {fileID: 8002581563620581597, guid: 46194fd5210dd13018d0765833a8648a,
         type: 3}
       propertyPath: asset
-      value: 17
+      value: 34
       objectReference: {fileID: 0}
     - target: {fileID: 8002581563620581599, guid: 46194fd5210dd13018d0765833a8648a,
         type: 3}

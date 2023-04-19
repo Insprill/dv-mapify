@@ -2,120 +2,119 @@ namespace Mapify.Editor
 {
     public enum VanillaAsset
     {
+        #region Misc
+
+        PlayerHouse = 1,
+        Water = 2,
+        CashRegister = 3,
+
+        #endregion
+
         # region Stations
 
-        CareerManager,
-        JobValidator,
-        TrashCan,
-        Dumpster,
-        LostAndFoundShed,
-        WarehouseMachine,
-        StationOffice1,
-        StationOffice2,
-        StationOffice3,
-        StationOffice4,
-        StationOffice5,
-        StationOffice6,
-        StationOffice7,
+        CareerManager = 10,
+        JobValidator = 11,
+        TrashCan = 12,
+        Dumpster = 13,
+        LostAndFoundShed = 14,
+        WarehouseMachine = 15,
+        StationOffice1 = 16,
+        StationOffice2 = 17,
+        StationOffice3 = 18,
+        StationOffice4 = 19,
+        StationOffice5 = 20,
+        StationOffice6 = 21,
+        StationOffice7 = 22,
 
         # endregion
 
         #region Trackage
 
-        BufferStop,
-        SwitchLeft,
-        SwitchRight,
-        SwitchLeftOuterSign,
-        SwitchRightOuterSign,
+        BufferStop = 30,
+        SwitchLeft = 31,
+        SwitchRight = 32,
+        SwitchLeftOuterSign = 33,
+        SwitchRightOuterSign = 34,
 
         #endregion
 
-        Water,
-        CashRegister,
-
         #region Service Stations
 
-        PitStopStation,
-        RefillMachineFuel,
-        RefillMachineSand,
-        RefillMachineOil,
-        RefillMachineWater,
-        RefillMachineCoal,
-        RefillMachineCarDamage,
-        RefillMachineWheelDamage,
-        RefillMachineEngineDamage,
-        ServiceStationMarkerOpen,
-        ServiceStationMarkerClosed,
+        PitStopStation = 40,
+        RefillMachineFuel = 41,
+        RefillMachineSand = 42,
+        RefillMachineOil = 43,
+        RefillMachineWater = 44,
+        RefillMachineCoal = 45,
+        RefillMachineCarDamage = 46,
+        RefillMachineWheelDamage = 47,
+        RefillMachineEngineDamage = 48,
+        ServiceStationMarkerOpen = 49,
+        ServiceStationMarkerClosed = 50,
 
         #endregion
 
         #region Required Scene Components
 
-        RenderTextureSystem,
-        CarSpawner,
-        LicensesAndGarages,
-        ItemDisablerGrid,
-        JobLogicController,
-        StorageLogic,
-        ShopLogic,
-        DerailAndDamageObserver,
+        RenderTextureSystem = 60,
+        CarSpawner = 61,
+        LicensesAndGarages = 62,
+        ItemDisablerGrid = 63,
+        JobLogicController = 64,
+        StorageLogic = 65,
+        ShopLogic = 66,
+        DerailAndDamageObserver = 67,
 
         #endregion
 
         #region Turntables
 
-        TurntablePit,
-        TurntableTrack,
-        TurntableControlPanel,
-        TurntableRotateLayered,
-
-        #endregion
-
-        #region Misc
-
-        PlayerHouse,
+        TurntablePit = 70,
+        TurntableTrack = 71,
+        TurntableControlPanel = 72,
+        TurntableRotateLayered = 73,
 
         #endregion
 
         #region Stores
 
-        Store,
-        StoreMesh,
-        StoreItemBoombox,
-        StoreItemCassetteAlbum01,
-        StoreItemCassetteAlbum02,
-        StoreItemCassetteAlbum03,
-        StoreItemCassetteAlbum04,
-        StoreItemCassetteAlbum05,
-        StoreItemCassetteAlbum06,
-        StoreItemCassetteAlbum07,
-        StoreItemCassetteAlbum08,
-        StoreItemCassetteAlbum09,
-        StoreItemCassetteAlbum10,
-        StoreItemCassetteAlbum11,
-        StoreItemCassetteAlbum12,
-        StoreItemCassetteAlbum13,
-        StoreItemCassetteAlbum14,
-        StoreItemCassetteAlbum15,
-        StoreItemCassetteAlbum16,
-        StoreItemCassettePlaylist01,
-        StoreItemCassettePlaylist02,
-        StoreItemCassettePlaylist03,
-        StoreItemCassettePlaylist04,
-        StoreItemCassettePlaylist05,
-        StoreItemCassettePlaylist06,
-        StoreItemCassettePlaylist07,
-        StoreItemCassettePlaylist08,
-        StoreItemCassettePlaylist09,
-        StoreItemCassettePlaylist10,
-        StoreItemExpertShovel,
-        StoreItemGoldenShovel,
-        StoreItemLighter,
-        StoreItemManualShunterBooklet,
-        StoreItemManualSteamBooklet,
-        StoreItemRemoteController,
-        StoreItemShovel,
-        StoreItemStopwatch
+        Store = 80,
+        StoreMesh = 81,
+        StoreItemBoombox = 82,
+        StoreItemCassetteAlbum01 = 83,
+        StoreItemCassetteAlbum02 = 84,
+        StoreItemCassetteAlbum03 = 85,
+        StoreItemCassetteAlbum04 = 86,
+        StoreItemCassetteAlbum05 = 87,
+        StoreItemCassetteAlbum06 = 88,
+        StoreItemCassetteAlbum07 = 89,
+        StoreItemCassetteAlbum08 = 90,
+        StoreItemCassetteAlbum09 = 91,
+        StoreItemCassetteAlbum10 = 92,
+        StoreItemCassetteAlbum11 = 93,
+        StoreItemCassetteAlbum12 = 94,
+        StoreItemCassetteAlbum13 = 95,
+        StoreItemCassetteAlbum14 = 96,
+        StoreItemCassetteAlbum15 = 97,
+        StoreItemCassetteAlbum16 = 98,
+        StoreItemCassettePlaylist01 = 99,
+        StoreItemCassettePlaylist02 = 100,
+        StoreItemCassettePlaylist03 = 101,
+        StoreItemCassettePlaylist04 = 102,
+        StoreItemCassettePlaylist05 = 103,
+        StoreItemCassettePlaylist06 = 104,
+        StoreItemCassettePlaylist07 = 105,
+        StoreItemCassettePlaylist08 = 106,
+        StoreItemCassettePlaylist09 = 107,
+        StoreItemCassettePlaylist10 = 108,
+        StoreItemExpertShovel = 109,
+        StoreItemGoldenShovel = 110,
+        StoreItemLighter = 111,
+        StoreItemManualShunterBooklet = 112,
+        StoreItemManualSteamBooklet = 113,
+        StoreItemRemoteController = 114,
+        StoreItemShovel = 115,
+        StoreItemStopwatch = 116
 
         #endregion
     }

@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 1200406428, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: 41
+  asset: 72
 --- !u!33 &7399585845804386503
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -233,7 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: 1200406428, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: 39
+  asset: 70
 --- !u!33 &7204868927337265320
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -363,7 +363,7 @@ MonoBehaviour:
   m_Script: {fileID: 1200406428, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: 40
+  asset: 71
 --- !u!114 &3220464524741620013
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,7 +396,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 2
   resolution: 0.5
-  drawColor: {r: 0, g: 0.64705884, b: 1, a: 1}
+  drawColor: {r: 1, g: 1, b: 1, a: 1}
   _close: 0
   _mirror: 0
   _axis: 0

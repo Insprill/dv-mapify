@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 1200406428, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: 0
+  asset: 10
 --- !u!33 &3491639448331925428
 MeshFilter:
   m_ObjectHideFlags: 0

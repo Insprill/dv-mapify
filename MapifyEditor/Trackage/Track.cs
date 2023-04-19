@@ -53,7 +53,7 @@ namespace Mapify.Editor
 
         private void OnValidate()
         {
-            if (IsSwitch || IsTurntable)
+            if (!isActiveAndEnabled || IsSwitch || IsTurntable)
                 return;
             switch (trackType)
             {

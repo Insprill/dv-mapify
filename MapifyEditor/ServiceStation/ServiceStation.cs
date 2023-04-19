@@ -20,6 +20,9 @@ namespace Mapify.Editor
 
         private void OnValidate()
         {
+            if (!isActiveAndEnabled)
+                return;
+
             if (ManualServiceIndicator == null)
             {
                 Debug.LogError($"Failed to find child {MANUAL_SERVICE_INDICATOR_NAME}", this);

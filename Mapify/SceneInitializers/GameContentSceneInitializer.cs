@@ -118,7 +118,7 @@ namespace Mapify.SceneInitializers
 
                 // Job generation ranges
                 StationJobGenerationRange jobGenerationRange = stationObject.AddComponent<StationJobGenerationRange>();
-                jobGenerationRange.stationCenterAnchor = station.yardCenter != null ? station.yardCenter : station.transform;
+                jobGenerationRange.stationCenterAnchor = station.YardCenter;
                 jobGenerationRange.generateJobsSqrDistance = station.jobGenerationDistance * station.jobGenerationDistance;
                 jobGenerationRange.destroyGeneratedJobsSqrDistanceRegular = station.jobDestroyDistance * station.jobDestroyDistance;
                 jobGenerationRange.jobOverviewBookletGenerationSqrDistance = station.bookletGenerationDistance * station.bookletGenerationDistance;

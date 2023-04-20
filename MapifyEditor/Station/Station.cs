@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace Mapify.Editor
@@ -18,8 +19,12 @@ namespace Mapify.Editor
         [Header("Job Generation")]
         [Tooltip("The area where job booklets should spawn. Not required when using a vanilla station")]
         public BoxCollider bookletSpawnArea;
+#pragma warning disable CS0649
+        [SerializeField]
         [Tooltip("The rough center of the yard. Used at the reference point for generating jobs. Will use the station if unset")]
-        public Transform yardCenter;
+        private Transform yardCenter;
+#pragma warning restore CS0649
+        public Transform YardCenter => yardCenter != null ? yardCenter : transform;
         [Tooltip("The distance, in meters, the player has to be relative to the station for job overview booklets to generate")]
         public float bookletGenerationDistance = 150;
         [Tooltip("The distance, in meters, the player has to be relative to the yard center for jobs to generate")]
@@ -63,5 +68,34 @@ namespace Mapify.Editor
         public List<string> transferOutTrackNames;
         [HideInInspector]
         public List<WarehouseMachine> warehouseMachines;
+
+        #region Editor Visualization
+
+        internal bool visualizeJobGenerationRange;
+        internal bool visualizeBookletGenerationDistance;
+        internal bool visualizeJobDestroyDistance;
+
+        private void OnDrawGizmos()
+        {
+            if (visualizeJobDestroyDistance)
+            {
+                Handles.color = new Color32(200, 25, 25, 100);
+                Handles.DrawSolidDisc(YardCenter.position, Vector3.up, jobDestroyDistance);
+            }
+
+            if (visualizeJobGenerationRange)
+            {
+                Handles.color = new Color32(25, 200, 25, 100);
+                Handles.DrawSolidDisc(YardCenter.position, Vector3.up, jobGenerationDistance);
+            }
+
+            if (visualizeBookletGenerationDistance)
+            {
+                Handles.color = new Color32(25, 25, 200, 100);
+                Handles.DrawSolidDisc(YardCenter.position, Vector3.up, bookletGenerationDistance);
+            }
+        }
+
+        #endregion
     }
 }

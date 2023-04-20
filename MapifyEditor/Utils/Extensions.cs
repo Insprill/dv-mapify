@@ -11,54 +11,12 @@ namespace Mapify.Editor.Utils
 {
     public static class Extensions
     {
-        public static void Select(this GameObject gameObject)
-        {
-            Selection.objects = new Object[] { gameObject };
-        }
-
-        public static List<T> ToList<T>(this IEnumerator<T> e)
-        {
-            List<T> list = new List<T>();
-            while (e.MoveNext()) list.Add(e.Current);
-            return list;
-        }
-
-        public static float CalculateWorldSize(this IEnumerable<Terrain> terrains)
-        {
-            float maxX = 0f;
-            float maxZ = 0f;
-
-            foreach (Terrain terrain in terrains)
-            {
-                Vector3 terrainSize = terrain.terrainData.size;
-                Vector3 position = terrain.transform.position;
-                float terrainMaxX = position.x + terrainSize.x;
-                float terrainMaxZ = position.z + terrainSize.z;
-                if (terrainMaxX > maxX) maxX = terrainMaxX;
-                if (terrainMaxZ > maxZ) maxZ = terrainMaxZ;
-            }
-
-            return Mathf.Max(maxX, maxZ);
-        }
-
-        public static Terrain[] Sort(this Terrain[] terrains)
-        {
-            return terrains.OrderBy(go =>
-            {
-                Vector3 pos = go.transform.position;
-                return pos.z * terrains.Length + pos.x;
-            }).ToArray();
-        }
+        #region GameObjects & Components
 
         public static T GetComponentInSelfOrParent<T>(this Component component)
         {
-            return component.gameObject.GetComponentInSelfOrParent<T>();
-        }
-
-        public static T GetComponentInSelfOrParent<T>(this GameObject gameObject)
-        {
-            T self = gameObject.GetComponent<T>();
-            return self != null ? self : gameObject.GetComponentInParent<T>();
+            T self = component.GetComponent<T>();
+            return self != null ? self : component.GetComponentInParent<T>();
         }
 
         public static T[] GetFirstComponentInChildren<T>(this GameObject gameObject, bool includeInactive = false) where T : Component
@@ -67,24 +25,6 @@ namespace Mapify.Editor.Utils
                 .GroupBy(c => c.gameObject)
                 .Select(g => g.First())
                 .ToArray();
-        }
-
-        public static (float, float, float, float) GroupedBounds(this IEnumerable<Renderer> renderers)
-        {
-            Bounds[] allBounds = renderers.Select(r => r.bounds).ToArray();
-            float minX = allBounds.Min(b => b.min.x);
-            float minZ = allBounds.Min(b => b.min.z);
-            float maxX = allBounds.Max(b => b.max.x);
-            float maxZ = allBounds.Max(b => b.max.z);
-            return (minX, minZ, maxX, maxZ);
-        }
-
-        public static Dictionary<Station, List<T>> MapToClosestStation<T>(this IEnumerable<T> arr) where T : Component
-        {
-            return arr
-                .GroupBy(spawner => spawner.gameObject.GetClosestComponent<Station>())
-                .Where(group => group.Key != null)
-                .ToDictionary(group => group.Key, group => group.ToList());
         }
 
         public static T GetClosestComponent<T>(this GameObject gameObject) where T : Component
@@ -117,20 +57,57 @@ namespace Mapify.Editor.Utils
             return children;
         }
 
+        public static T[] GetAllComponents<T>(this Scene scene, bool includeInactive = false)
+        {
+            return scene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<T>(includeInactive)).ToArray();
+        }
+
+        public static GameObject[] GetAllGameObjects(this Scene scene)
+        {
+            return scene.GetAllComponents<Transform>().Select(t => t.gameObject).ToArray();
+        }
+
         public static void RecordObjectChanges(this IEnumerable<Object> objects, Action func)
         {
             Object[] nonNullObjects = objects.Where(obj => obj != null).ToArray();
             Undo.IncrementCurrentGroup();
-            Undo.RecordObjects(nonNullObjects, "Map Validation");
+            Undo.RecordObjects(nonNullObjects, "Object Changes");
 
             func.Invoke();
 
             foreach (Object o in nonNullObjects.Where(PrefabUtility.IsPartOfPrefabInstance))
                 PrefabUtility.RecordPrefabInstancePropertyModifications(o);
 
-            EditorSceneManager.SaveOpenScenes();
             Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
+            EditorSceneManager.SaveOpenScenes();
         }
+
+        #endregion
+
+        #region Misc. Unity Types
+
+        public static Terrain[] Sort(this Terrain[] terrains)
+        {
+            return terrains.OrderBy(go =>
+            {
+                Vector3 pos = go.transform.position;
+                return pos.z * terrains.Length + pos.x;
+            }).ToArray();
+        }
+
+        public static (float, float, float, float) GroupedBounds(this IEnumerable<Renderer> renderers)
+        {
+            Bounds[] allBounds = renderers.Select(r => r.bounds).ToArray();
+            float minX = allBounds.Min(b => b.min.x);
+            float minZ = allBounds.Min(b => b.min.z);
+            float maxX = allBounds.Max(b => b.max.x);
+            float maxZ = allBounds.Max(b => b.max.z);
+            return (minX, minZ, maxX, maxZ);
+        }
+
+        #endregion
+
+        #region Bezier Curves
 
         public static BezierCurve Curve(this BezierPoint point)
         {
@@ -145,38 +122,34 @@ namespace Mapify.Editor.Utils
             return new[] { curve[0], curve.Last() };
         }
 
-        public static Texture2D Resize(this Texture2D source, int width, int height, FilterMode filterMode)
+        #endregion
+
+        #region C# Utils
+
+        public static List<T> ToList<T>(this IEnumerator<T> e)
         {
-            RenderTexture rt = new RenderTexture(width, height, 0);
-            Graphics.Blit(source, rt, new Material(Shader.Find("Hidden/BlitCopy")));
-            RenderTexture.active = rt;
-
-            Texture2D result = new Texture2D(width, height) {
-                filterMode = filterMode,
-                wrapMode = TextureWrapMode.Clamp
-            };
-            result.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-            result.Apply();
-
-            RenderTexture.active = null;
-            Object.DestroyImmediate(rt);
-
-            return result;
+            List<T> list = new List<T>();
+            while (e.MoveNext()) list.Add(e.Current);
+            return list;
         }
 
-        public static T[] GetAllComponents<T>(this Scene scene, bool includeInactive = false)
-        {
-            return scene.GetRootGameObjects().SelectMany(go => go.GetComponentsInChildren<T>(includeInactive)).ToArray();
-        }
+        #endregion
 
-        public static GameObject[] GetAllGameObjects(this Scene scene)
-        {
-            return scene.GetAllComponents<Transform>().Select(t => t.gameObject).ToArray();
-        }
+        #region Mapify
 
         public static string PrettySceneName(this string sceneName)
         {
             return sceneName.Split('/').Last().Split('.').First();
         }
+
+        public static Dictionary<Station, List<T>> MapToClosestStation<T>(this IEnumerable<T> arr) where T : Component
+        {
+            return arr
+                .GroupBy(spawner => spawner.gameObject.GetClosestComponent<Station>())
+                .Where(group => group.Key != null)
+                .ToDictionary(group => group.Key, group => group.ToList());
+        }
+
+        #endregion
     }
 }

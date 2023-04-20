@@ -12,7 +12,7 @@ namespace Mapify.Editor
         {
             MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
             Texture2D combinedHeightmap = CreateHeightmap(terrains, mapInfo);
-            Texture2D scaledHeightmap = combinedHeightmap.Resize(TEXTURE_SIZE, TEXTURE_SIZE, FilterMode.Bilinear);
+            Texture2D scaledHeightmap = Resize(combinedHeightmap, TEXTURE_SIZE, TEXTURE_SIZE);
             mapInfo.mapTextureSerialized = scaledHeightmap.EncodeToJPG();
             mapInfo.mapTextureSize = new[] { scaledHeightmap.width, scaledHeightmap.height };
         }
@@ -63,6 +63,18 @@ namespace Mapify.Editor
             combinedTexture.Apply();
 
             return combinedTexture;
+        }
+
+        private static Texture2D Resize(Texture2D source, int width, int height)
+        {
+            RenderTexture rt = RenderTexture.GetTemporary(width, height, 0);
+            Graphics.Blit(source, rt);
+
+            Texture2D result = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            Graphics.CopyTexture(rt, result);
+
+            RenderTexture.ReleaseTemporary(rt);
+            return result;
         }
     }
 }

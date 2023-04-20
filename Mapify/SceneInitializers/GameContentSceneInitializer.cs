@@ -133,10 +133,10 @@ namespace Mapify.SceneInitializers
                 proceduralJobsRuleset.minCarsPerJob = station.minCarsPerJob;
                 proceduralJobsRuleset.maxCarsPerJob = station.maxCarsPerJob;
                 proceduralJobsRuleset.maxShuntingStorageTracks = station.maxShuntingStorageTracks;
-                proceduralJobsRuleset.haulStartingJobSupported = station.haulStartingJobSupported;
-                proceduralJobsRuleset.loadStartingJobSupported = station.loadStartingJobSupported;
-                proceduralJobsRuleset.unloadStartingJobSupported = station.unloadStartingJobSupported;
-                proceduralJobsRuleset.emptyHaulStartingJobSupported = station.emptyHaulStartingJobSupported;
+                proceduralJobsRuleset.haulStartingJobSupported = station.generateFreightHaul;
+                proceduralJobsRuleset.loadStartingJobSupported = station.generateShuntingLoad;
+                proceduralJobsRuleset.unloadStartingJobSupported = station.generateShuntingUnload;
+                proceduralJobsRuleset.emptyHaulStartingJobSupported = station.generateLogisticalHaul;
 
                 // Warehouse machines
                 stationController.warehouseMachineControllers = station.warehouseMachines.Select(machine =>

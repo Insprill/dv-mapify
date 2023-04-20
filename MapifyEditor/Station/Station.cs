@@ -15,17 +15,7 @@ namespace Mapify.Editor
         [Tooltip("The location where the player will be teleported to when fast travelling")]
         public Transform teleportLocation;
 
-        [HideInInspector]
-        [SerializeField]
-        public List<string> storageTrackNames;
-        [HideInInspector]
-        [SerializeField]
-        public List<string> transferInTrackNames;
-        [HideInInspector]
-        [SerializeField]
-        public List<string> transferOutTrackNames;
-
-        [Header("Jobs")]
+        [Header("Job Generation")]
         [Tooltip("The area where job booklets should spawn. Not required when using a vanilla station")]
         public BoxCollider bookletSpawnArea;
         [Tooltip("The rough center of the yard. Used at the reference point for generating jobs. Will use the station if unset")]
@@ -37,18 +27,26 @@ namespace Mapify.Editor
         [Tooltip("The distance, in meters, the player has to be relative to the yard center for jobs to despawn")]
         public float jobDestroyDistance = 600;
         [Range(1, 30)]
+        [Tooltip("The maximum number of jobs that can be generated at once. This number may not be met, but it'll never be exceeded")]
         public int jobsCapacity = 30;
-        public int maxShuntingStorageTracks = 3;
+        [Tooltip("The minimum number of cars per-job")]
         public int minCarsPerJob = 3;
+        [Tooltip("The maximum number of cars per-job")]
         public int maxCarsPerJob = 20;
+        public int maxShuntingStorageTracks = 3;
+
+        [Tooltip("Whether freight haul jobs will be generated")]
+        public bool generateFreightHaul = true;
+        [Tooltip("Whether logistical haul jobs will be generated")]
+        public bool generateLogisticalHaul = true;
+        [Tooltip("Whether shunting load jobs will be generated")]
+        public bool generateShuntingLoad = true;
+        [Tooltip("Whether shunting unload jobs will be generated")]
+        public bool generateShuntingUnload = true;
 
         [Header("Cargo")]
-        [HideInInspector]
-        [SerializeField]
-        public List<WarehouseMachine> warehouseMachines;
         // Another workaround for Unity's excuse of a game engine
         [HideInNormalInspector]
-        [SerializeField]
         public int inputCargoGroupsCount;
 #pragma warning disable CS0649
         [SerializeField]
@@ -57,10 +55,13 @@ namespace Mapify.Editor
         internal List<CargoSet> outputCargoGroups;
 #pragma warning restore CS0649
 
-        [Header("Starting chain job priorities")]
-        public bool loadStartingJobSupported = true;
-        public bool haulStartingJobSupported = true;
-        public bool unloadStartingJobSupported = true;
-        public bool emptyHaulStartingJobSupported = true;
+        [HideInInspector]
+        public List<string> storageTrackNames;
+        [HideInInspector]
+        public List<string> transferInTrackNames;
+        [HideInInspector]
+        public List<string> transferOutTrackNames;
+        [HideInInspector]
+        public List<WarehouseMachine> warehouseMachines;
     }
 }

@@ -65,8 +65,9 @@ namespace Mapify.Patches
             SaveGameManager.data.SetBool("Tutorial_02_completed", true);
             SingletonBehaviour<SaveGameManager>.Instance.disableAutosave = false; // The tutorial normally enables this
 
-            // This is normally set by the first one to load, but if the map doesn't have any shops it stays null and causes issues saving.
+            // These are normally set by the first one to load, but if the map doesn't have any they'll stays null and cause issues.
             CashRegisterBase.allCashRegisters = new List<CashRegisterBase>();
+            StationController.allStations = new List<StationController>();
         }
     }
 }

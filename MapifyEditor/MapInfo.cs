@@ -28,9 +28,27 @@ namespace Mapify.Editor
         [Tooltip("The color of track borders on the map")]
         public Color trackBackgroundColor = new Color32(57, 48, 33, 255);
         [Tooltip("The color of water on the map. 0% represents the lowest your terrain can go, and 100% represents water level")]
-        public Gradient waterColor;
+        public Gradient waterColor = new Gradient {
+            colorKeys = new[] {
+                new GradientColorKey(new Color32(21, 51, 42, 255), 0.0f),
+                new GradientColorKey(new Color32(40, 96, 80, 255), 1.0f)
+            },
+            alphaKeys = new[] {
+                new GradientAlphaKey(1.0f, 0.0f),
+                new GradientAlphaKey(1.0f, 1.0f)
+            }
+        };
         [Tooltip("The color of terrain on the map. 0% represents water level, and 100% represents the highest your terrain can go")]
-        public Gradient terrainColor;
+        public Gradient terrainColor = new Gradient {
+            colorKeys = new[] {
+                new GradientColorKey(new Color32(86, 95, 66, 255), 0.0f),
+                new GradientColorKey(new Color32(178, 175, 136, 255), 1.0f)
+            },
+            alphaKeys = new[] {
+                new GradientAlphaKey(1.0f, 0.0f),
+                new GradientAlphaKey(1.0f, 1.0f)
+            }
+        };
 
         [Header("Terrain Streaming")]
         [Tooltip("How many terrain chunks to keep loaded around the player")]

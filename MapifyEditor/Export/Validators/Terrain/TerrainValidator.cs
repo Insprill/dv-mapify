@@ -23,6 +23,17 @@ namespace MapifyEditor.Export.Validators
             if (sortedTerrain[0].transform.position.x != 0 || sortedTerrain[0].transform.position.z != 0)
                 yield return Result.Error("Terrain must start at 0, 0 expanding on the positive X and Z axis'", sortedTerrain[0]);
 
+            bool anyFailed = false;
+            foreach (Terrain terrain in sortedTerrain)
+                if (terrain.terrainData == null)
+                {
+                    yield return Result.Error("Terrains must have a Terrain Data set", terrain);
+                    anyFailed = true;
+                }
+
+            if (anyFailed)
+                yield break;
+
             Terrain[] duplicateTerrains = terrains.GroupBy(t => t.terrainData)
                 .Where(g => g.Count() > 1)
                 .SelectMany(g => g)

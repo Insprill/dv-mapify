@@ -11,7 +11,7 @@ namespace Mapify.Editor
         private const string LAST_EXPORTED_KEY = "Mapify.Package.LastExportPath";
         private const string LAST_IMPORTED_KEY = "Mapify.Package.LastImportPath";
 
-        [MenuItem("Mapify/Package/Export")]
+        [MenuItem("Mapify/Package/Export", priority = 4)]
         public static void Export()
         {
             string path = EditorPrefs.GetString(LAST_EXPORTED_KEY);
@@ -26,7 +26,7 @@ namespace Mapify.Editor
             Debug.Log($"Package exported to '{path}'!");
         }
 
-        [MenuItem("Mapify/Package/Import")]
+        [MenuItem("Mapify/Package/Import", priority = 3)]
         public static void Import()
         {
             string path = EditorPrefs.GetString(LAST_IMPORTED_KEY);
@@ -41,7 +41,7 @@ namespace Mapify.Editor
             Debug.Log($"Package imported from '{path}'!");
         }
 
-        [MenuItem("Mapify/Package/Remove Saved Paths")]
+        [MenuItem("Mapify/Package/Remove Saved Paths", priority = 5)]
         public static void RemoveSavedPath()
         {
             EditorPrefs.DeleteKey(LAST_EXPORTED_KEY);

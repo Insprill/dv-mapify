@@ -22,7 +22,7 @@ namespace Mapify.Editor.StateUpdaters
         protected virtual void Cleanup(Scenes scenes)
         { }
 
-        [MenuItem("Mapify/Debug/Update")]
+        [MenuItem("Mapify/Debug/Build Update/Update", priority = int.MaxValue)]
         private static void Update(MenuCommand command)
         {
             Update();
@@ -58,7 +58,7 @@ namespace Mapify.Editor.StateUpdaters
             EditorUtility.ClearProgressBar();
         }
 
-        [MenuItem("Mapify/Debug/Update Cleanup")]
+        [MenuItem("Mapify/Debug/Build Update/Cleanup", priority = int.MaxValue)]
         private static void Cleanup(MenuCommand command)
         {
             Cleanup();

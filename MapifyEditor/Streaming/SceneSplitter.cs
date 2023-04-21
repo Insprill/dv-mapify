@@ -123,7 +123,7 @@ namespace Mapify.Editor
             isWaitingForCleanup = false;
         }
 
-        [MenuItem("Mapify/Debug/Split Scene")]
+        [MenuItem("Mapify/Debug/Split Scene", priority = int.MaxValue)]
         private static void DebugSplitScenes()
         {
             SplitScene(SceneManager.GetSceneByPath(Scenes.STREAMING), Scenes.STREAMING_DIR, EditorAssets.FindAsset<MapInfo>());

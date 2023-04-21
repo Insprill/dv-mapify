@@ -12,7 +12,7 @@ namespace Mapify.Editor
         private bool validationRun;
         private bool validationPassed;
 
-        [MenuItem("Mapify/Export Map")]
+        [MenuItem("Mapify/Export Map", priority = 1)]
         public static void ShowWindow()
         {
             bool wasOpen = HasOpenInstances<ExportMapGui>();

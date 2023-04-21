@@ -19,7 +19,7 @@ namespace Mapify.Editor
         private Result[] errors;
         private Result[] warnings;
 
-        [MenuItem("Mapify/Validate Map")]
+        [MenuItem("Mapify/Validate Map", priority = 2)]
         private static void OpenAndValidate(MenuCommand menuCommand)
         {
             OpenAndValidate();

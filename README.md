@@ -11,7 +11,7 @@
 <div align="center">
   <h1>Mapify</h1>
   <p>
-    An experimental <a href="https://store.steampowered.com/app/588030">Derail Valley</a> mod for loading custom maps
+    A <a href="https://store.steampowered.com/app/588030">Derail Valley</a> mod for creating and loading custom maps
     <br />
     <br />
     <a href="https://github.com/Insprill/dv-mapify/issues">Report Bug</a>
@@ -29,7 +29,6 @@
   <ol>
     <li><a href="#about-the-project">About The Project</a></li>
     <li><a href="#creating-maps">Documentation</a></li>
-    <li><a href="#building">Building</a></li>
     <li><a href="#license">License</a></li>
   </ol>
 </details>
@@ -41,8 +40,7 @@
 
 ## About The Project
 
-Mapify (new name soon™) is a Derail Valley mod that allows people to create and load custom maps.  
-They said it couldn't be done, so I did it :)
+Mapify is a Derail Valley mod that allows people to create and load custom maps.
 
 
 
@@ -52,43 +50,6 @@ They said it couldn't be done, so I did it :)
 ## Documentation
 
 For information about creating maps and contributing to the project, check out the [docs](https://dv-mapify.rtfd.io/).
-
-
-
-
-<!-- ROADMAP -->
-
-## Roadmap
-
-A vague roadmap roughly in order of priority.
-
-- [x] Load custom scenes
-- [x] Road tracks
-- [x] Switches
-- [x] Buffer stops
-- [x] Turntables
-- [x] Stations
-    - [x] Job generation
-        - [x] Load/Unload machines
-    - [x] Locomotive spawners
-    - [x] Service stations
-    - [x] Station office
-        - [x] Job validator
-        - [x] Career manager
-        - [x] Lost and found
-        - [x] Dumpster
-        - [x] Trash Can
-        - [x] Teleport point
-    - [x] Shops
-- [x] License-based zone blocking
-- [ ] Garages
-- [x] Player homes
-- [x] Custom map items
-- [ ] Custom station schematic maps
-- [x] Terrain streaming
-- [x] World streaming
-- [ ] Custom skyboxes
-- [x] Better savegame handling
 
 
 

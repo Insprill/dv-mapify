@@ -44,6 +44,10 @@ namespace MapifyEditor.Export.Validators
             Material m = terrains[0].materialTemplate;
             float xSize = terrains[0].terrainData.size.x;
             float ySize = terrains[0].terrainData.size.y;
+
+            if (ySize < 0)
+                yield return Result.Error("Terrain must be above Y 0", terrains[0]);
+
             foreach (Terrain terrain in terrains)
             {
                 if (m != terrain.materialTemplate)

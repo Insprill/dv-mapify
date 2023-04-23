@@ -82,6 +82,24 @@ namespace Mapify.Editor.Utils
             EditorSceneManager.SaveOpenScenes();
         }
 
+        public static float CalculateWorldSize(this IEnumerable<Terrain> terrains)
+        {
+            float maxX = 0f;
+            float maxZ = 0f;
+
+            foreach (Terrain terrain in terrains)
+            {
+                Vector3 terrainSize = terrain.terrainData.size;
+                Vector3 position = terrain.transform.position;
+                float terrainMaxX = position.x + terrainSize.x;
+                float terrainMaxZ = position.z + terrainSize.z;
+                if (terrainMaxX > maxX) maxX = terrainMaxX;
+                if (terrainMaxZ > maxZ) maxZ = terrainMaxZ;
+            }
+
+            return Mathf.Max(maxX, maxZ);
+        }
+
         #endregion
 
         #region Misc. Unity Types

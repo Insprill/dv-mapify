@@ -28,9 +28,15 @@ namespace MapifyEditor.Export.Validators.Project
             if (mapInfo.waterLevel < 0)
                 yield return Result.Error("Water level cannot be lower than 0", mapInfo);
 
+            Terrain[] terrains = scenes.terrainScene.GetAllComponents<Terrain>();
+            float worldSize = terrains.CalculateWorldSize();
+            float worldHeight = terrains[0].transform.position.y;
+
             Vector3 spawnPos = mapInfo.defaultSpawnPosition;
-            if (spawnPos.x < 0 || spawnPos.z < 0 || spawnPos.x > mapInfo.worldSize || spawnPos.x > mapInfo.worldSize)
-                yield return Result.Error($"The spawn position's X and Z values must be within the world's bounds (0-{mapInfo.worldSize}", mapInfo);
+            if (spawnPos.x < 0 || spawnPos.z < 0 || spawnPos.x > worldSize || spawnPos.x > worldSize)
+                yield return Result.Error($"The spawn position's X and Z values must be within the world's bounds (0-{worldSize})", mapInfo);
+            if (spawnPos.y < worldHeight)
+                yield return Result.Error($"The spawn position's Y value must be above the terrain ({worldHeight})", mapInfo);
             if (spawnPos.y < mapInfo.waterLevel)
                 yield return Result.Error($"The spawn position must be above the water level ({mapInfo.waterLevel}", mapInfo);
         }

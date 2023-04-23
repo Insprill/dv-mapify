@@ -113,9 +113,10 @@ namespace Mapify
 
             SceneCollection collection = streamerObj.AddComponent<SceneCollection>();
             JsonUtility.FromJsonOverwrite(mapInfo.sceneSplitData, collection);
-            if (collection.names.Length == 0)
+            if (collection.names == null || collection.names.Length == 0)
             {
                 // A streamer with no scenes will mark all positions as unloaded, and the game will get stuck on the loading screen.
+                Main.Logger.Log("No streamer scenes found, destroying!");
                 Object.Destroy(streamerObj);
                 return;
             }

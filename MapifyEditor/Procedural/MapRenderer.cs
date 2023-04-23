@@ -43,7 +43,7 @@ namespace Mapify.Editor
                 {
                     float height = heightmapData[y, x];
                     float worldHeight = terrainY + height * terrainHeight;
-                    Color color = worldHeight <= mapInfo.waterLevel
+                    Color color = worldHeight != 0 && mapInfo.waterLevel != 0 && worldHeight <= mapInfo.waterLevel
                         ? mapInfo.waterColor.Evaluate(worldHeight / mapInfo.waterLevel)
                         : mapInfo.terrainColor.Evaluate(worldHeight / (terrainY + terrainHeight));
                     colors[y * terrainWidth + x] = color;

@@ -14,6 +14,13 @@ Due to this, you have to follow some rules when making terrain.
 
 &#42; If each piece of terrain has a different setting, only the setting from the first one in the hierarchy will be used.
 
+## Creating Terrain
+
+The easiest way to create terrain is using the [Terrain Tools Package][terrain-tools-package].
+It allows you to easily create huge terrains, automatically split up into smaller chunks, load heightmaps, and adds new tools for modifying terrain.
+
+For more information on creating terrains and using Terrain Tools, check out [this][brackeys-terrain-tutorial] great video from Brackeys.
+
 ## Terrain Size
 
 In the base game, each terrain chunk is 250m x 250m.
@@ -31,3 +38,5 @@ You can customize how terrain is streamed in around the player in the "Terrain S
 The value of this highly depends on the size of your terrain assets.
 The smaller each terrain piece, the larger this should be.
 
+[terrain-tools-package]: https://docs.unity3d.com/Packages/com.unity.terrain-tools@4.0/manual/index.html
+[brackeys-terrain-tutorial]: https://youtu.be/MWQv2Bagwgk

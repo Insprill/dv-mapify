@@ -18,6 +18,9 @@ You can unpack it by right-clicking on it in the scene hierarchy, and clicking "
 Each track is made up of a series of points with handles that control how the track will be created between them.
 There is currently no way to visualize the actual track in the editor.
 
+To ensure your track isn't obscured by terrain or other objects, it should be
+at least 0.15m above the ground, and you should leave no less than 2m free on either side.
+
 On each piece of track you'll see a `Track` component with a few fields.
 Don't worry about those for now, we'll get to them in the [Stations & Job Generation](stations.md) section.
 

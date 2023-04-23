@@ -39,7 +39,16 @@ namespace Mapify
             try
             {
                 MapsFolder = Path.Combine(ModEntry.Path, MAPS_FOLDER_NAME);
-                if (!Directory.Exists(MapsFolder)) Directory.CreateDirectory(MapsFolder);
+                if (!Directory.Exists(MapsFolder))
+                {
+                    Directory.CreateDirectory(MapsFolder);
+                }
+                else
+                {
+                    Logger.Log("Searching for maps...");
+                    FindMaps();
+                    Logger.Log($"Found {Maps.Count} map(s) {(Maps.Count > 0 ? $"({string.Join(", ", Maps.Keys.ToArray())})" : "")}");
+                }
 
                 if (Settings.MapName != DEFAULT_MAP_NAME)
                 {
@@ -60,10 +69,6 @@ namespace Mapify
                 }
 
                 WorldStreamingInit.LoadingFinished += DebugCommands.RegisterCommands;
-
-                Logger.Log("Searching for maps...");
-                FindMaps();
-                Logger.Log($"Found {Maps.Count} map(s) {(Maps.Count > 0 ? $"({string.Join(", ", Maps.Keys.ToArray())})" : "")}");
             }
             catch (Exception ex)
             {
@@ -99,9 +104,14 @@ namespace Mapify
             AllMapNames = Maps.Keys.OrderBy(x => x).ToArray();
 
             if (!Maps.ContainsKey(Settings.MapName))
+            {
                 Logger.Error($"Failed to find selected map {Settings.MapName}! Is it still installed? Was it renamed?");
+                Settings.MapName = DEFAULT_MAP_NAME;
+            }
             else
+            {
                 basicMapInfo = Maps[Settings.MapName].Item1;
+            }
         }
 
         public static string GetLoadedMapAssetPath(string fileName, string mapDir = null)

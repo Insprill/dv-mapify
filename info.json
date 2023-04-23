@@ -6,5 +6,8 @@
   "EntryMethod": "Mapify.Main.Load",
   "LoadAfter": [
     "PassengerJobs"
-  ]
+  ],
+  "ManagerVersion": "0.24.6",
+  "HomePage": "https://www.nexusmods.com/derailvalley/mods/593",
+  "Repository": "https://raw.githubusercontent.com/Insprill/dv-mapify/master/repository.json"
 }

@@ -23,6 +23,7 @@ namespace Mapify.SceneInitializers
                 transform.SetParent(railwayParent);
             SetupRailTracks();
             CreateSigns();
+            CreateTrackLODs();
         }
 
         private static void SetupRailTracks()
@@ -157,6 +158,23 @@ namespace Mapify.SceneInitializers
         private static void CreateSigns()
         {
             WorldMover.Instance.NewChild("Signs").AddComponent<SignPlacer>();
+        }
+
+        private static void CreateTrackLODs()
+        {
+            RailwayLodGenerator lodGenerator = new GameObject("Railway LOD Generator").AddComponent<RailwayLodGenerator>();
+            // RailTrackRegistry#AllTracks causes issues here for some reason
+            BaseType basedType = Object.FindObjectsOfType<RailTrack>().FirstOrDefault(rt => rt.baseType != null)?.baseType;
+            if (basedType == null)
+            {
+                Main.Logger.Error($"Failed to find a {nameof(BaseType)} to use for railway LOD generation!");
+                return;
+            }
+
+            lodGenerator.profile = basedType.baseShape;
+            GameObject ballastLodMaterialObject = AssetCopier.Instantiate(VanillaAsset.BallastLodMaterial);
+            lodGenerator.mat = ballastLodMaterialObject.GetComponent<Renderer>().sharedMaterial;
+            Object.Destroy(ballastLodMaterialObject);
         }
     }
 }

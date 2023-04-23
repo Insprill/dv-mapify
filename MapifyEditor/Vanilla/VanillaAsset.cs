@@ -35,6 +35,7 @@ namespace Mapify.Editor
         SwitchRight = 32,
         SwitchLeftOuterSign = 33,
         SwitchRightOuterSign = 34,
+        BallastLodMaterial = 35,
 
         #endregion
 

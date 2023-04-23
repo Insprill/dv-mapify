@@ -28,6 +28,18 @@ namespace Mapify.SceneInitializers
                         break;
                 }
             }
+
+            foreach (Renderer renderer in gameObject.GetComponentsInChildren<Renderer>(true))
+            {
+                Material material = renderer.sharedMaterial;
+                if (material == null) continue;
+                switch (material.name)
+                {
+                    case "BallastLOD":
+                        yield return (VanillaAsset.BallastLodMaterial, renderer.gameObject);
+                        break;
+                }
+            }
         }
     }
 }

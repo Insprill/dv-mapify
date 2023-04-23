@@ -11,7 +11,7 @@ namespace MapifyEditor.Export.Validators
     {
         protected override IEnumerator<Result> Validate(Scenes scenes)
         {
-            Terrain[] terrains = scenes.terrainScene.GetAllComponents<Terrain>();
+            Terrain[] terrains = scenes.terrainScene.GetAllComponents<Terrain>().Sort();
 
             if (terrains.Length == 0)
             {
@@ -19,12 +19,13 @@ namespace MapifyEditor.Export.Validators
                 yield break;
             }
 
-            Terrain[] sortedTerrain = terrains.Sort();
-            if (sortedTerrain[0].transform.position.x != 0 || sortedTerrain[0].transform.position.z != 0)
-                yield return Result.Error("Terrain must start at 0, 0 expanding on the positive X and Z axis'", sortedTerrain[0]);
+            if (terrains[0].transform.position.x != 0 || terrains[0].transform.position.z != 0)
+                yield return Result.Error("Terrain must start at 0, 0 expanding on the positive X and Z axis'", terrains[0]);
+            if (terrains[0].transform.position.y < 0)
+                yield return Result.Error("Terrain must be above Y 0", terrains[0]);
 
             bool anyFailed = false;
-            foreach (Terrain terrain in sortedTerrain)
+            foreach (Terrain terrain in terrains)
                 if (terrain.terrainData == null)
                 {
                     yield return Result.Error("Terrains must have a Terrain Data set", terrain);
@@ -44,10 +45,6 @@ namespace MapifyEditor.Export.Validators
             Material m = terrains[0].materialTemplate;
             float xSize = terrains[0].terrainData.size.x;
             float ySize = terrains[0].terrainData.size.y;
-
-            if (ySize < 0)
-                yield return Result.Error("Terrain must be above Y 0", terrains[0]);
-
             foreach (Terrain terrain in terrains)
             {
                 if (m != terrain.materialTemplate)

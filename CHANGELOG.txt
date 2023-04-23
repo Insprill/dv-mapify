@@ -1,0 +1,13 @@
+0.1.1:
+Runtime:
+- Fixed the mod trying to load a non-existent map if it was deleted while selected.
+- Fixed the mod's home page and repository URLs not being set.
+- Specified minimum UMM version as 0.24.6.
+
+Map Creation Package:
+- Added validation for terrain height.
+- Fixed spawn position validation always failing until a build was run.
+- Fixed an error when generating the map background if the terrain or water levels were 0.
+
+0.1.0:
+- Initial release.

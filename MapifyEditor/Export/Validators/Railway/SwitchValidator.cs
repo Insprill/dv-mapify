@@ -9,7 +9,7 @@ namespace MapifyEditor.Export.Validators
     {
         protected override IEnumerator<Result> Validate(Scenes scenes)
         {
-            foreach (Switch sw in scenes.gameContentScene.GetAllComponents<Switch>())
+            foreach (Switch sw in scenes.railwayScene.GetAllComponents<Switch>())
             {
                 Track divergingTrack = sw.DivergingTrack.GetComponent<Track>();
                 Track throughTrack = sw.ThroughTrack.GetComponent<Track>();

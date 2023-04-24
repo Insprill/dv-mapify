@@ -3,6 +3,9 @@ Runtime:
 - Added track LODs. You shouldn't see track popping-in anymore when travelling through the world.
 - Fixed an error when initializing streamers.
 
+Map Creation Package:
+- Fixed the disconnected switch validation not working.
+
 0.1.1:
 Runtime:
 - Fixed the mod trying to load a non-existent map if it was deleted while selected.

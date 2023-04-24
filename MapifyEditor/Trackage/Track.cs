@@ -129,7 +129,7 @@ namespace Mapify.Editor
 
             Collider[] colliders = new Collider[1];
             // Turntables will search for track within 0.05m, so set it a little lower to be safe.
-            if (Physics.OverlapSphereNonAlloc(pos, 0.04f, colliders) != 0)
+            if (!IsSwitch && Physics.OverlapSphereNonAlloc(pos, 0.04f, colliders) != 0)
             {
                 Collider collider = colliders[0];
                 Track track = collider.GetComponent<Track>();
@@ -149,6 +149,7 @@ namespace Mapify.Editor
                     Vector3 otherPos = otherBp.transform.position;
                     float dist = Mathf.Abs(Vector3.Distance(otherPos, pos));
                     if (dist > SNAP_RANGE || dist >= closestDist) continue;
+                    if (IsSwitch && otherBp.GetComponentInParent<Track>().IsSwitch) continue;
                     closestPos = otherPos;
                     closestDist = dist;
                 }

@@ -61,6 +61,7 @@ namespace Mapify.Editor
                 Vector3 otherPos = otherBP.transform.position;
                 float dist = Mathf.Abs(Vector3.Distance(otherPos, pos));
                 if (dist > Track.SNAP_RANGE || dist >= closestDist) continue;
+                if (otherBP.GetComponentInParent<Track>().IsSwitch) continue;
                 closestPos = otherPos;
                 closestDist = dist;
             }

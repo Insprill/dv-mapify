@@ -70,7 +70,7 @@ namespace Mapify.Patches
             {
                 if (!type.IsSubclassOf(typeof(MonoBehaviour)))
                 {
-                    Main.Logger.Error($"Tried to patch non-MonoBehaviour type {type}");
+                    Main.LogError($"Tried to patch non-MonoBehaviour type {type}");
                     continue;
                 }
 

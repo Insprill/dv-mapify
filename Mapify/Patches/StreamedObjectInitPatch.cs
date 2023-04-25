@@ -25,7 +25,7 @@ namespace Mapify.Patches
             Streamer streamer = streamers.FirstOrDefault(s => s.sceneCollection.names.Contains(__instance.sceneName));
             if (streamer == null)
             {
-                Main.Logger.Error($"Failed to find streamer for scene {__instance.sceneName}");
+                Main.LogError($"Failed to find streamer for scene {__instance.sceneName}");
                 return;
             }
 

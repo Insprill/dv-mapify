@@ -28,7 +28,7 @@ namespace Mapify.SceneInitializers
 
         private static void SetupRailTracks()
         {
-            Main.Logger.Log("Creating RailTracks");
+            Main.Log("Creating RailTracks");
 
             Track[] tracks = Object.FindObjectsOfType<Track>().Where(t => !t.IsSwitch && !t.IsTurntable).ToArray();
             foreach (Track track in tracks)
@@ -54,11 +54,11 @@ namespace Mapify.SceneInitializers
                 railTrack.ApplyRailType();
             }
 
-            Main.Logger.Log("Creating Junctions");
+            Main.Log("Creating Junctions");
             foreach (Switch sw in Object.FindObjectsOfType<Switch>())
                 CreateJunction(sw);
 
-            Main.Logger.Log("Connecting tracks");
+            Main.Log("Connecting tracks");
             ConnectTracks(tracks);
 
             foreach (Track track in tracks)
@@ -66,10 +66,10 @@ namespace Mapify.SceneInitializers
 
             VanillaObject[] vanillaObjects = Object.FindObjectsOfType<VanillaObject>();
 
-            Main.Logger.Log("Creating Turntables");
+            Main.Log("Creating Turntables");
             SetupTurntables(vanillaObjects);
 
-            Main.Logger.Log("Creating Buffer Stops");
+            Main.Log("Creating Buffer Stops");
             SetupBufferStops(vanillaObjects);
 
             RailManager.AlignAllTrackEnds();
@@ -167,7 +167,7 @@ namespace Mapify.SceneInitializers
             BaseType basedType = Object.FindObjectsOfType<RailTrack>().FirstOrDefault(rt => rt.baseType != null)?.baseType;
             if (basedType == null)
             {
-                Main.Logger.Error($"Failed to find a {nameof(BaseType)} to use for railway LOD generation!");
+                Main.LogError($"Failed to find a {nameof(BaseType)} to use for railway LOD generation!");
                 return;
             }
 

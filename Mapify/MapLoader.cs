@@ -116,7 +116,7 @@ namespace Mapify
             if (collection.names == null || collection.names.Length == 0)
             {
                 // A streamer with no scenes will mark all positions as unloaded, and the game will get stuck on the loading screen.
-                Main.Logger.Log("No streamer scenes found, destroying!");
+                Main.Log("No streamer scenes found, destroying!");
                 Object.Destroy(streamerObj);
                 return;
             }
@@ -138,32 +138,32 @@ namespace Mapify
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
             if (scene.path == wsi.terrainsScenePath)
             {
-                Main.Logger.Log($"Loaded terrain scene at {wsi.terrainsScenePath}");
+                Main.Log($"Loaded terrain scene at {wsi.terrainsScenePath}");
                 TerrainSceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == wsi.railwayScenePath)
             {
-                Main.Logger.Log($"Loaded railway scene at {wsi.railwayScenePath}");
+                Main.Log($"Loaded railway scene at {wsi.railwayScenePath}");
                 RailwaySceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == wsi.gameContentScenePath)
             {
-                Main.Logger.Log($"Loaded game content scene at {wsi.gameContentScenePath}");
+                Main.Log($"Loaded game content scene at {wsi.gameContentScenePath}");
                 GameContentSceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == originalRailwayScenePath)
             {
-                Main.Logger.Log($"Loaded vanilla railway scene at {originalRailwayScenePath}");
+                Main.Log($"Loaded vanilla railway scene at {originalRailwayScenePath}");
                 VanillaRailwaySceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == originalGameContentScenePath)
             {
-                Main.Logger.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
+                Main.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
                 VanillaGameContentSceneInitializer.SceneLoaded(scene);
                 MonoBehaviourPatch.EnableAllLater();
                 WorldStreamingInit_Awake_Patch.CanInitialize = true;
                 foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
-                    Main.Logger.Error($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
+                    Main.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
             }
         }
     }

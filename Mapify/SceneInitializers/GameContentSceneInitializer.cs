@@ -59,7 +59,7 @@ namespace Mapify.SceneInitializers
             AssetCopier.Instantiate(VanillaAsset.ShopLogic, false, false);
             AssetCopier.Instantiate(VanillaAsset.DerailAndDamageObserver, false);
             // I'm not sure where vanilla creates this because it doesn't have auto create enabled.
-            Main.Logger.Log("Creating YardTracksOrganizer");
+            Main.Log("Creating YardTracksOrganizer");
             new GameObject("[YardTracksOrganizer]").AddComponent<YardTracksOrganizer>();
         }
 

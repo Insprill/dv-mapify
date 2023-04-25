@@ -25,7 +25,11 @@ namespace Mapify.Patches
             modified = true;
 
             GameObject mapPoster = GameObject.Find("MapPoster");
-            if (mapPoster == null) return;
+            if (mapPoster == null)
+            {
+                Main.LogError("Failed to find map poster!");
+                return;
+            }
             mapPoster.GetComponent<Renderer>().sharedMaterial.mainTexture = mapTexture;
         }
 

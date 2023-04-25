@@ -23,12 +23,12 @@ namespace Mapify
                     Action<CommandArg[]> proc = (Action<CommandArg[]>)Delegate.CreateDelegate(typeof(Action<CommandArg[]>), method);
                     Terminal.Shell.AddCommand(commandAttribute.Name, proc, commandAttribute.MinArgCount, commandAttribute.MaxArgCount, commandAttribute.Help, commandAttribute.Hint, commandAttribute.Secret);
                     Terminal.Autocomplete.Register(commandAttribute.Name);
-                    Main.Logger.Log($"Registered command {commandAttribute.Name}");
+                    Main.Log($"Registered command {commandAttribute.Name}");
                 }
             }
             catch (Exception e)
             {
-                Main.Logger.LogException("Failed to register debug commands", e);
+                Main.LogException("Failed to register debug commands", e);
             }
         }
 

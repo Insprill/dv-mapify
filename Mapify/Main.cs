@@ -16,12 +16,11 @@ namespace Mapify
         private const string MAPS_FOLDER_NAME = "Maps";
 
         private static UnityModManager.ModEntry ModEntry;
-        public static UnityModManager.ModEntry.ModLogger Logger => ModEntry.Logger;
         public static Settings Settings { get; private set; }
         internal static Harmony Harmony { get; private set; }
 
-        public static readonly UnityModManager.ModEntry PassengerJobs = UnityModManager.FindMod("PassengerJobs");
-        public static bool IsPassengerJobsEnabled => PassengerJobs != null && PassengerJobs.Enabled;
+        private static readonly UnityModManager.ModEntry PassengerJobs = UnityModManager.FindMod("PassengerJobs");
+        private static bool IsPassengerJobsEnabled => PassengerJobs != null && PassengerJobs.Enabled;
 
         public static MapInfo LoadedMap;
         private static BasicMapInfo basicMapInfo;
@@ -45,34 +44,34 @@ namespace Mapify
                 }
                 else
                 {
-                    Logger.Log("Searching for maps...");
+                    Log("Searching for maps...");
                     FindMaps();
-                    Logger.Log($"Found {Maps.Count} map(s) {(Maps.Count > 0 ? $"({string.Join(", ", Maps.Keys.ToArray())})" : "")}");
+                    Log($"Found {Maps.Count} map(s) {(Maps.Count > 0 ? $"({string.Join(", ", Maps.Keys.ToArray())})" : "")}");
                 }
 
                 if (Settings.MapName != DEFAULT_MAP_NAME)
                 {
-                    Logger.Log("Patching...");
+                    Log("Patching...");
                     Harmony = new Harmony(ModEntry.Info.Id);
                     Harmony.PatchAll();
-                    Logger.Log("Successfully patched");
+                    Log("Successfully patched");
                     if (IsPassengerJobsEnabled)
                     {
-                        Logger.Log($"Found {PassengerJobs.Info.DisplayName}, patching...");
+                        Log($"Found {PassengerJobs.Info.DisplayName}, patching...");
                         PassengerJobsPatch.Patch(Harmony);
-                        Logger.Log("Successfully patched");
+                        Log("Successfully patched");
                     }
                 }
                 else
                 {
-                    Logger.Log("Default map selected, skipping patches");
+                    Log("Default map selected, skipping patches");
                 }
 
                 WorldStreamingInit.LoadingFinished += DebugCommands.RegisterCommands;
             }
             catch (Exception ex)
             {
-                Logger.LogException($"Failed to load {ModEntry.Info.DisplayName}:", ex);
+                LogException($"Failed to load {ModEntry.Info.DisplayName}:", ex);
                 Harmony?.UnpatchAll();
                 return false;
             }
@@ -105,7 +104,7 @@ namespace Mapify
 
             if (!Maps.ContainsKey(Settings.MapName))
             {
-                Logger.Error($"Failed to find selected map {Settings.MapName}! Is it still installed? Was it renamed?");
+                LogError($"Failed to find selected map {Settings.MapName}! Is it still installed? Was it renamed?");
                 Settings.MapName = DEFAULT_MAP_NAME;
             }
             else
@@ -118,5 +117,35 @@ namespace Mapify
         {
             return Path.Combine(MapsFolder, mapDir ?? Maps[basicMapInfo.mapName].Item2, fileName);
         }
+
+        #region Logging
+
+        public static void LogDebug(object msg)
+        {
+            if (Settings.VerboseLogging)
+                ModEntry.Logger.Log($"[Debug] {msg}");
+        }
+
+        public static void Log(object msg)
+        {
+            ModEntry.Logger.Log($"{msg}");
+        }
+
+        public static void LogWarning(object msg)
+        {
+            ModEntry.Logger.Warning($"{msg}");
+        }
+
+        public static void LogError(object msg)
+        {
+            ModEntry.Logger.Error($"{msg}");
+        }
+
+        public static void LogException(object msg, Exception e)
+        {
+            ModEntry.Logger.LogException($"{msg}", e);
+        }
+
+        #endregion
     }
 }

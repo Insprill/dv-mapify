@@ -1,14 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Mapify
 {
     public static class AssetCopier
     {
-        private static readonly Dictionary<VanillaAsset, GameObject> prefabs = new Dictionary<VanillaAsset, GameObject>(4);
+        private static readonly Dictionary<VanillaAsset, GameObject> prefabs = new Dictionary<VanillaAsset, GameObject>(Enum.GetValues(typeof(VanillaAsset)).Length);
 
         public static IEnumerable<VanillaAsset> InstantiatableAssets => prefabs.Keys;
 

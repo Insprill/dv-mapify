@@ -6,6 +6,7 @@ Runtime:
 Map Creation Package:
 - Fixed the disconnected switch validation not working.
 - Fixed switches snapping to turntables and other switches.
+- Fixed occasional terrain related issues when exporting.
 
 0.1.1:
 Runtime:

@@ -44,6 +44,7 @@ namespace Mapify.Editor.StateUpdaters
                         .Select(t => (Object)t.gameObject)
                     )
                 ).ToList();
+            gameObjectsToUndo.Add(EditorAssets.FindAsset<MapInfo>());
 
             Scenes scenes = Scenes.FromEnumerable(sceneStates.Keys);
             gameObjectsToUndo.RecordObjectChanges(() =>

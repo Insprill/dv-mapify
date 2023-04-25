@@ -22,7 +22,7 @@ namespace Mapify.SceneInitializers
             grid.addToVegetationStudio = false;
             grid.pixelError = Main.LoadedMap.terrainPixelError;
             grid.drawInstanced = Main.LoadedMap.terrainDrawInstanced;
-            grid.terrainLayer = 8;
+            grid.terrainLayer = LayerMask.NameToLayer("Terrain");
             grid.vegetationReloadWaitFrames = 2;
             grid.maxConcurrentLoads = 3;
         }

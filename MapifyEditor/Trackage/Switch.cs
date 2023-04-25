@@ -19,13 +19,18 @@ namespace Mapify.Editor
         [Tooltip("Which side of the switch the stand will appear on")]
         public StandSide standSide;
 
-        public Transform ThroughTrack => transform.Find("[track through]");
-        public Transform DivergingTrack => transform.Find("[track diverging]");
+        public Track ThroughTrack => transform.Find("[track through]").GetComponent<Track>();
+        public Track DivergingTrack => transform.Find("[track diverging]").GetComponent<Track>();
 
         private void OnDrawGizmos()
         {
             if ((transform.position - Camera.current.transform.position).sqrMagnitude >= Track.SNAP_UPDATE_RANGE * Track.SNAP_UPDATE_RANGE)
                 return;
+            Snap();
+        }
+
+        public void Snap()
+        {
             BezierPoint[] bezierPoints = FindObjectsOfType<BezierPoint>();
             GameObject[] selectedObjects = Selection.gameObjects;
             bool isSelected = selectedObjects.Contains(gameObject);
@@ -43,10 +48,10 @@ namespace Mapify.Editor
                     reference = transform;
                     break;
                 case 1:
-                    reference = DivergingTrack.GetComponent<BezierCurve>().Last().transform;
+                    reference = DivergingTrack.Curve.Last().transform;
                     break;
                 case 2:
-                    reference = ThroughTrack.GetComponent<BezierCurve>().Last().transform;
+                    reference = ThroughTrack.Curve.Last().transform;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(which));

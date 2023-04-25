@@ -11,8 +11,10 @@ namespace MapifyEditor.Export.Validators
         {
             foreach (Switch sw in scenes.railwayScene.GetAllComponents<Switch>())
             {
-                Track divergingTrack = sw.DivergingTrack.GetComponent<Track>();
-                Track throughTrack = sw.ThroughTrack.GetComponent<Track>();
+                Track divergingTrack = sw.DivergingTrack;
+                Track throughTrack = sw.ThroughTrack;
+                divergingTrack.Snap();
+                throughTrack.Snap();
                 if (!divergingTrack.isInSnapped || !divergingTrack.isOutSnapped || !throughTrack.isInSnapped || !throughTrack.isOutSnapped)
                     yield return Result.Error("Switches must have a track attached to all points", sw);
             }

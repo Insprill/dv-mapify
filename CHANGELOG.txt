@@ -1,6 +1,7 @@
 0.x.x:
 Runtime:
 - Added track LODs. You shouldn't see track popping-in anymore when travelling through the world.
+- Fixed vegetation not being visible on terrain.
 - Fixed an error when initializing streamers.
 
 Map Creation Package:

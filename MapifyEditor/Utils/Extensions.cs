@@ -27,11 +27,16 @@ namespace Mapify.Editor.Utils
                 .ToArray();
         }
 
-        public static T GetClosestComponent<T>(this GameObject gameObject) where T : Component
+        public static T GetClosestComponent<T>(this Vector3 position) where T : Component
         {
             return Object.FindObjectsOfType<T>()
-                .OrderBy(c => (gameObject.transform.position - c.transform.position).sqrMagnitude)
+                .OrderBy(c => (position - c.transform.position).sqrMagnitude)
                 .FirstOrDefault();
+        }
+
+        private static T GetClosestComponent<T>(this GameObject gameObject) where T : Component
+        {
+            return gameObject.transform.position.GetClosestComponent<T>();
         }
 
         public static GameObject FindChildByName(this GameObject parent, string name)

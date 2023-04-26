@@ -50,6 +50,9 @@ namespace Mapify.Editor
             }
         };
 
+        [Header("Gameplay")]
+        public bool allowTrackBuilding;
+
         [Header("Terrain Streaming")]
         [Tooltip("How many terrain chunks to keep loaded around the player")]
         public byte terrainLoadingRingSize = 2;

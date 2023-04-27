@@ -16,6 +16,10 @@ namespace Mapify.Editor
         [Tooltip("The player's initial spawn rotation")]
         public Vector3 defaultSpawnRotation;
 
+        [Header("Loading Gauge")]
+        public float loadingGaugeHeight = 5;
+        public float loadingGaugeWidth = 4;
+
         [Header("Procedural Maps")]
         [Tooltip("How large tracks should be on the map")]
         public float trackWidth = 5;

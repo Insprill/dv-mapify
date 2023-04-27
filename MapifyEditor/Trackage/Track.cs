@@ -32,6 +32,8 @@ namespace Mapify.Editor
         [Tooltip("The purpose of this track")]
         public TrackType trackType;
 
+        internal bool showLoadingGauge;
+
         public bool isInSnapped { get; private set; }
         public bool isOutSnapped { get; private set; }
         private BezierCurve _curve;
@@ -90,6 +92,8 @@ namespace Mapify.Editor
 
         private void OnDrawGizmos()
         {
+            if (showLoadingGauge)
+                DrawLoadingGauge();
             if ((transform.position - Camera.current.transform.position).sqrMagnitude >= SNAP_UPDATE_RANGE * SNAP_UPDATE_RANGE)
                 return;
             if (!isInSnapped)
@@ -119,6 +123,31 @@ namespace Mapify.Editor
             Quaternion rotation = Quaternion.LookRotation(cameraForward, cameraUp);
             Handles.DrawLine(position - rotation * Vector3.one * size, position + rotation * Vector3.one * size);
             Handles.DrawLine(position - rotation * new Vector3(size, -size, 0f), position + rotation * new Vector3(size, -size, 0f));
+        }
+
+        private void DrawLoadingGauge()
+        {
+            Gizmos.color = Curve.drawColor;
+            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
+            for (int i = 0; i < Curve.pointCount - 1; ++i)
+            {
+                BezierPoint p1 = Curve[i];
+                BezierPoint p2 = Curve[i + 1];
+                int resolution = BezierCurve.GetNumPoints(p1, p2, Curve.resolution);
+                Vector3[] vector3Array = BezierCurve.Interpolate(p1.position, p1.globalHandle2, p2.position, p2.globalHandle1, resolution);
+                Vector3 from = vector3Array[0];
+                for (int index = 1; index < vector3Array.Length; ++index)
+                {
+                    Vector3 to = vector3Array[index];
+                    Vector3 center = Vector3.Lerp(from, to, 0.5f);
+                    center.y += mapInfo.loadingGaugeHeight / 2;
+                    Vector3 direction = to - from;
+                    Quaternion rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+                    Gizmos.matrix = Matrix4x4.TRS(center, rotation, Vector3.one);
+                    Gizmos.DrawWireCube(Vector3.zero, new Vector3(mapInfo.loadingGaugeWidth, mapInfo.loadingGaugeHeight, Mathf.Abs(direction.magnitude)));
+                    from = to;
+                }
+            }
         }
 
         private void TrySnap(IEnumerable<BezierPoint> snapPoints, bool move, bool first)

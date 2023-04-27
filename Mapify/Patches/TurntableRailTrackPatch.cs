@@ -8,8 +8,7 @@ namespace Mapify.Patches
     {
         public static void Postfix(TurntableRailTrack __instance)
         {
-            if (__instance.Track.generateMeshes)
-                RailwayMeshUpdater.UpdateTrack(__instance.Track);
+            RailwayMeshUpdater.UpdateTrack(__instance.Track);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Mapify.Utils
         private static readonly FieldInfo RailwayMeshGenerator_Field_spatialHash = AccessTools.DeclaredField(typeof(RailwayMeshGenerator), "spatialHash");
         private static readonly FieldInfo RailwayMeshGenerator_Field_activeChunks = AccessTools.DeclaredField(typeof(RailwayMeshGenerator), "activeChunks");
         private static readonly FieldInfo RailwayMeshGenerator_Field_prevCellId = AccessTools.DeclaredField(typeof(RailwayMeshGenerator), "prevCellId");
+        private static readonly MethodInfo RailwayMeshGenerator_Method_ScheduleGenerateBaseAndRail = AccessTools.DeclaredMethod(typeof(RailwayMeshGenerator), "ScheduleGenerateBaseAndRail");
         private static readonly FieldInfo TrackChunkSpatialHash_Field_doneAdding = AccessTools.DeclaredField(typeof(TrackChunkSpatialHash), "doneAdding");
         private static readonly FieldInfo TrackChunkSpatialHash_Field_lookupCells = AccessTools.DeclaredField(typeof(TrackChunkSpatialHash), "lookupCells");
 
@@ -20,11 +21,38 @@ namespace Mapify.Utils
         private static Dictionary<Vector2Int, List<TrackChunk>> activeChunks;
         private static Dictionary<Vector2Int, List<TrackChunk>> lookupCells;
 
+        /// <summary>
+        ///     Updates the meshes of a RailTrack. Won't do anything if <see cref="RailTrack.generateMeshes" /> is false.
+        /// </summary>
+        /// <param name="track"></param>
         public static void UpdateTrack(RailTrack track)
         {
-            if (!CheckCaches())
+            if (!track.generateMeshes || !CheckCaches())
                 return;
 
+            RecreateTrack(track);
+            UpdateSpatialHash(track);
+
+            RailwayMeshGenerator_Field_prevCellId.SetValue(railwayMeshGenerator, new Vector2Int(int.MinValue, int.MaxValue));
+        }
+
+        private static void RecreateTrack(RailTrack track)
+        {
+            foreach (KeyValuePair<Vector2Int, List<TrackChunk>> kvp in activeChunks)
+            {
+                List<TrackChunk> chunks = kvp.Value;
+                foreach (TrackChunk chunk in chunks)
+                {
+                    if (chunk.isSleepers || chunk.track != track)
+                        continue;
+                    chunk.ReleasePoolObjects();
+                    RailwayMeshGenerator_Method_ScheduleGenerateBaseAndRail.Invoke(railwayMeshGenerator, new object[] { chunk });
+                }
+            }
+        }
+
+        private static void UpdateSpatialHash(RailTrack track)
+        {
             TrackChunkSpatialHash_Field_doneAdding.SetValue(spatialHash, false);
 
             foreach (KeyValuePair<Vector2Int, List<TrackChunk>> kvp in lookupCells)
@@ -49,12 +77,6 @@ namespace Mapify.Utils
             }
 
             spatialHash.DoneAdding();
-            RailwayMeshGenerator_Field_prevCellId.SetValue(railwayMeshGenerator, new Vector2Int(int.MinValue, int.MaxValue));
-            foreach (KeyValuePair<Vector2Int, List<TrackChunk>> kvp in activeChunks)
-            foreach (TrackChunk chunk in kvp.Value)
-                if (chunk.track == track)
-                    chunk.ReleasePoolObjects();
-            // activeChunks.Clear();
         }
 
         private static bool CheckCaches()

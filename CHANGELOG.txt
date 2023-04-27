@@ -4,6 +4,7 @@ Runtime:
 - Fixed vegetation not being visible on terrain.
 - Fixed an error when initializing streamers.
 - Fixed tracks on the map not appearing smooth on smaller maps.
+- Fixed issues if there was a piece of track shorter than 0.75m.
 
 Map Creation Package:
 - Added the ability to create fully custom turntables.

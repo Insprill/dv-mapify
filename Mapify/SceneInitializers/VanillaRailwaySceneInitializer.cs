@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Mapify.Editor;
+using Mapify.Editor.Utils;
+using Mapify.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -24,7 +26,14 @@ namespace Mapify.SceneInitializers
                 switch (name)
                 {
                     case "Turntable Track":
-                        yield return (VanillaAsset.TurntableTrack, child);
+                        GameObject bridge = child.FindChildByName("bridge");
+                        Transform visual = bridge.FindChildByName("visual").transform;
+                        visual.localPosition = visual.localPosition.AddY(2.5f);
+                        Transform colliders = bridge.FindChildByName("colliders").transform;
+                        colliders.localPosition = colliders.localPosition.AddY(2.5f);
+                        GameObject rail = bridge.FindChildByName("TurntableRail");
+                        yield return (VanillaAsset.TurntableTrack, rail);
+                        yield return (VanillaAsset.TurntableBridge, bridge);
                         continue;
                     case "TurntableControlPanel":
                         yield return (VanillaAsset.TurntableControlPanel, child);

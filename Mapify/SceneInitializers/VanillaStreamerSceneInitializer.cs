@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Mapify.Editor;
+using Mapify.Editor.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -20,9 +21,28 @@ namespace Mapify.SceneInitializers
                 if (mesh == null) continue;
                 switch (mesh.name)
                 {
-                    case "TurntablePit":
-                        yield return (VanillaAsset.TurntablePit, filter.transform.parent.gameObject);
+                    case "TurntablePit": {
+                        Transform parent = Object.Instantiate(filter.transform.parent.gameObject).transform;
+                        parent.gameObject.SetActive(false);
+                        Object.Destroy(parent.FindChildByName("TurntableControlHouse").gameObject);
+                        Object.Destroy(parent.FindChildByName("TurntableControlHouse_LOD1").gameObject);
+                        Object.Destroy(parent.FindChildByName("TurntableControlHouse_ShadowCaster").gameObject);
+                        foreach (Transform t in parent)
+                            t.localPosition = Vector3.zero;
+                        yield return (VanillaAsset.TurntablePit, parent.gameObject);
                         break;
+                    }
+                    case "TurntableControlHouse": {
+                        Transform parent = Object.Instantiate(filter.transform.parent.gameObject).transform;
+                        parent.gameObject.SetActive(false);
+                        Object.Destroy(parent.FindChildByName("TurntablePit").gameObject);
+                        Object.Destroy(parent.FindChildByName("TurntablePit_LOD1").gameObject);
+                        Object.Destroy(parent.FindChildByName("TurntablePit_ShadowCaster").gameObject);
+                        foreach (Transform t in parent)
+                            t.localPosition = Vector3.zero;
+                        yield return (VanillaAsset.TurntableControlShed, parent.gameObject);
+                        break;
+                    }
                     case "ItemShop":
                         yield return (VanillaAsset.StoreMesh, filter.transform.parent.gameObject);
                         break;

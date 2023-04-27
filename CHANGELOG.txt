@@ -6,6 +6,7 @@ Runtime:
 - Fixed tracks on the map not appearing smooth on smaller maps.
 
 Map Creation Package:
+- Added the ability to create fully custom turntables.
 - Added an option to toggle whether ballast and sleepers are generated for track.
 - Fixed the disconnected switch validation not working.
 - Fixed switches snapping to turntables and other switches.

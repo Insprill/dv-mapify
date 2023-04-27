@@ -15,11 +15,11 @@ namespace Mapify.Editor
         [Header("Visuals")]
         [Tooltip("The age of the track. Older tracks are rougher and more rusted, newer tracks are smoother and cleaner")]
         public TrackAge age;
-        [Tooltip("Whether speed limit, grade, and marker signs should be generated. Only applies to road tracks.")]
+        [Tooltip("Whether speed limit, grade, and marker signs should be generated. Only applies to road tracks")]
         public bool generateSigns;
-        [Tooltip("Whether ballast is generated for the track. Doesn't apply to switches.")]
+        [Tooltip("Whether ballast is generated for the track. Doesn't apply to switches")]
         public bool generateBallast = true;
-        [Tooltip("Whether sleepers and anchors are generated for the track. Doesn't apply to switches.")]
+        [Tooltip("Whether sleepers and anchors are generated for the track. Doesn't apply to switches")]
         public bool generateSleepers = true;
 
         [Header("Job Generation")]
@@ -53,7 +53,7 @@ namespace Mapify.Editor
         }
 
         public bool IsSwitch => ParentSwitch != null;
-        public bool IsTurntable => GetComponent<VanillaObject>()?.asset == VanillaAsset.TurntableTrack;
+        public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
         private void OnValidate()
         {

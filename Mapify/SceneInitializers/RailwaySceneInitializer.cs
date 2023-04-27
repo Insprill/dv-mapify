@@ -30,7 +30,7 @@ namespace Mapify.SceneInitializers
         {
             Main.Log("Creating RailTracks");
 
-            Track[] tracks = Object.FindObjectsOfType<Track>().Where(t => !t.IsSwitch && !t.IsTurntable).ToArray();
+            Track[] tracks = Object.FindObjectsOfType<Track>().Where(t => !t.IsSwitch).ToArray();
             foreach (Track track in tracks)
             {
                 int age = 0;
@@ -49,16 +49,17 @@ namespace Mapify.SceneInitializers
 
                 track.gameObject.SetActive(false);
                 RailTrack railTrack = track.gameObject.AddComponent<RailTrack>();
+                railTrack.generateColliders = !track.IsTurntable;
                 railTrack.dontChange = false;
                 railTrack.age = age;
                 railTrack.ApplyRailType();
             }
 
-            Main.Log("Creating Junctions");
+            Main.LogDebug("Creating Junctions");
             foreach (Switch sw in Object.FindObjectsOfType<Switch>())
                 CreateJunction(sw);
 
-            Main.Log("Connecting tracks");
+            Main.LogDebug("Connecting tracks");
             ConnectTracks(tracks);
 
             foreach (Track track in tracks)
@@ -66,10 +67,11 @@ namespace Mapify.SceneInitializers
 
             VanillaObject[] vanillaObjects = Object.FindObjectsOfType<VanillaObject>();
 
-            Main.Log("Creating Turntables");
-            SetupTurntables(vanillaObjects);
+            Main.LogDebug("Creating Turntables");
+            foreach (Turntable turntable in Object.FindObjectsOfType<Turntable>())
+                CreateTurntable(turntable);
 
-            Main.Log("Creating Buffer Stops");
+            Main.LogDebug("Creating Buffer Stops");
             SetupBufferStops(vanillaObjects);
 
             RailManager.AlignAllTrackEnds();
@@ -114,39 +116,48 @@ namespace Mapify.SceneInitializers
             Debug.unityLogger.filterLogType = type;
         }
 
-        private static void SetupTurntables(VanillaObject[] vanillaObjects)
+        private static void CreateTurntable(Turntable turntable)
         {
-            foreach (VanillaObject vanillaObject in vanillaObjects.Where(vo => vo.asset == VanillaAsset.TurntableTrack || vo.asset == VanillaAsset.TurntablePit))
+            TurntableController controller = null;
+            bool usingDefaultTrack = false;
+            foreach (VanillaObject vanillaObject in turntable.GetComponentsInChildren<VanillaObject>())
             {
-                Transform t = vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset)).transform;
-                Vector3 pos = t.position;
-                pos.y += TURNTABLE_HEIGHT_OFFSET;
-                t.position = pos;
+                VanillaAsset vanillaAsset = vanillaObject.asset;
+                if (vanillaAsset == VanillaAsset.TurntableTrack)
+                    usingDefaultTrack = true;
+                switch (vanillaAsset)
+                {
+                    case VanillaAsset.TurntablePit:
+                    case VanillaAsset.TurntableTrack:
+                    case VanillaAsset.TurntableBridge:
+                    case VanillaAsset.TurntableControlShed:
+                        vanillaObject.Replace();
+                        break;
+                    case VanillaAsset.TurntableControlPanel:
+                        controller = vanillaObject.Replace(false).GetComponent<TurntableController>();
+                        break;
+                }
             }
 
-            TurntableRailTrack[] turntableTracks = Object.FindObjectsOfType<TurntableRailTrack>();
-            foreach (TurntableRailTrack track in turntableTracks)
-            {
-                if (track.Track != null)
-                    Object.Destroy(track.Track);
-                RailTrack newTrack = track.gameObject.AddComponent<RailTrack>();
-                newTrack.generateMeshes = false;
-                newTrack.generateColliders = false;
-                TurntableRailTrack_Field__track.SetValue(track, newTrack);
-                track.uniqueID = $"{track.transform.position.GetHashCode()}";
-                track.trackEnds = track.FindTrackEnds();
-            }
+            if (controller == null)
+                return;
 
-            foreach (VanillaObject vanillaObject in vanillaObjects.Where(vo => vo.asset == VanillaAsset.TurntableControlPanel))
-            {
-                Transform controlPanel = vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active: false)).transform;
-                Vector3 controlPanelPos = controlPanel.position.AddY(-TURNTABLE_HEIGHT_OFFSET); // The control panel is a child of the pit so they rotate together, but our Y pos isn't offset.
-                controlPanel.position = controlPanelPos;
-                TurntableController controller = controlPanel.GetComponent<TurntableController>();
-                controller.turntableRotateLayered = AssetCopier.Instantiate(VanillaAsset.TurntableRotateLayered).GetComponent<LayeredAudio>();
-                controller.turntable = turntableTracks.OrderBy(t => (t.transform.position - controlPanelPos).sqrMagnitude).FirstOrDefault();
-                controlPanel.gameObject.SetActive(true);
-            }
+            Track track = turntable.Track;
+            TurntableRailTrack turntableTrack = track.gameObject.AddComponent<TurntableRailTrack>();
+            RailTrack railTrack = track.GetComponent<RailTrack>();
+            railTrack.generateMeshes = !usingDefaultTrack;
+            TurntableRailTrack_Field__track.SetValue(turntableTrack, railTrack);
+            turntableTrack.uniqueID = $"{turntableTrack.transform.position.GetHashCode()}";
+            turntableTrack.trackEnds = turntableTrack.FindTrackEnds();
+            turntableTrack.visuals = turntable.bridge;
+            if (turntable.frontHandle != null)
+                turntableTrack.frontHandle = turntable.frontHandle.transform;
+            if (turntable.rearHandle != null)
+                turntableTrack.rearHandle = turntable.rearHandle.transform;
+
+            controller.turntableRotateLayered = AssetCopier.Instantiate(VanillaAsset.TurntableRotateLayered).GetComponent<LayeredAudio>();
+            controller.turntable = turntableTrack;
+            controller.gameObject.SetActive(true);
         }
 
         private static void SetupBufferStops(IEnumerable<VanillaObject> vanillaObjects)

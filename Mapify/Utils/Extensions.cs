@@ -96,6 +96,14 @@ namespace Mapify.Utils
             return vec;
         }
 
+        public static Vector3 Add(this Vector3 vec, float val)
+        {
+            vec.x += val;
+            vec.y += val;
+            vec.z += val;
+            return vec;
+        }
+
         public static Vector2 Scale(this Vector2 vec, float minValue, float maxValue, float newMinValue, float newMaxValue)
         {
             return new Vector2(vec.x.ScaleNumber(minValue, maxValue, newMinValue, newMaxValue), vec.y.ScaleNumber(minValue, maxValue, newMinValue, newMaxValue));
@@ -199,10 +207,7 @@ namespace Mapify.Utils
 
         public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool keepChildren = true, bool originShift = true)
         {
-            foreach (VanillaObject vanillaObject in vanillaObjects)
-            {
-                vanillaObject.Replace(active, keepChildren, originShift);
-            }
+            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift);
         }
 
         public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true)

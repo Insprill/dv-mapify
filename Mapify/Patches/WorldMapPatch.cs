@@ -28,6 +28,7 @@ namespace Mapify.Patches
                 Main.LogError("Failed to find map poster!");
                 return;
             }
+
             mapPoster.GetComponent<Renderer>().sharedMaterial.mainTexture = mapTexture;
         }
 

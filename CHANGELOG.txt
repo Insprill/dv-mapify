@@ -3,6 +3,7 @@ Runtime:
 - Added track LODs. You shouldn't see track popping-in anymore when travelling through the world.
 - Fixed vegetation not being visible on terrain.
 - Fixed an error when initializing streamers.
+- Fixed tracks on the map not appearing smooth on smaller maps.
 
 Map Creation Package:
 - Added an option to toggle whether ballast and sleepers are generated for track.

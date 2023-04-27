@@ -11,8 +11,6 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(WorldMap), "Awake")]
     public static class WorldMap_Awake_Patch
     {
-        private const float TRACK_SAMPLE_RESOLUTION = 40f;
-
         private static bool modified;
 
         private static void Postfix(WorldMap __instance)
@@ -43,7 +41,7 @@ namespace Mapify.Patches
 
             float worldSize = Main.LoadedMap.worldSize;
 
-            IEnumerable<Vector2[]> points = RailTrackRegistry.AllTracks.Select(rt => rt.GetCurvePositions(TRACK_SAMPLE_RESOLUTION).ToArray());
+            IEnumerable<Vector2[]> points = RailTrackRegistry.AllTracks.Select(rt => rt.GetCurvePositions(rt.curve.resolution).ToArray());
             (Vector2, Vector2)[] pairs = points.SelectMany(trackPoints =>
                 Enumerable.Range(1, trackPoints.Length - 1)
                     .Select(i => (

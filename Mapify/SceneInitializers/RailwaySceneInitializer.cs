@@ -151,8 +151,7 @@ namespace Mapify.SceneInitializers
 
         private static void SetupBufferStops(IEnumerable<VanillaObject> vanillaObjects)
         {
-            foreach (VanillaObject vanillaObject in vanillaObjects.Where(vo => vo.asset == VanillaAsset.BufferStop))
-                vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
+            vanillaObjects.Where(vo => vo.asset == VanillaAsset.BufferStop).Replace();
         }
 
         private static void CreateSigns()

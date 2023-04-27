@@ -194,5 +194,22 @@ namespace Mapify.Utils
         }
 
         #endregion
+
+        #region Mapify
+
+        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool keepChildren = true, bool originShift = true)
+        {
+            foreach (VanillaObject vanillaObject in vanillaObjects)
+            {
+                vanillaObject.Replace(active, keepChildren, originShift);
+            }
+        }
+
+        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true)
+        {
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, originShift, active), keepChildren: keepChildren);
+        }
+
+        #endregion
     }
 }

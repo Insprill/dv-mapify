@@ -17,6 +17,7 @@ namespace Mapify.SceneInitializers
         private static void SetupTerrainGrid()
         {
             GameObject gridObject = WorldMover.Instance.NewChildWithPosition("TerrainGrid", new Vector3(0, Main.LoadedMap.terrainHeight, 0));
+            gridObject.SetActive(false);
             TerrainGrid grid = gridObject.AddComponent<TerrainGrid>();
             grid.loadingRingSize = Main.LoadedMap.terrainLoadingRingSize;
             grid.addToVegetationStudio = false;
@@ -25,6 +26,8 @@ namespace Mapify.SceneInitializers
             grid.terrainLayer = LayerMask.NameToLayer("Terrain");
             grid.vegetationReloadWaitFrames = 2;
             grid.maxConcurrentLoads = 3;
+            TerrainGrid.Initialized += () => OnTerrainInitialized(grid);
+            gridObject.SetActive(true);
         }
 
         private static void SetupDistantTerrain()
@@ -35,6 +38,16 @@ namespace Mapify.SceneInitializers
             DistantTerrain distantTerrain = distantTerrainObject.gameObject.AddComponent<DistantTerrain>();
             distantTerrain.worldScale = SingletonBehaviour<LevelInfo>.Instance.worldSize;
             distantTerrain.step = 128; // No idea what this means but this is what it's set to in the game.
+        }
+
+        private static void OnTerrainInitialized(TerrainGrid grid)
+        {
+            foreach (GameObject obj in grid.generatedTerrains)
+            {
+                Terrain terrain = obj.GetComponent<Terrain>();
+                terrain.materialTemplate = Main.LoadedMap.terrainMaterial;
+                terrain.basemapDistance = Main.LoadedMap.terrainBasemapDistance;
+            }
         }
     }
 }

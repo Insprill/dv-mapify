@@ -45,6 +45,11 @@ namespace Mapify.Editor.Utils
             return child == null ? null : child.gameObject;
         }
 
+        public static GameObject[] FindChildrenByName(this GameObject parent, string name)
+        {
+            return parent.transform.FindChildrenByName(name).Select(t => t.gameObject).ToArray();
+        }
+
         public static Transform FindChildByName(this Transform parent, string name)
         {
             return FindChildrenByName(parent, name).FirstOrDefault();

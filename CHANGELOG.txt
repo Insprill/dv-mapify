@@ -1,12 +1,26 @@
 0.x.x:
 Runtime:
-- Added track LODs. You shouldn't see track popping-in anymore when travelling through the world.
+- Fixed another issue if there was a piece of track shorter than 0.75m.
+
+
+0.2.0:
+Runtime:
+- Added track LODs. You shouldn't see tracks popping in anymore when traveling through the world.
+- Fixed vegetation not being visible on terrain.
 - Fixed an error when initializing streamers.
+- Fixed tracks on the map not appearing smooth on smaller maps.
+- Fixed issues if there was a piece of track shorter than 0.75m.
 
 Map Creation Package:
+- Added the ability to create fully custom turntables.
+- Added a toggle to visualize the loading gauge of trackage.
+- Added an option to toggle whether ballast and sleepers are generated for tracks.
 - Fixed the disconnected switch validation not working.
 - Fixed switches snapping to turntables and other switches.
-- Fixed occasional terrain related issues when exporting.
+- Fixed occasional terrain-related issues when exporting.
+- Fixed procedural map backgrounds being completely white.
+- Fixed the "polygon is self-intersecting" warning when importing the creation package.
+
 
 0.1.1:
 Runtime:
@@ -18,6 +32,7 @@ Map Creation Package:
 - Added validation for terrain height.
 - Fixed spawn position validation always failing until a build was run.
 - Fixed an error when generating the map background if the terrain or water levels were 0.
+
 
 0.1.0:
 - Initial release.

@@ -192,7 +192,7 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.LostAndFoundShed:
                     case VanillaAsset.WarehouseMachine:
                     case VanillaAsset.PlayerHouse:
-                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
+                        vanillaObject.Replace();
                         break;
                     case VanillaAsset.StationOffice1:
                     case VanillaAsset.StationOffice2:
@@ -201,7 +201,7 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.StationOffice5:
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
-                        GameObject go = vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset));
+                        GameObject go = vanillaObject.Replace();
                         Transform youAreHereFlag = go.transform.FindChildByName("youarehere_flag");
                         if (youAreHereFlag != null)
                             Object.Destroy(youAreHereFlag.gameObject);
@@ -258,11 +258,11 @@ namespace Mapify.SceneInitializers
                         collider.center = vCollider.center;
                         collider.size = vCollider.size;
                         collider.isTrigger = true;
-                        vanillaObject.gameObject.Replace(AssetCopier.Instantiate(asset));
+                        vanillaObject.Replace();
                     }
                     else if (asset == VanillaAsset.CashRegister)
                     {
-                        GameObject cashRegisterObj = vanillaObject.gameObject.Replace(AssetCopier.Instantiate(asset), keepChildren: false);
+                        GameObject cashRegisterObj = vanillaObject.Replace(keepChildren: false);
                         CashRegisterResourceModules cashRegister = cashRegisterObj.GetComponentInChildren<CashRegisterResourceModules>();
                         cashRegister.resourceMachines = resourceModules.Cast<ResourceModule>().ToArray();
                     }

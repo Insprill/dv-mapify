@@ -113,6 +113,8 @@ namespace Mapify.Editor.BezierCurves
 
         private void OnSceneGUI()
         {
+            if (point.GetComponentInParent<Track>()?.IsSwitch == true)
+                return;
             Handles.color = Color.green;
             Vector3 newPosition = Handles.FreeMoveHandle(point.position, point.transform.rotation, HandleUtility.GetHandleSize(point.position) * 0.2f, Vector3.zero, Handles.CubeHandleCap);
             if (point.position != newPosition) point.position = newPosition;

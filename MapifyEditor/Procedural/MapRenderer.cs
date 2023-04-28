@@ -43,9 +43,11 @@ namespace Mapify.Editor
                 {
                     float height = heightmapData[y, x];
                     float worldHeight = terrainY + height * terrainHeight;
-                    Color color = worldHeight != 0 && mapInfo.waterLevel != 0 && worldHeight <= mapInfo.waterLevel
-                        ? mapInfo.waterColor.Evaluate(worldHeight / mapInfo.waterLevel)
-                        : mapInfo.terrainColor.Evaluate(worldHeight / (terrainY + terrainHeight));
+                    float waterLevel = worldHeight / mapInfo.waterLevel;
+                    float terrainLevel = worldHeight / (terrainY + terrainHeight);
+                    Color color = worldHeight <= mapInfo.waterLevel
+                        ? mapInfo.waterColor.Evaluate(float.IsNaN(waterLevel) ? 0.0f : waterLevel)
+                        : mapInfo.terrainColor.Evaluate(float.IsNaN(terrainLevel) ? 0.0f : terrainLevel);
                     colors[y * terrainWidth + x] = color;
                 }
 
@@ -68,10 +70,11 @@ namespace Mapify.Editor
         private static Texture2D Resize(Texture2D source, int width, int height)
         {
             RenderTexture rt = RenderTexture.GetTemporary(width, height, 0);
-            Graphics.Blit(source, rt);
+            Graphics.Blit(source, rt, new Material(Shader.Find("Hidden/BlitCopy")));
 
             Texture2D result = new Texture2D(width, height, TextureFormat.RGBA32, false);
-            Graphics.CopyTexture(rt, result);
+            result.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            result.Apply();
 
             RenderTexture.ReleaseTemporary(rt);
             return result;

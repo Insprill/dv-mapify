@@ -36,10 +36,25 @@ You *cannot* modify the curves of switches!
 Derail Valley switches are a single static asset, and therefor you can only use the angle of switch they give us.
 
 ### Turntables
-Turntables can be placed using the `Turntable` prefab.
 
-The control stand *cannot* be moved or rotated independently.
-To change it's position, rotate the pit.
+#### The Default Turntable
+The default turntable can be placed using the `Turntable` prefab.
+To replace any one of the meshes on the default table, remove the `Vanilla Object` component from it and customize the Mesh Filter and Mesh Render as desired.
+
+#### Custom Turntables
+To create a custom turntable, start by creating a new object and adding the `Turntable` component to it.
+
+Next, as a child, add the `Turntable Control Panel` prefab from the `Components` folder.
+If you want to replace the mesh of the shed, remove the `Vanilla Object` component from it and customize the Mesh Filter and Mesh Render as desired.
+
+To make the track, create a new object with a `Track` component and a `Capsule Collider`.
+The Capsule Colliders radius and center should be set to perfectly match the length of your track at the middle.
+
+For the visuals of the table itself, create a new child of the track and set your meshes.
+On the `Turntable` component, set the `Bridge` field to this child.
+
+If you want to be to manually push the turntable, add two objects under the Bridge object, 
+add Box Colliders to both, and assign them in the `Turntable` component.
 
 ### Buffer Stops
 At the ends of your track, you can place down buffer stops to prevent trains from rolling off.

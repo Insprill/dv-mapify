@@ -71,9 +71,11 @@ namespace Mapify.Editor
         #region Turntables
 
         TurntablePit = 70,
-        TurntableTrack = 71,
-        TurntableControlPanel = 72,
-        TurntableRotateLayered = 73,
+        TurntableBridge = 71,
+        TurntableTrack = 72,
+        TurntableControlPanel = 73,
+        TurntableControlShed = 74,
+        TurntableRotateLayered = 75,
 
         #endregion
 

@@ -15,8 +15,12 @@ namespace Mapify.Editor
         [Header("Visuals")]
         [Tooltip("The age of the track. Older tracks are rougher and more rusted, newer tracks are smoother and cleaner")]
         public TrackAge age;
-        [Tooltip("Whether speed limit, grade, and marker signs should be generated. Shouldn't be set on yard tracks.")]
+        [Tooltip("Whether speed limit, grade, and marker signs should be generated. Only applies to road tracks")]
         public bool generateSigns;
+        [Tooltip("Whether ballast is generated for the track. Doesn't apply to switches")]
+        public bool generateBallast = true;
+        [Tooltip("Whether sleepers and anchors are generated for the track. Doesn't apply to switches")]
+        public bool generateSleepers = true;
 
         [Header("Job Generation")]
         [Tooltip("The ID of the station this track belongs to")]
@@ -27,6 +31,8 @@ namespace Mapify.Editor
         public byte trackId;
         [Tooltip("The purpose of this track")]
         public TrackType trackType;
+
+        internal bool showLoadingGauge;
 
         public bool isInSnapped { get; private set; }
         public bool isOutSnapped { get; private set; }
@@ -49,7 +55,7 @@ namespace Mapify.Editor
         }
 
         public bool IsSwitch => ParentSwitch != null;
-        public bool IsTurntable => GetComponent<VanillaObject>()?.asset == VanillaAsset.TurntableTrack;
+        public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
         private void OnValidate()
         {
@@ -61,7 +67,7 @@ namespace Mapify.Editor
                     Curve.drawColor = new Color32(255, 255, 255, 255);
                     break;
                 case TrackType.Storage:
-                    Curve.drawColor = new Color32(255, 127, 80, 255);
+                    Curve.drawColor = new Color32(172, 134, 101, 255);
                     break;
                 case TrackType.Loading:
                     Curve.drawColor = new Color32(0, 0, 128, 255);
@@ -76,7 +82,7 @@ namespace Mapify.Editor
                     Curve.drawColor = new Color32(200, 235, 0, 255);
                     break;
                 case TrackType.PassengerStorage:
-                    Curve.drawColor = new Color32(0, 128, 128, 255);
+                    Curve.drawColor = new Color32(0, 100, 100, 255);
                     break;
                 case TrackType.PassengerLoading:
                     Curve.drawColor = new Color32(0, 255, 255, 255);
@@ -86,6 +92,8 @@ namespace Mapify.Editor
 
         private void OnDrawGizmos()
         {
+            if (showLoadingGauge)
+                DrawLoadingGauge();
             if ((transform.position - Camera.current.transform.position).sqrMagnitude >= SNAP_UPDATE_RANGE * SNAP_UPDATE_RANGE)
                 return;
             if (!isInSnapped)
@@ -115,6 +123,31 @@ namespace Mapify.Editor
             Quaternion rotation = Quaternion.LookRotation(cameraForward, cameraUp);
             Handles.DrawLine(position - rotation * Vector3.one * size, position + rotation * Vector3.one * size);
             Handles.DrawLine(position - rotation * new Vector3(size, -size, 0f), position + rotation * new Vector3(size, -size, 0f));
+        }
+
+        private void DrawLoadingGauge()
+        {
+            Gizmos.color = Curve.drawColor;
+            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
+            for (int i = 0; i < Curve.pointCount - 1; ++i)
+            {
+                BezierPoint p1 = Curve[i];
+                BezierPoint p2 = Curve[i + 1];
+                int resolution = BezierCurve.GetNumPoints(p1, p2, Curve.resolution);
+                Vector3[] vector3Array = BezierCurve.Interpolate(p1.position, p1.globalHandle2, p2.position, p2.globalHandle1, resolution);
+                Vector3 from = vector3Array[0];
+                for (int index = 1; index < vector3Array.Length; ++index)
+                {
+                    Vector3 to = vector3Array[index];
+                    Vector3 center = Vector3.Lerp(from, to, 0.5f);
+                    center.y += mapInfo.loadingGaugeHeight / 2;
+                    Vector3 direction = to - from;
+                    Quaternion rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+                    Gizmos.matrix = Matrix4x4.TRS(center, rotation, Vector3.one);
+                    Gizmos.DrawWireCube(Vector3.zero, new Vector3(mapInfo.loadingGaugeWidth, mapInfo.loadingGaugeHeight, Mathf.Abs(direction.magnitude)));
+                    from = to;
+                }
+            }
         }
 
         private void TrySnap(IEnumerable<BezierPoint> snapPoints, bool move, bool first)

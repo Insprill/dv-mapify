@@ -95,6 +95,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   age: 0
   generateSigns: 0
+  generateBallast: 1
+  generateSleepers: 1
+  generateAnchors: 1
   stationId: 
   yardId: 0
   trackId: 0
@@ -168,6 +171,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   age: 0
   generateSigns: 0
+  generateBallast: 1
+  generateSleepers: 1
+  generateAnchors: 1
   stationId: 
   yardId: 0
   trackId: 0

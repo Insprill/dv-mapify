@@ -14,6 +14,7 @@ Map Creation Package:
 - Fixed switches snapping to turntables and other switches.
 - Fixed occasional terrain related issues when exporting.
 - Fixed procedural map backgrounds being completely white.
+- Fixed the "polygon is self-intersecting" waring when importing the creation package.
 
 0.1.1:
 Runtime:

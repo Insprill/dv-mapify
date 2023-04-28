@@ -67,7 +67,7 @@ namespace Mapify.Editor
                     Curve.drawColor = new Color32(255, 255, 255, 255);
                     break;
                 case TrackType.Storage:
-                    Curve.drawColor = new Color32(255, 127, 80, 255);
+                    Curve.drawColor = new Color32(172, 134, 101, 255);
                     break;
                 case TrackType.Loading:
                     Curve.drawColor = new Color32(0, 0, 128, 255);
@@ -82,7 +82,7 @@ namespace Mapify.Editor
                     Curve.drawColor = new Color32(200, 235, 0, 255);
                     break;
                 case TrackType.PassengerStorage:
-                    Curve.drawColor = new Color32(0, 128, 128, 255);
+                    Curve.drawColor = new Color32(0, 100, 100, 255);
                     break;
                 case TrackType.PassengerLoading:
                     Curve.drawColor = new Color32(0, 255, 255, 255);

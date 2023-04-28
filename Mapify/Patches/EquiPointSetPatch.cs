@@ -1,3 +1,4 @@
+using System;
 using DV.PointSet;
 using HarmonyLib;
 
@@ -10,7 +11,9 @@ namespace Mapify.Patches
         {
             if (pointSpacing <= source.span / 2.0)
                 return true;
-            __result = new EquiPointSet();
+            __result = new EquiPointSet {
+                points = Array.Empty<EquiPointSet.Point>()
+            };
             return false;
         }
     }

@@ -2,6 +2,11 @@
   "Releases": [
     {
       "Id": "Mapify",
+      "Version": "0.2.0",
+      "DownloadUrl": "https://github.com/Insprill/dv-mapify/releases/download/v0.2.0/Mapify_v0.2.0.zip"
+    },
+    {
+      "Id": "Mapify",
       "Version": "0.1.1",
       "DownloadUrl": "https://github.com/Insprill/dv-mapify/releases/download/v0.1.1/Mapify_v0.1.1.zip"
     },

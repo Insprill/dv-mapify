@@ -1,4 +1,4 @@
-0.x.x:
+0.2.0:
 Runtime:
 - Added track LODs. You shouldn't see track popping-in anymore when travelling through the world.
 - Fixed vegetation not being visible on terrain.

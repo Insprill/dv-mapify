@@ -7,43 +7,43 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../MapifyEditor/MapifyEditor.csproj"/>
+        <ProjectReference Include="../MapifyEditor/MapifyEditor.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="0Harmony"/>
-        <Reference Include="Assembly-CSharp"/>
-        <Reference Include="DV.Interaction"/>
-        <Reference Include="DV.PointSet"/>
-        <Reference Include="DV.TerrainSystem"/>
-        <Reference Include="DV.TerrainTools"/>
-        <Reference Include="DV.Utils"/>
-        <Reference Include="BezierCurves"/>
-        <Reference Include="net.smkd.vector3d"/>
-        <Reference Include="PassengerJobs"/>
-        <Reference Include="Unity.Collections"/>
-        <Reference Include="Unity.Postprocessing.Runtime"/>
-        <Reference Include="Unity.TextMeshPro"/>
-        <Reference Include="UnityEngine"/>
-        <Reference Include="UnityEngine.AssetBundleModule"/>
-        <Reference Include="UnityEngine.CoreModule"/>
-        <Reference Include="UnityEngine.ImageConversionModule"/>
-        <Reference Include="UnityEngine.IMGUIModule"/>
-        <Reference Include="UnityEngine.JSONSerializeModule"/>
-        <Reference Include="UnityEngine.PhysicsModule"/>
-        <Reference Include="UnityEngine.TerrainModule"/>
-        <Reference Include="UnityModManager"/>
+        <Reference Include="0Harmony" />
+        <Reference Include="Assembly-CSharp" />
+        <Reference Include="DV.Interaction" />
+        <Reference Include="DV.PointSet" />
+        <Reference Include="DV.TerrainSystem" />
+        <Reference Include="DV.TerrainTools" />
+        <Reference Include="DV.Utils" />
+        <Reference Include="BezierCurves" />
+        <Reference Include="net.smkd.vector3d" />
+        <Reference Include="PassengerJobs" />
+        <Reference Include="Unity.Collections" />
+        <Reference Include="Unity.Postprocessing.Runtime" />
+        <Reference Include="Unity.TextMeshPro" />
+        <Reference Include="UnityEngine" />
+        <Reference Include="UnityEngine.AssetBundleModule" />
+        <Reference Include="UnityEngine.CoreModule" />
+        <Reference Include="UnityEngine.ImageConversionModule" />
+        <Reference Include="UnityEngine.IMGUIModule" />
+        <Reference Include="UnityEngine.JSONSerializeModule" />
+        <Reference Include="UnityEngine.PhysicsModule" />
+        <Reference Include="UnityEngine.TerrainModule" />
+        <Reference Include="UnityModManager" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p ../build &amp;&amp; cp &quot;$(TargetPath)&quot; ../build/"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="export DEST=&quot;$HOME/.local/share/Steam/steamapps/common/Derail Valley/Mods/Mapify&quot; &amp;&amp; [ -d &quot;${DEST}&quot; ] &amp;&amp; cp -pfu &quot;$(TargetPath)&quot; &quot;${DEST}&quot;"/>
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p ../build &amp;&amp; cp &quot;$(TargetPath)&quot; ../build/" />
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="export DEST=&quot;$HOME/.local/share/Steam/steamapps/common/Derail Valley/Mods/Mapify&quot; &amp;&amp; [ -d &quot;${DEST}&quot; ] &amp;&amp; cp -pfu &quot;$(TargetPath)&quot; &quot;${DEST}&quot;" />
 
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="xcopy /d /y &quot;$(TargetPath)&quot; ..\build\"/>
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="setlocal enabledelayedexpansion &amp;&amp; set DEST=C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\Mods\Mapify &amp;&amp; if exist !DEST! xcopy /d /y &quot;$(TargetPath)&quot; &quot;!DEST!&quot;"/>
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="xcopy /d /y &quot;$(TargetPath)&quot; ..\build\" />
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="setlocal enabledelayedexpansion &amp;&amp; set DEST=C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\Mods\Mapify &amp;&amp; if exist !DEST! xcopy /d /y &quot;$(TargetPath)&quot; &quot;!DEST!&quot;" />
     </Target>
 </Project>

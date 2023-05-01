@@ -23,9 +23,9 @@ namespace Mapify.SceneInitializers
             grid.addToVegetationStudio = false;
             grid.pixelError = Main.LoadedMap.terrainPixelError;
             grid.drawInstanced = Main.LoadedMap.terrainDrawInstanced;
-            grid.terrainLayer = LayerMask.NameToLayer("Terrain");
             grid.vegetationReloadWaitFrames = 2;
             grid.maxConcurrentLoads = 3;
+            Layer.Terrain.Apply(grid);
             TerrainGrid.Initialized += () => OnTerrainInitialized(grid);
             gridObject.SetActive(true);
         }

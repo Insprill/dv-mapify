@@ -57,6 +57,22 @@ If you want to be to manually push the turntable, add two objects under the Brid
 add Box Colliders to both, and assign them in the `Turntable` component.
 
 ### Buffer Stops
-At the ends of your track, you can place down buffer stops to prevent trains from rolling off.
 
-Like regular track and switches, you add it to the scene the same way using the `Buffer Stop` prefab, and snap it to the end of a track.
+#### The Default Buffer Stop
+To use the default buffer stop, you can simply drag in the `Buffer Stop` prefab, and snap it to the end of a track.
+
+#### Custom Buffer Stops
+To create custom buffer stops, create a new object with a `Buffer Stop` component.
+When added, it'll also add a `Track Snappable` and a `Box Collider`.
+
+To allow the buffer to snap to tracks, create a new child and name it "Snap Point".
+This will be the reference point when snapping to trackage.
+On the `Track Snappable` object, set the Reference Point to the "Snap Point" object.
+
+The BoxCollider object is used to detect when a train hits it.
+It should be positioned a little in front of the buffer stop itself, and about the width and height of the loading gauge.
+
+Lastly, create a new child called "Player Collider" with a `Box Collider` component.
+This collider will be used to prevent the buffer stop from spawning inside a train when the game loads,
+and as the collider the player interact with.
+Back on the `Buffer Stop`, set the Player Collider to this object.

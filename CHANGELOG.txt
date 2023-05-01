@@ -1,6 +1,9 @@
 0.x.x:
 Runtime:
-- Fixed another issue if there was a piece of track shorter than 0.75m.
+- Fixed issues if there is a piece of track shorter than 0.75m.
+
+Map Creation Package:
+- Added support for custom buffer stops.
 
 
 0.2.0:
@@ -9,7 +12,6 @@ Runtime:
 - Fixed vegetation not being visible on terrain.
 - Fixed an error when initializing streamers.
 - Fixed tracks on the map not appearing smooth on smaller maps.
-- Fixed issues if there was a piece of track shorter than 0.75m.
 
 Map Creation Package:
 - Added the ability to create fully custom turntables.

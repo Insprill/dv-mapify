@@ -41,7 +41,7 @@ namespace Mapify.SceneInitializers
                         yield return (VanillaAsset.TurntableRotateLayered, child.GetComponent<TurntableController>().turntableRotateLayered.gameObject);
                         continue;
                     case "term-buffer":
-                        yield return (VanillaAsset.BufferStop, child);
+                        yield return (VanillaAsset.BufferStop, child.transform.FindChildByName("model").gameObject);
                         continue;
                 }
 

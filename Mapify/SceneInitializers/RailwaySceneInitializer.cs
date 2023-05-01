@@ -72,7 +72,8 @@ namespace Mapify.SceneInitializers
                 CreateTurntable(turntable);
 
             Main.LogDebug("Creating Buffer Stops");
-            SetupBufferStops(vanillaObjects);
+            foreach (Editor.BufferStop bufferStop in Object.FindObjectsOfType<Editor.BufferStop>())
+                SetupBufferStop(bufferStop);
 
             RailManager.AlignAllTrackEnds();
             RailManager.TestConnections();
@@ -160,9 +161,21 @@ namespace Mapify.SceneInitializers
             controller.gameObject.SetActive(true);
         }
 
-        private static void SetupBufferStops(IEnumerable<VanillaObject> vanillaObjects)
+        private static void SetupBufferStop(Editor.BufferStop bufferStop)
         {
-            vanillaObjects.Where(vo => vo.asset == VanillaAsset.BufferStop).Replace();
+            foreach (VanillaObject vanillaObject in bufferStop.GetComponentsInChildren<VanillaObject>())
+                if (vanillaObject.asset == VanillaAsset.BufferStop)
+                    vanillaObject.Replace();
+
+            GameObject go = bufferStop.gameObject;
+            go.SetActive(false);
+            Layer.Train_Big_Collider.ApplyRecursive(go);
+            Layer.Default.Apply(bufferStop.playerCollider);
+            BufferStop dvBufferStop = go.AddComponent<BufferStop>();
+            dvBufferStop.triggerCollider = bufferStop.GetComponent<BoxCollider>();
+            dvBufferStop.bufferCollider = bufferStop.playerCollider;
+            dvBufferStop.modelGO = new GameObject();
+            go.SetActive(true);
         }
 
         private static void CreateSigns()

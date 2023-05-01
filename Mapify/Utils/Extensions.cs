@@ -205,14 +205,14 @@ namespace Mapify.Utils
 
         #region Mapify
 
-        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool keepChildren = true, bool originShift = true)
+        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift);
+            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift, preserveTypes);
         }
 
-        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true)
+        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, originShift, active), keepChildren: keepChildren);
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, originShift, active), preserveTypes, keepChildren);
         }
 
         #endregion

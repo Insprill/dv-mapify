@@ -24,6 +24,7 @@
         <Reference Include="DV.Utils"/>
         <Reference Include="BezierCurves"/>
         <Reference Include="net.smkd.vector3d"/>
+        <Reference Include="Newtonsoft.Json"/>
         <Reference Include="PassengerJobs"/>
         <Reference Include="Unity.Collections"/>
         <Reference Include="Unity.Postprocessing.Runtime"/>

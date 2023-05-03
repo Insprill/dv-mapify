@@ -119,6 +119,14 @@ namespace Mapify.Utils
             return new Vector3(-vec.z, vec.y, -vec.x);
         }
 
+        public static Vector3 ClosestPositionOnBounds(this Collider collider, Vector3 point)
+        {
+            Bounds bounds = collider.bounds;
+            Transform transform = collider.transform;
+            Vector3 closestPoint = bounds.Contains(point) ? bounds.ClosestPoint(point) : Physics.ClosestPoint(point, collider, transform.position, transform.rotation);
+            return closestPoint;
+        }
+
         #endregion
 
         #region Mapify -> Vanilla Converters
@@ -199,6 +207,15 @@ namespace Mapify.Utils
 
             foreach (EquiPointSet.Point point in simplified.points)
                 yield return new Vector2((float)point.position.x, (float)point.position.z);
+        }
+
+        private static readonly FieldInfo RailTrack_Field_pointSet = AccessTools.DeclaredField(typeof(RailTrack), "pointSet");
+
+        public static void RefreshPointSet(this RailTrack railTrack)
+        {
+            RailTrack.pointSets.Remove(railTrack);
+            RailTrack_Field_pointSet.SetValue(railTrack, null);
+            RailTrack.pointSets.Add(railTrack, railTrack.GetPointSet());
         }
 
         #endregion

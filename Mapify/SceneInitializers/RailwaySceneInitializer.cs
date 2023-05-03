@@ -150,6 +150,7 @@ namespace Mapify.SceneInitializers
             TurntableRailTrack_Field__track.SetValue(turntableTrack, railTrack);
             turntableTrack.uniqueID = $"{turntableTrack.transform.position.GetHashCode()}";
             turntableTrack.trackEnds = turntableTrack.FindTrackEnds();
+            Main.Log($"ends: {string.Join(", ", turntableTrack.trackEnds.Select(t => t.track.name + " at " + t.angle))}");
             turntableTrack.visuals = turntable.bridge;
             if (turntable.frontHandle != null)
                 turntableTrack.frontHandle = turntable.frontHandle.transform;

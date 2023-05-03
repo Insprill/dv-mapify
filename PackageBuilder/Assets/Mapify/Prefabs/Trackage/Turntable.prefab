@@ -164,7 +164,6 @@ MonoBehaviour:
   generateSigns: 0
   generateBallast: 0
   generateSleepers: 1
-  randomSleeperOffset: 0
   stationId: 
   yardId: 0
   trackId: 0
@@ -434,6 +433,7 @@ MonoBehaviour:
   m_Script: {fileID: -459185933, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  type: 0
   frontHandle: {fileID: 7766102347786447595}
   rearHandle: {fileID: 4788395526131242718}
   bridge: {fileID: 1276935389952048925}

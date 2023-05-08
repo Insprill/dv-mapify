@@ -98,8 +98,6 @@ namespace Mapify
 
             // Register scene loaded hook
             SceneManager.sceneLoaded += OnSceneLoad;
-
-            WorldStreamingInit.LoadingFinished += OnLoadingFinished;
         }
 
         private static void OnStreamerSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -168,14 +166,6 @@ namespace Mapify
                 foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
                     Main.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
             }
-        }
-
-        private static void OnLoadingFinished()
-        {
-            if (!Main.LoadedMap.allowTrackBuilding)
-                return;
-            GameObject playerGO = PlayerManager.PlayerTransform.gameObject;
-            playerGO.AddComponent<RailwayBuilder>();
         }
     }
 }

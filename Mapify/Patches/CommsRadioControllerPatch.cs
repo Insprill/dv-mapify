@@ -17,6 +17,7 @@ namespace Mapify.Patches
 
         private static void Postfix(CommsRadioController __instance, ref List<ICommsRadioMode> ___allModes)
         {
+            // todo Main.LoadedMap.allowTrackBuilding
             controller = __instance;
             ___allModes = ___allModes
                 .Where(mode => !(mode is CommsRadioCrewVehicle))

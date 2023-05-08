@@ -39,7 +39,8 @@ namespace Mapify.Patches
             Vector3 globalOffset = -position;
 
             TrackChunkPoolObject ballastPoolObject = null;
-            if (chunk.track.GetComponent<Track>().generateBallast)
+            Track track = chunk.track.GetComponent<Track>();
+            if (track == null || track.generateBallast)
             {
                 ballastPoolObject = TrackChunkPoolObject.TakeFromPool(__instance.parent, position);
                 ballastPoolObject.SetMaterial(__instance.baseMat);
@@ -86,7 +87,7 @@ namespace Mapify.Patches
             }
 
             Track track = chunk.track.GetComponent<Track>();
-            if (!track.generateSleepers)
+            if (track != null && !track.generateSleepers)
                 return false;
 
             JobHandle sleepersHandle = (JobHandle)RailwayMeshGenerator_Field_sleepersHandle.GetValue(__instance);

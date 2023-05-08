@@ -13,7 +13,7 @@ namespace Mapify.Components
         private const string MODE_NAME = "Build Track";
         private const string MAIN_MENU_CONTENT = "Place trackage?";
         private const float MAX_RANGE = 150.0f;
-        private const float Y_OFFSET = 2.0f;
+        private const float Y_OFFSET = 1.0f;
         private const float SNAP_DIST = 2.0f;
 
         private static readonly Color LASER_COLOR = new Color32(255, 255, 255, 255);
@@ -23,8 +23,8 @@ namespace Mapify.Components
         private CommsRadioDisplay display;
         private Transform signalOrigin;
 
-        private Vector3 position;
-        private RailTrack placingTrack;
+        private Option<Vector3> targetPosition;
+        private Option<RailTrack> placingTrack;
 
         public void Awake()
         {
@@ -55,42 +55,37 @@ namespace Mapify.Components
         public void OnUpdate()
         {
             if (state != State.MainMenu && state != State.SelectObject)
-            {
-                Ray ray = new Ray(signalOrigin.position, signalOrigin.forward);
-                if (Physics.Raycast(ray, out RaycastHit hit, MAX_RANGE))
-                {
-                    position = hit.point.AddY(Y_OFFSET);
-                    BezierPoint point = hit.point.GetClosestComponent<BezierPoint>();
-                    if (point != null && Vector3.Distance(point.transform.position, hit.point) < SNAP_DIST)
-                    {
-                        int idx = point.curve.GetPointIndex(point);
-                        position = idx != 0 && idx != point.curve.pointCount - 1 ? point.position : hit.point.AddY(Y_OFFSET);
-                    }
-                    else
-                    {
-                        position = hit.point.AddY(Y_OFFSET);
-                    }
-                }
-            }
+                UpdateTargetPos();
 
             switch (state)
             {
-                case State.PlaceTrack:
-                case State.FinishTrack:
-                    Camera camera = PlayerManager.PlayerCamera;
-                    if (!Physics.Raycast(camera.transform.position, camera.transform.forward, out RaycastHit hit, MAX_RANGE))
+                case State.PlaceTrack: {
+                    if (!placingTrack.IsSome(out RailTrack track))
                         return;
-                    Vector3 pos = hit.point.AddY(1);
-                    if (placingTrack.curve.Last().position == pos)
+                    if (!targetPosition.IsSome(out Vector3 pos))
                         return;
-                    if (Vector3.Distance(placingTrack.curve[0].position, pos) < 2.0f)
-                        return;
-                    placingTrack.curve.Last().position = pos;
-                    RailTrack.pointSets.Remove(placingTrack);
-                    RailTrack.pointSets.Add(placingTrack, placingTrack.GetPointSet());
-                    RailTrack_Field_pointSet.SetValue(placingTrack, null);
-                    RailwayMeshUpdater.UpdateTrack(placingTrack);
+                    Vector3 forward = signalOrigin.forward;
+                    track.curve[0].position = pos;
+                    track.curve.Last().position = pos + forward.AddY(-forward.y).normalized * 2.0f;
                     break;
+                }
+                case State.FinishTrack: {
+
+                    if (!placingTrack.IsSome(out RailTrack track))
+                        return;
+                    if (!targetPosition.IsSome(out Vector3 pos))
+                        return;
+                    if (track.curve.Last().position == pos)
+                        return;
+                    if (Vector3.Distance(track.curve[0].position, pos) < 2.0f)
+                        return;
+                    track.curve.Last().position = pos;
+                    RailTrack.pointSets.Remove(track);
+                    RailTrack.pointSets.Add(track, track.GetPointSet());
+                    RailTrack_Field_pointSet.SetValue(track, null);
+                    RailwayMeshUpdater.UpdateTrack(track);
+                    break;
+                }
             }
         }
 
@@ -124,10 +119,13 @@ namespace Mapify.Components
             switch (state)
             {
                 case State.MainMenu:
-                    // display.SetDisplay(MODE_NAME);
+                    display.SetDisplay(MODE_NAME);
                     break;
                 case State.PlaceTrack:
-                    // display.SetDisplay(MODE_NAME, "Place track?");
+                    display.SetContentAndAction("Place track?");
+                    break;
+                case State.FinishTrack:
+                    display.SetContentAndAction("Finish placing track?");
                     break;
             }
         }
@@ -140,6 +138,7 @@ namespace Mapify.Components
                     switch (action)
                     {
                         case CommsRadioAction.Use:
+                            display.SetContentAndAction("Track"); //todo
                             return State.SelectObject;
                     }
 
@@ -161,24 +160,32 @@ namespace Mapify.Components
                 case State.PlaceTrack: {
                     switch (action)
                     {
-                        case CommsRadioAction.Use:
+                        case CommsRadioAction.Use: {
+                            if (!targetPosition.IsSome(out Vector3 pos))
+                                return state;
                             GameObject go = WorldMover.Instance.NewChild("track");
                             go.SetActive(false);
                             BezierCurve curve = go.AddComponent<BezierCurve>();
                             curve.resolution = 0.5f;
-                            curve.AddPointAt(position);
-                            curve.AddPointAt(position + signalOrigin.forward.AddY(-signalOrigin.forward.y).normalized * 2.0f);
-                            placingTrack = go.AddComponent<RailTrack>();
-                            placingTrack.dontChange = false;
-                            placingTrack.ApplyRailType();
+                            curve.AddPointAt(pos);
+                            curve.AddPointAt(pos + signalOrigin.forward.AddY(-signalOrigin.forward.y).normalized * 2.0f);
+                            RailTrack track = go.AddComponent<RailTrack>();
+                            track.dontChange = false;
+                            track.ApplyRailType();
+                            placingTrack = track;
                             go.SetActive(true);
                             return State.FinishTrack;
-                        case CommsRadioAction.Decrease:
-                            placingTrack.transform.Rotate(Vector3.up, -15.0f);
+                        }
+                        case CommsRadioAction.Decrease: {
+                            if (placingTrack.IsSome(out RailTrack track))
+                                track.transform.Rotate(Vector3.up, -15.0f);
                             break;
-                        case CommsRadioAction.Increase:
-                            placingTrack.transform.Rotate(Vector3.up, 15.0f);
+                        }
+                        case CommsRadioAction.Increase: {
+                            if (placingTrack.IsSome(out RailTrack track))
+                                track.transform.Rotate(Vector3.up, 15.0f);
                             break;
+                        }
                     }
 
                     break;
@@ -186,20 +193,28 @@ namespace Mapify.Components
                 case State.FinishTrack: {
                     switch (action)
                     {
-                        case CommsRadioAction.Use:
-                            placingTrack.ConnectInToClosestBranch();
-                            placingTrack.ConnectOutToClosestBranch();
-                            if (placingTrack.generateColliders)
-                                placingTrack.CreateCollider();
-                            RailwayMeshUpdater.UpdateTrack(placingTrack);
-                            placingTrack = null;
+                        case CommsRadioAction.Use: {
+                            if (!placingTrack.TakeIfSome(out RailTrack track))
+                                return state;
+                            track.ConnectInToClosestBranch();
+                            track.ConnectOutToClosestBranch();
+                            if (track.generateColliders)
+                                track.CreateCollider();
+                            RailwayMeshUpdater.UpdateTrack(track);
                             return State.MainMenu;
-                        case CommsRadioAction.Decrease:
-                            placingTrack.transform.Rotate(Vector3.up, -15.0f);
+                        }
+                        case CommsRadioAction.Decrease: {
+                            if (!placingTrack.IsSome(out RailTrack track))
+                                return state;
+                            track.transform.Rotate(Vector3.up, -15.0f);
                             break;
-                        case CommsRadioAction.Increase:
-                            placingTrack.transform.Rotate(Vector3.up, 15.0f);
+                        }
+                        case CommsRadioAction.Increase: {
+                            if (!placingTrack.IsSome(out RailTrack track))
+                                return state;
+                            track.transform.Rotate(Vector3.up, 15.0f);
                             break;
+                        }
                     }
 
                     break;
@@ -212,9 +227,30 @@ namespace Mapify.Components
         private void ClearFlags()
         {
             SetState(State.MainMenu);
-            position = Vector3.zero;
-            if (placingTrack != null)
-                Destroy(placingTrack.gameObject);
+            targetPosition = Vector3.zero;
+            if (placingTrack.TakeIfSome(out RailTrack track))
+                Destroy(track.gameObject);
+        }
+
+        private void UpdateTargetPos()
+        {
+            Ray ray = new Ray(signalOrigin.position, signalOrigin.forward);
+            if (!Physics.Raycast(ray, out RaycastHit hit, MAX_RANGE))
+            {
+                targetPosition = Option<Vector3>.None;
+                return;
+            }
+
+            BezierPoint point = hit.point.GetClosestComponent<BezierPoint>();
+            if (point != null && Vector3.Distance(point.transform.position, hit.point) < SNAP_DIST)
+            {
+                int idx = point.curve.GetPointIndex(point);
+                targetPosition = idx != 0 && idx != point.curve.pointCount - 1 ? point.position : hit.point.AddY(Y_OFFSET);
+            }
+            else
+            {
+                targetPosition = hit.point.AddY(Y_OFFSET);
+            }
         }
 
         private enum State

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using DV.PointSet;
 using HarmonyLib;
@@ -30,8 +31,8 @@ namespace Mapify.Utils
             if (!track.generateMeshes || !CheckCaches())
                 return;
 
-            RecreateTrack(track);
             UpdateSpatialHash(track);
+            RecreateTrack(track);
 
             RailwayMeshGenerator_Field_prevCellId.SetValue(railwayMeshGenerator, new Vector2Int(int.MinValue, int.MaxValue));
         }
@@ -66,6 +67,9 @@ namespace Mapify.Utils
                 TrackChunk trackChunk = spatialHash.Add(railPointSet, point);
                 trackChunk.isSleepers = false;
                 trackChunk.track = track;
+
+                if (activeChunks.TryGetValue(trackChunk.coords, out List<TrackChunk> chunks) && chunks.All(chunk => chunk.track != track))
+                    chunks.Add(trackChunk);
             }
 
             EquiPointSet sleepersPointSet = EquiPointSet.ResampleEquidistant(railPointSet, track.baseType.sleeperDistance, track.baseType.sleeperDistance * 0.5f, true);

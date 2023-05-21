@@ -4,6 +4,8 @@ Runtime:
 
 Map Creation Package:
 - Added support for custom buffer stops.
+- Added a validation and startup warning if an incorrect Unity version is being used.
+- Fixed an error during validation if a Terrain object was missing its TerrainData.
 
 
 0.2.0:

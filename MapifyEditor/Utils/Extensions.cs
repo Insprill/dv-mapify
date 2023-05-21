@@ -94,6 +94,9 @@ namespace Mapify.Editor.Utils
 
             foreach (Terrain terrain in terrains)
             {
+                // This is validated in the TerrainValidator, but can be called elsewhere, so just ignore it.
+                if (terrain.terrainData == null)
+                    continue;
                 Vector3 terrainSize = terrain.terrainData.size;
                 Vector3 position = terrain.transform.position;
                 float terrainMaxX = position.x + terrainSize.x;

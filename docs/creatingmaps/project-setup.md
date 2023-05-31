@@ -48,6 +48,13 @@ When you're done, it should look like this.
 ![XR Settings](../assets/xr-settings.png)
 
 
+Lastly, you'll need to ensure Gizmos are enabled.
+Gizmos are used to render trackage and other previews in the editor.
+To toggle Gizmos, click the "Gizmos" button in the top right of the scene view.
+
+![Gizmos](../assets/gizmos.png)
+
+
 ## Importing The Creation Package
 
 To import the map creation package, [download the latest release from GitHub][github-releases].

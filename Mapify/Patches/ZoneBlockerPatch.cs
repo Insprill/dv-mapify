@@ -1,3 +1,4 @@
+using DV.Utils;
 using HarmonyLib;
 
 namespace Mapify.Patches
@@ -20,7 +21,8 @@ namespace Mapify.Patches
 
             blocker.Hovered.Invoke();
             if (!VRManager.IsVREnabled())
-                SingletonBehaviour<InteractionTextControllerNonVr>.Instance.DisplayText((InteractionInfoType)blocker.requiredJobLicense + OFFSET);
+                // Todo: Proper localization support?
+                SingletonBehaviour<InteractionTextControllerNonVr>.Instance.DisplayText((InteractionInfoType)blocker.requiredJobLicense.v1 + OFFSET);
 
             return false;
         }

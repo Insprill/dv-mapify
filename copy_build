@@ -1,0 +1,21 @@
+#!/bin/bash
+
+BUILD_TARGET_PATH="$1"
+PROJECT_PATH="$2"
+DEST_FOLDER="$HOME/.local/share/Steam/steamapps/common/Derail Valley/Mods/Mapify"
+INFO_FILE="info.json"
+LOCALE_FILE="locale.csv"
+
+function copy() {
+    cp -pfu "$1" "$DEST_FOLDER"
+}
+
+function copy_root() {
+    copy "$PROJECT_PATH../$1"
+}
+
+[ -d "$DEST_FOLDER" ] || exit 0
+
+copy "$BUILD_TARGET_PATH"
+copy_root "$INFO_FILE"
+copy_root "$LOCALE_FILE"

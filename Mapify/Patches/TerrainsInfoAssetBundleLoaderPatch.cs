@@ -49,8 +49,6 @@ namespace Mapify.Patches
             TerrainsInfoFromAssetBundle bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
             bundle.terrainSizeInWorld = Main.LoadedMap.terrainSize;
             bundle.numberOfTerrains = Main.LoadedMap.terrainCount;
-            bundle.hasMicroSplatDiffuse = false;
-            bundle.hasMicroSplatNormal = false;
             Field_assBunInfo.SetValue(__instance, bundle);
         }
     }

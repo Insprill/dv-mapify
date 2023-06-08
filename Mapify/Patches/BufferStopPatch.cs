@@ -22,7 +22,7 @@ namespace Mapify.Patches
         {
             Rigidbody attachedRigidbody = other.attachedRigidbody;
             float breakSpeed = __instance.GetComponent<Editor.BufferStop>().breakSpeed * 3.6f;
-            return attachedRigidbody != null && attachedRigidbody.velocity.sqrMagnitude <= (breakSpeed * breakSpeed);
+            return attachedRigidbody != null && attachedRigidbody.velocity.sqrMagnitude <= breakSpeed * breakSpeed;
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Mapify.Patches
         ///     Removes the velocity check, which is replaced in our Prefix patch.
         /// </summary>
         /// <seealso cref="Prefix" />
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             float threshold = (float)BufferStop_Field_SQR_BREAK_BUFFER_VELOCITY_THRESHOLD.GetValue(null);
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
@@ -48,7 +48,8 @@ namespace Mapify.Patches
             for (int i = 0; i < codes.Count; i++)
                 if (codes[i].opcode == OpCodes.Ldc_R4 && Mathf.Abs((float)codes[i].operand - threshold) < 0.001)
                 {
-                    codes.RemoveRange(i - 5, 7);
+                    for (int j = i - 5; j <= i + 1; j++)
+                        codes[j].opcode = OpCodes.Nop;
                     break;
                 }
 

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityModManagerNet;
 
@@ -7,7 +6,6 @@ namespace Mapify
     public class Settings : UnityModManager.ModSettings
     {
         // ReSharper disable MemberCanBePrivate.Global
-        public string MapName = Main.DEFAULT_MAP_NAME;
         public bool ShowHiddenSettings;
         public bool verboseLogging;
         // ReSharper restore MemberCanBePrivate.Global
@@ -15,17 +13,6 @@ namespace Mapify
 
         public void Draw(UnityModManager.ModEntry modEntry)
         {
-            #region Map
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Map");
-            int idx = Array.IndexOf(Main.AllMapNames, MapName);
-            UnityModManager.UI.PopupToggleGroup(ref idx, Main.AllMapNames);
-            MapName = Main.AllMapNames[idx];
-            GUILayout.EndHorizontal();
-
-            #endregion
-
             #region Hidden Settings
 
             ShowHiddenSettings = GUILayout.Toggle(ShowHiddenSettings, "Show Hidden Settings");

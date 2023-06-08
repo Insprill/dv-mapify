@@ -2,34 +2,48 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using DV;
 using HarmonyLib;
 using Mapify.Editor;
-using Mapify.Patches.Mods;
+using Mapify.Utils;
 using UnityEngine;
 using UnityModManagerNet;
+
+// using Mapify.Patches.Mods;
 
 namespace Mapify
 {
     public static class Main
     {
+        private static readonly int[] COMPATIBLE_GAME_VERSIONS = { 93 };
+
+        public static readonly BasicMapInfo DEFAULT_MAP_INFO = new BasicMapInfo("Default", null);
         public const string DEFAULT_MAP_NAME = "Default";
         private const string MAPS_FOLDER_NAME = "Maps";
+        private const string LOCALE_PATH = "locale.csv";
 
         private static UnityModManager.ModEntry ModEntry;
         public static Settings Settings { get; private set; }
         internal static Harmony Harmony { get; private set; }
 
-        private static readonly UnityModManager.ModEntry PassengerJobs = UnityModManager.FindMod("PassengerJobs");
-        private static bool IsPassengerJobsEnabled => PassengerJobs != null && PassengerJobs.Enabled;
+        // private static readonly UnityModManager.ModEntry PassengerJobs = UnityModManager.FindMod("PassengerJobs");
+        // private static bool IsPassengerJobsEnabled => PassengerJobs != null && PassengerJobs.Enabled;
 
         public static MapInfo LoadedMap;
         private static BasicMapInfo basicMapInfo;
         public static string[] AllMapNames { get; private set; }
         private static string MapsFolder;
-        private static readonly Dictionary<string, (BasicMapInfo, string)> Maps = new Dictionary<string, (BasicMapInfo, string)>();
+        public static readonly Dictionary<string, (BasicMapInfo, string)> Maps = new Dictionary<string, (BasicMapInfo, string)>();
+        public static Locale Locale;
 
         private static bool Load(UnityModManager.ModEntry modEntry)
         {
+            if (!COMPATIBLE_GAME_VERSIONS.Contains(BuildInfo.BUILD_VERSION_MAJOR))
+            {
+                LogError($"Incompatible game version {BuildInfo.BUILD_VERSION_MAJOR}! This version of Mapify is only compatible with {string.Join(", ", COMPATIBLE_GAME_VERSIONS)}");
+                return false;
+            }
+
             ModEntry = modEntry;
             Settings = Settings.Load<Settings>(modEntry);
             ModEntry.OnGUI = DrawGUI;
@@ -46,28 +60,25 @@ namespace Mapify
                 {
                     Log("Searching for maps...");
                     FindMaps();
-                    Log($"Found {Maps.Count} map(s) {(Maps.Count > 0 ? $"({string.Join(", ", Maps.Keys.ToArray())})" : "")}");
+                    Log($"Found {Maps.Count} map(s) ({string.Join(", ", Maps.Keys.ToArray())})");
                 }
 
-                if (Settings.MapName != DEFAULT_MAP_NAME)
-                {
-                    Log("Patching...");
-                    Harmony = new Harmony(ModEntry.Info.Id);
-                    Harmony.PatchAll();
-                    Log("Successfully patched");
-                    if (IsPassengerJobsEnabled)
-                    {
-                        Log($"Found {PassengerJobs.Info.DisplayName}, patching...");
-                        PassengerJobsPatch.Patch(Harmony);
-                        Log("Successfully patched");
-                    }
-                }
+                string localePath = Path.Combine(ModEntry.Path, LOCALE_PATH);
+                if (File.Exists(localePath))
+                    Locale = new Locale(CSV.Parse(File.ReadAllText(localePath)));
                 else
-                {
-                    Log("Default map selected, skipping patches");
-                }
+                    LogError($"Failed to find locale file at {localePath}! Please make sure it's there.");
 
-                WorldStreamingInit.LoadingFinished += DebugCommands.RegisterCommands;
+                Log("Patching...");
+                Harmony = new Harmony(ModEntry.Info.Id);
+                Harmony.PatchAll();
+                Log("Successfully patched");
+                // if (IsPassengerJobsEnabled)
+                // {
+                //     Log($"Found {PassengerJobs.Info.DisplayName}, patching...");
+                //     PassengerJobsPatch.Patch(Harmony);
+                //     Log("Successfully patched");
+                // }
             }
             catch (Exception ex)
             {
@@ -101,16 +112,6 @@ namespace Mapify
             }
 
             AllMapNames = Maps.Keys.OrderBy(x => x).ToArray();
-
-            if (!Maps.ContainsKey(Settings.MapName))
-            {
-                LogError($"Failed to find selected map {Settings.MapName}! Is it still installed? Was it renamed?");
-                Settings.MapName = DEFAULT_MAP_NAME;
-            }
-            else
-            {
-                basicMapInfo = Maps[Settings.MapName].Item1;
-            }
         }
 
         public static string GetLoadedMapAssetPath(string fileName, string mapDir = null)

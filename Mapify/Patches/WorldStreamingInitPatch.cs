@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using DV.Utils;
 using HarmonyLib;
 using UnityEngine;
 
@@ -63,7 +64,7 @@ namespace Mapify.Patches
                         continue;
 
                     // Don't add the vegetationStudioPrefab
-                    if (operand == "loading terrain")
+                    if (operand == "loading/terrains")
                     {
                         codes.RemoveRange(i - 9, 8);
                         continue;

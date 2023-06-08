@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using DV.Utils;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Patches;
@@ -24,7 +25,7 @@ namespace Mapify
         public static IEnumerator LoadMap()
         {
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
-            string loadingMapLogMsg = $"loading map {Main.Settings.MapName}";
+            string loadingMapLogMsg = $"loading map {SingletonBehaviour<SaveGameManager>.Instance.FindStartGameData().GetSaveGameData().GetJObject("mapify").ToObject<BasicMapInfo>()}";
             wsi.Log(loadingMapLogMsg, 0);
             yield return null;
 

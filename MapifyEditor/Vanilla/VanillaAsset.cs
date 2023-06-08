@@ -57,14 +57,16 @@ namespace Mapify.Editor
 
         #region Required Scene Components
 
-        RenderTextureSystem = 60,
-        CarSpawner = 61,
-        LicensesAndGarages = 62,
-        ItemDisablerGrid = 63,
-        JobLogicController = 64,
-        StorageLogic = 65,
-        ShopLogic = 66,
-        DerailAndDamageObserver = 67,
+        ItemBuoyancyEnabler = 60,
+        ItemDisablerGrid = 61,
+        JobLogicController = 62,
+        LicensesAndGarages = 63,
+        ShopLogic = 64,
+        SingletonInstanceFinder = 65,
+        StorageLogic = 66,
+        UnderwaterPostProcessing = 67,
+        WeatherDV = 68,
+        WeatherGUITogglerScript = 69,
 
         #endregion
 

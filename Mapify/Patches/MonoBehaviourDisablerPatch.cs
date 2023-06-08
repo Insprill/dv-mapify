@@ -2,12 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using DV;
-using DV.CabControls;
-using DV.CabControls.Spec;
-using DV.CashRegister;
-using DV.RenderTextureSystem;
-using DV.Shops;
+using DV.Utils;
 using HarmonyLib;
 using UnityEngine;
 
@@ -19,37 +14,6 @@ namespace Mapify.Patches
     /// </summary>
     public static class MonoBehaviourPatch
     {
-        private static readonly Type[] disableTypes = {
-            typeof(RenderTextureSystem),
-            typeof(CarSpawner),
-            typeof(CarSpawnerOriginShiftHandler),
-            typeof(SaveLoadController),
-            typeof(LogicController),
-            typeof(StorageController),
-            typeof(StorageBase),
-            typeof(ItemBase),
-            typeof(ItemDisablerGrid),
-            typeof(GlobalShopController),
-            typeof(DerailAndDamageObserver),
-            typeof(TutorialEnabler),
-            typeof(StationController),
-            typeof(StationLocoSpawner),
-            typeof(WarehouseMachineController),
-            typeof(PitStop),
-            typeof(StorageAccessPoint),
-            typeof(Shop),
-            typeof(CashRegisterBase),
-            typeof(ResourceModule),
-            typeof(LocoResourceModule),
-            typeof(ScanItemResourceModule),
-            typeof(CashRegisterResourceModules),
-            typeof(GarageLogic),
-            typeof(GarageCarSpawner),
-            typeof(ControlSpec),
-            typeof(PlayerDistanceMultipleGameObjectsOptimizer),
-            typeof(PlayerDistanceGameObjectsDisabler),
-            typeof(TurntableRailTrack)
-        };
         private static HashSet<MethodInfo> patchedMethods;
         private static readonly string[] methodNames = {
             "Awake",
@@ -67,13 +31,12 @@ namespace Mapify.Patches
         public static void DisableAll()
         {
             patchedMethods = new HashSet<MethodInfo>();
-            foreach (Type type in disableTypes)
+            foreach (Type type in Assembly.GetAssembly(typeof(TrainCar)).GetTypes())
             {
-                if (!type.IsSubclassOf(typeof(MonoBehaviour)))
-                {
-                    Main.LogError($"Tried to patch non-MonoBehaviour type {type}");
+                if (!type.IsSubclassOf(typeof(MonoBehaviour)) || (!string.IsNullOrEmpty(type.Namespace) && type.Namespace.StartsWith("DV.")))
                     continue;
-                }
+
+                Main.LogDebug($"Disabling {type.FullName}");
 
                 foreach (string methodName in methodNames)
                 {
@@ -93,6 +56,7 @@ namespace Mapify.Patches
         private static IEnumerator EnableLater()
         {
             yield return null;
+            Main.LogDebug("Enabling disabled MonoBehaviours");
             foreach (MethodInfo method in patchedMethods)
                 Main.Harmony.Unpatch(method, prefix);
             patchedMethods = null;

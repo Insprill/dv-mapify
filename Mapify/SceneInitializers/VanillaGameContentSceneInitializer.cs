@@ -20,12 +20,7 @@ namespace Mapify.SceneInitializers
         {
             switch (gameObject.name)
             {
-                case "[RenderTextureSystem]":
-                    yield return (VanillaAsset.RenderTextureSystem, gameObject);
-                    yield break;
-                case "[CarSpawner]":
-                    yield return (VanillaAsset.CarSpawner, gameObject);
-                    yield break;
+                // Todo: add these
                 case "[LicensesAndGarages]":
                     yield return (VanillaAsset.LicensesAndGarages, gameObject);
                     yield break;
@@ -40,9 +35,6 @@ namespace Mapify.SceneInitializers
                     yield break;
                 case "[ShopLogic]":
                     yield return (VanillaAsset.ShopLogic, gameObject);
-                    yield break;
-                case "[DerailAndDamageObserver]":
-                    yield return (VanillaAsset.DerailAndDamageObserver, gameObject);
                     yield break;
             }
 
@@ -91,7 +83,7 @@ namespace Mapify.SceneInitializers
             yield return (VanillaAsset.RefillMachineEngineDamage, refillStationParent.FindChildByName("Engine repair"));
             yield return (VanillaAsset.ServiceStationMarkerOpen, refillStationParent.FindChildByName("ServiceStationMarker-open"));
             yield return (VanillaAsset.ServiceStationMarkerClosed, refillStationParent.FindChildByName("ServiceStationMarker-closed"));
-            yield return (VanillaAsset.CashRegister, refillStationParent.FindChildByName("CashRegisterResourceModules"));
+            yield return (VanillaAsset.CashRegister, refillStationParent.FindChildByName("CashRegisterWithModules"));
 
             #endregion
 
@@ -99,7 +91,7 @@ namespace Mapify.SceneInitializers
 
             GameObject shopsParent = gameObject.FindChildByName("Shops");
 
-            foreach (ScanItemResourceModule module in shopsParent.GetComponentsInChildren<ScanItemResourceModule>())
+            foreach (ScanItemCashRegisterModule module in shopsParent.GetComponentsInChildren<ScanItemCashRegisterModule>())
             {
                 string itemName = module.sellingItemSpec.name.Replace("_", "");
                 if (itemName.StartsWith("Key")) continue;
@@ -110,7 +102,7 @@ namespace Mapify.SceneInitializers
             }
 
             GameObject shop = shopsParent.FindChildByName("[ItemShop] Harbor");
-            foreach (ScanItemResourceModule module in shop.GetComponentsInChildren<ScanItemResourceModule>())
+            foreach (ScanItemCashRegisterModule module in shop.GetComponentsInChildren<ScanItemCashRegisterModule>())
                 Object.Destroy(module.gameObject);
             Object.Destroy(shop.FindChildByName("Stopwatch"));
 

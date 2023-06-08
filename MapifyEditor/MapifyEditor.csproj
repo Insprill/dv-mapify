@@ -32,7 +32,7 @@
         <Exec Condition="'$(OS)' != 'Windows_NT'" Command="jq -r '.Version' ../info.json &gt; ../PackageBuilder/Assets/Mapify/version.txt"/>
         <Exec Condition="'$(OS)' != 'Windows_NT'" Command="cp &quot;$(TargetPath)&quot; &quot;$(OutDir)BezierCurves.dll&quot; ../PackageBuilder/Assets/Mapify/Scripts/"/>
         <Exec Condition="'$(OS)' != 'Windows_NT'" Command="export DEST=&quot;../TestMap/Assets/Mapify/Scripts&quot; &amp;&amp; [ -d &quot;${DEST}&quot; ] &amp;&amp; cp -pfu &quot;$(TargetPath)&quot; &quot;${DEST}&quot;"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="export DEST=&quot;$HOME/.local/share/Steam/steamapps/common/Derail Valley/Mods/Mapify&quot; &amp;&amp; [ -d &quot;${DEST}&quot; ] &amp;&amp; cp -pfu &quot;$(TargetPath)&quot; &quot;${DEST}&quot;"/>
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="../copy_build $(TargetPath) $(ProjectDir)"/>
 
         <Exec Condition="'$(OS)' == 'Windows_NT'" Command="xcopy /d /y &quot;$(TargetPath)&quot; ..\build\"/>
         <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell -Command &quot;(Get-Content ../info.json | ConvertFrom-Json).Version | Set-Content ..\PackageBuilder\Assets\Mapify\version.txt&quot;"/>

@@ -4,11 +4,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using CommandTerminal;
+using DV.Common;
+using DV.JObjectExtstensions;
 using DV.Logic.Job;
 using DV.PointSet;
+using DV.ThingTypes;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace Mapify.Utils
@@ -199,6 +203,23 @@ namespace Mapify.Utils
 
             foreach (EquiPointSet.Point point in simplified.points)
                 yield return new Vector2((float)point.position.x, (float)point.position.z);
+        }
+
+        public static BasicMapInfo GetBasicMapInfo(this SaveGameManager saveGameManager)
+        {
+            JObject mapify = saveGameManager.data.GetJObject("mapify");
+            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Main.DEFAULT_MAP_INFO;
+        }
+
+        public static BasicMapInfo GetBasicMapInfo(this JObject jObject)
+        {
+            JObject mapify = jObject.GetJObject("mapify");
+            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Main.DEFAULT_MAP_INFO;
+        }
+
+        public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo mapInfo)
+        {
+            jObject.SetJObject("mapify", new JObject(mapInfo));
         }
 
         #endregion

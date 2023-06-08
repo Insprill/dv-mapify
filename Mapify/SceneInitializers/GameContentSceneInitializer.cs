@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using DV.CashRegister;
-using DV.Logic.Job;
 using DV.Printers;
 using DV.Shops;
 using DV.Teleporters;
+using DV.ThingTypes;
+using DV.ThingTypes.TransitionHelpers;
+using DV.Utils;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -15,7 +17,6 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
-using Station = Mapify.Editor.Station;
 
 namespace Mapify.SceneInitializers
 {
@@ -28,9 +29,9 @@ namespace Mapify.SceneInitializers
         #endregion
 
         private static readonly FieldInfo StationController_Field_jobBookletSpawnSurface = AccessTools.DeclaredField(typeof(StationController), "jobBookletSpawnSurface");
-        private static readonly MethodInfo LogicController_Method_GetContainerTypesThatStationUses = AccessTools.DeclaredMethod(
+        private static readonly MethodInfo LogicController_Method_GetCarTypesThatStationUses = AccessTools.DeclaredMethod(
             typeof(LogicController),
-            "GetContainerTypesThatStationUses",
+            "GetCarTypesThatStationUses",
             new[] { typeof(StationController) }
         );
 
@@ -50,14 +51,16 @@ namespace Mapify.SceneInitializers
 
         private static void SetupGameScene()
         {
-            AssetCopier.Instantiate(VanillaAsset.RenderTextureSystem, false);
-            AssetCopier.Instantiate(VanillaAsset.CarSpawner, false);
-            AssetCopier.Instantiate(VanillaAsset.LicensesAndGarages, false);
+            AssetCopier.Instantiate(VanillaAsset.ItemBuoyancyEnabler, false);
             AssetCopier.Instantiate(VanillaAsset.ItemDisablerGrid, false);
             AssetCopier.Instantiate(VanillaAsset.JobLogicController, false);
-            AssetCopier.Instantiate(VanillaAsset.StorageLogic, false);
+            AssetCopier.Instantiate(VanillaAsset.LicensesAndGarages, false);
             AssetCopier.Instantiate(VanillaAsset.ShopLogic, false, false);
-            AssetCopier.Instantiate(VanillaAsset.DerailAndDamageObserver, false);
+            AssetCopier.Instantiate(VanillaAsset.SingletonInstanceFinder, false);
+            AssetCopier.Instantiate(VanillaAsset.StorageLogic, false);
+            AssetCopier.Instantiate(VanillaAsset.UnderwaterPostProcessing, false);
+            AssetCopier.Instantiate(VanillaAsset.WeatherDV, false);
+            AssetCopier.Instantiate(VanillaAsset.WeatherGUITogglerScript, false);
             // I'm not sure where vanilla creates this because it doesn't have auto create enabled.
             Main.Log("Creating YardTracksOrganizer");
             new GameObject("[YardTracksOrganizer]").AddComponent<YardTracksOrganizer>();
@@ -69,7 +72,7 @@ namespace Mapify.SceneInitializers
             {
                 GameObject go = areaBlocker.gameObject;
                 StationLicenseZoneBlocker zoneBlocker = go.AddComponent<StationLicenseZoneBlocker>();
-                zoneBlocker.requiredJobLicense = areaBlocker.requiredLicense.ConvertByName<JobLicense, JobLicenses>();
+                zoneBlocker.requiredJobLicense = areaBlocker.requiredLicense.ConvertByName<JobLicense, JobLicenses>().ToV2();
                 zoneBlocker.blockerObjectsParent = go;
                 InvalidTeleportLocationReaction reaction = go.AddComponent<InvalidTeleportLocationReaction>();
                 reaction.blocker = zoneBlocker;
@@ -166,15 +169,16 @@ namespace Mapify.SceneInitializers
                         locoSpawner.locoTypeGroupsToSpawn = locomotiveSpawner.condensedLocomotiveTypes
                             .Select(rollingStockTypes =>
                                 new ListTrainCarTypeWrapper(rollingStockTypes.Split(',').Select(rollingStockType =>
-                                        (TrainCarType)Enum.Parse(typeof(TrainCarType), rollingStockType)
+                                        ((TrainCarType)Enum.Parse(typeof(TrainCarType), rollingStockType)).ToV2()
                                     ).ToList()
                                 )
                             ).ToList();
                     }
 
-                logicController.YardIdToStationController.Add(stationController.stationInfo.YardID, stationController);
-                logicController.stationToSupportedContainerTypes.Add(stationController,
-                    (HashSet<CargoContainerType>)LogicController_Method_GetContainerTypesThatStationUses.Invoke(logicController, new object[] { stationController }));
+                // Todo: If this doesn't pick up our stuff, can we just re-call the Awake and Start functions?
+                // logicController.YardIdToStationController.Add(stationController.stationInfo.YardID, stationController);
+                // logicController.stationToSupportedCarTypes.Add(stationController,
+                //     (HashSet<TrainCarType_v2>)LogicController_Method_GetCarTypesThatStationUses.Invoke(logicController, new object[] { stationController }));
 
                 stationObject.SetActive(true);
             }
@@ -263,8 +267,8 @@ namespace Mapify.SceneInitializers
                     else if (asset == VanillaAsset.CashRegister)
                     {
                         GameObject cashRegisterObj = vanillaObject.Replace(keepChildren: false);
-                        CashRegisterResourceModules cashRegister = cashRegisterObj.GetComponentInChildren<CashRegisterResourceModules>();
-                        cashRegister.resourceMachines = resourceModules.Cast<ResourceModule>().ToArray();
+                        // CashRegisterWithModules cashRegister = cashRegisterObj.GetComponentInChildren<CashRegisterWithModules>();
+                        // cashRegister.resourceMachines = resourceModules.Cast<ResourceModule>().ToArray();
                     }
                 }
 
@@ -302,18 +306,18 @@ namespace Mapify.SceneInitializers
                 gsc.globalShopList.Add(shop);
 
 
-                shop.scanItemResourceModules = new ScanItemResourceModule[store.itemTypes.Length];
+                shop.scanItemResourceModules = new ScanItemCashRegisterModule[store.itemTypes.Length];
                 for (int i = 0; i < store.itemTypes.Length; i++)
                 {
                     Transform t = AssetCopier.Instantiate(store.itemTypes[i].ToVanillaAsset()).transform;
                     t.SetParent(store.moduleReference, false);
                     store.PositionThing(store.moduleReference, t, i);
-                    shop.scanItemResourceModules[i] = t.GetComponent<ScanItemResourceModule>();
+                    shop.scanItemResourceModules[i] = t.GetComponent<ScanItemCashRegisterModule>();
                     optimizer.gameObjectsToDisable.Add(t.gameObject);
                 }
 
-                CashRegisterResourceModules cashRegister = shopTransform.GetComponentInChildren<CashRegisterResourceModules>();
-                cashRegister.resourceMachines = shop.scanItemResourceModules.Cast<ResourceModule>().ToArray();
+                CashRegisterWithModules cashRegister = shopTransform.GetComponentInChildren<CashRegisterWithModules>();
+                cashRegister.registerModules = shop.scanItemResourceModules.Cast<CashRegisterModule>().ToArray();
                 optimizer.gameObjectsToDisable.Add(cashRegister.gameObject);
                 cashRegister.GetComponent<PrinterController>().spawnAnchor = store.itemSpawnReference;
 

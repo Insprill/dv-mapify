@@ -1,3 +1,4 @@
+using DV.ThingTypes;
 using HarmonyLib;
 using Mapify.Utils;
 
@@ -8,7 +9,8 @@ namespace Mapify.Patches
     ///     then creates a new string to show the player.
     /// </summary>
     /// <seealso cref="ZoneBlocker_Hover_Patch" />
-    [HarmonyPatch(typeof(InteractionTextControllerNonVr), nameof(InteractionTextControllerNonVr.GetText))]
+    // Todo: See ZoneBlockerPatch
+    // [HarmonyPatch(typeof(InteractionTextControllerNonVr), nameof(InteractionTextControllerNonVr.GetText))]
     public class InteractionTextControllerNonVr_GetText_Patch
     {
         private static bool Prefix(InteractionInfoType infoType, ref string __result)

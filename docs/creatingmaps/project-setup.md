@@ -10,7 +10,7 @@ In particular, I'd recommend checking out this one:
 
 ## Installing Unity
 
-To create custom maps, you must install Unity **2019.4.22f1**.
+To create custom maps, you must install Unity **2019.4.40f1**.
 The minor version is essential!
 If you don't have Unity installed, the easiest way to get it is through [Unity Hub][unity-hub].
 
@@ -104,6 +104,6 @@ To view them, hover over the field momentarily, and it'll appear.
 
 
 [unity-hub]: https://unity.com/download
-[unity-download]: unityhub://2019.4.22f1/9fdda2fe27ad
+[unity-download]: unityhub://2019.4.40f1/ffc62b691db5
 [github-releases]: https://github.com/Insprill/dv-mapify/releases
 [code-monkey]: https://www.youtube.com/@CodeMonkeyUnitys

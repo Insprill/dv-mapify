@@ -26,9 +26,6 @@ namespace Mapify
         public static Settings Settings { get; private set; }
         internal static Harmony Harmony { get; private set; }
 
-        // private static readonly UnityModManager.ModEntry PassengerJobs = UnityModManager.FindMod("PassengerJobs");
-        // private static bool IsPassengerJobsEnabled => PassengerJobs != null && PassengerJobs.Enabled;
-
         public static MapInfo LoadedMap;
         private static BasicMapInfo basicMapInfo;
         public static string[] AllMapNames { get; private set; }

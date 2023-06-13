@@ -24,7 +24,7 @@ namespace Mapify.Patches
             Object.Destroy(gameObject.FindChildByName("ButtonIcon - session"));
             gameObject.transform.SetSiblingIndex(gameObject.transform.GetSiblingIndex() - 2);
             Selector selector = gameObject.GetComponentInChildren<Selector>();
-            selector.SetValues(Main.AllMapNames.ToList());
+            selector.SetValues(Mapify.AllMapNames.ToList());
             selector.Clicked += _ => { OnSelectorClicked(__instance, selector); };
             Localize localize = selector.GetComponentInChildren<Localize>();
             localize.key = Locale.SESSION__MAP_SELECTOR;
@@ -36,7 +36,7 @@ namespace Mapify.Patches
         {
             if (__instance.CurrentThing?.GameData == null)
                 return;
-            BasicMapInfo basicMapInfo = Main.Maps[Main.AllMapNames[selector.SelectedIndex]].Item1;
+            BasicMapInfo basicMapInfo = Mapify.Maps[Mapify.AllMapNames[selector.SelectedIndex]].Item1;
             if (basicMapInfo == null)
                 __instance.CurrentThing.GameData.Remove("mapify");
             else

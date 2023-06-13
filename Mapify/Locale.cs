@@ -19,7 +19,7 @@ namespace Mapify
         {
             if (!csv.ContainsKey(locale))
             {
-                Main.LogWarning($"Failed to find locale language {locale}");
+                Mapify.LogWarning($"Failed to find locale language {locale}");
                 return null;
             }
 
@@ -27,7 +27,7 @@ namespace Mapify
             if (localeDict.TryGetValue(key, out string value))
                 return value;
 
-            Main.LogWarning($"Failed to find locale key {key}");
+            Mapify.LogWarning($"Failed to find locale key {key}");
             return null;
         }
     }

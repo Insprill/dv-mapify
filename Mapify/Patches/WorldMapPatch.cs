@@ -25,7 +25,7 @@ namespace Mapify.Patches
             GameObject mapPoster = GameObject.Find("MapPoster");
             if (mapPoster == null)
             {
-                Main.LogError("Failed to find map poster!");
+                Mapify.LogError("Failed to find map poster!");
                 return;
             }
 
@@ -34,13 +34,13 @@ namespace Mapify.Patches
 
         private static Texture2D DrawTracksOnMap()
         {
-            int[] textureSize = Main.LoadedMap.mapTextureSize;
+            int[] textureSize = Mapify.LoadedMap.mapTextureSize;
             Texture2D texture = new Texture2D(textureSize[0], textureSize[1]);
-            texture.LoadImage(Main.LoadedMap.mapTextureSerialized);
+            texture.LoadImage(Mapify.LoadedMap.mapTextureSerialized);
 
             TextureDrawer drawer = new TextureDrawer(texture);
 
-            float worldSize = Main.LoadedMap.worldSize;
+            float worldSize = Mapify.LoadedMap.worldSize;
 
             IEnumerable<Vector2[]> points = RailTrackRegistry.Instance.AllTracks.Select(rt => rt.GetCurvePositions(rt.curve.resolution).ToArray());
             (Vector2, Vector2)[] pairs = points.SelectMany(trackPoints =>
@@ -52,16 +52,16 @@ namespace Mapify.Patches
             ).ToArray();
 
             // The borders must be draw first, otherwise you'll see it dividing each segment of the rail
-            if (Main.LoadedMap.trackBackgroundWidth > 0)
+            if (Mapify.LoadedMap.trackBackgroundWidth > 0)
                 foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
                     drawer.DrawLineOnTexture(
-                        startPoint + Main.LoadedMap.trackBackgroundOffset,
-                        endPoint + Main.LoadedMap.trackBackgroundOffset,
-                        Main.LoadedMap.trackWidth + Main.LoadedMap.trackBackgroundWidth,
-                        Main.LoadedMap.trackBackgroundColor
+                        startPoint + Mapify.LoadedMap.trackBackgroundOffset,
+                        endPoint + Mapify.LoadedMap.trackBackgroundOffset,
+                        Mapify.LoadedMap.trackWidth + Mapify.LoadedMap.trackBackgroundWidth,
+                        Mapify.LoadedMap.trackBackgroundColor
                     );
             foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
-                drawer.DrawLineOnTexture(startPoint, endPoint, Main.LoadedMap.trackWidth, Main.LoadedMap.trackColor);
+                drawer.DrawLineOnTexture(startPoint, endPoint, Mapify.LoadedMap.trackWidth, Mapify.LoadedMap.trackColor);
 
             drawer.Apply();
 
@@ -85,7 +85,7 @@ namespace Mapify.Patches
                 RectTransform rect = clone.GetComponent<RectTransform>();
                 // Truly one of the chained method calls of all time
                 rect.localPosition = controller.GetComponent<StationJobGenerationRange>().stationCenterAnchor.position.ToXZ()
-                    .Scale(0, Main.LoadedMap.worldSize, -0.175f, 0.175f);
+                    .Scale(0, Mapify.LoadedMap.worldSize, -0.175f, 0.175f);
                 clone.GetComponent<TextMeshPro>().text = controller.stationInfo.Name.ToUpper();
             }
 

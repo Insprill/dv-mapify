@@ -25,11 +25,11 @@ namespace Mapify
         {
             if (!scene.isLoaded)
             {
-                Main.LogError($"Tried to copy vanilla assets from {scene.name} but it isn't loaded!");
+                Mapify.LogError($"Tried to copy vanilla assets from {scene.name} but it isn't loaded!");
                 return;
             }
 
-            Main.LogDebug($"Copying default assets from vanilla scene {scene.name}");
+            Mapify.LogDebug($"Copying default assets from vanilla scene {scene.name}");
 
             GameObject[] rootObjects = scene.GetRootGameObjects();
             foreach (GameObject rootObject in rootObjects)
@@ -52,7 +52,7 @@ namespace Mapify
                     Object.Destroy(rootObject);
             }
 
-            Main.LogDebug($"Unloading vanilla scene {scene.name}");
+            Mapify.LogDebug($"Unloading vanilla scene {scene.name}");
             // cope
 #pragma warning disable CS0618
             SceneManager.UnloadScene(scene);

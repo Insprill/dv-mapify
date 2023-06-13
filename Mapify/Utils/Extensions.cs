@@ -85,8 +85,8 @@ namespace Mapify.Utils
         public static void PrintHierarchy(this GameObject gameObject, string indent = "")
         {
             Transform t = gameObject.transform;
-            Main.Log($"{indent}+-- {t.name}");
-            foreach (Component component in t.GetComponents<Component>()) Main.Log($"{indent}|   +-- {component.GetType().Name}");
+            Mapify.Log($"{indent}+-- {t.name}");
+            foreach (Component component in t.GetComponents<Component>()) Mapify.Log($"{indent}|   +-- {component.GetType().Name}");
             foreach (Transform child in t) PrintHierarchy(child.gameObject, $"{indent}|   ");
         }
 
@@ -208,13 +208,13 @@ namespace Mapify.Utils
         public static BasicMapInfo GetBasicMapInfo(this SaveGameManager saveGameManager)
         {
             JObject mapify = saveGameManager.data.GetJObject("mapify");
-            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Main.DEFAULT_MAP_INFO;
+            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Mapify.DEFAULT_MAP_INFO;
         }
 
         public static BasicMapInfo GetBasicMapInfo(this JObject jObject)
         {
             JObject mapify = jObject.GetJObject("mapify");
-            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Main.DEFAULT_MAP_INFO;
+            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Mapify.DEFAULT_MAP_INFO;
         }
 
         public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo mapInfo)

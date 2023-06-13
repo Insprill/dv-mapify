@@ -17,13 +17,13 @@ namespace Mapify.SceneInitializers
 
         private static void SetupTerrainGrid()
         {
-            GameObject gridObject = WorldMover.Instance.NewChildWithPosition("TerrainGrid", new Vector3(0, Main.LoadedMap.terrainHeight, 0));
+            GameObject gridObject = WorldMover.Instance.NewChildWithPosition("TerrainGrid", new Vector3(0, Mapify.LoadedMap.terrainHeight, 0));
             gridObject.SetActive(false);
             TerrainGrid grid = gridObject.AddComponent<TerrainGrid>();
-            grid.loadingRingSize = Main.LoadedMap.terrainLoadingRingSize;
+            grid.loadingRingSize = Mapify.LoadedMap.terrainLoadingRingSize;
             grid.addToVegetationStudio = false;
-            grid.pixelError = Main.LoadedMap.terrainPixelError;
-            grid.drawInstanced = Main.LoadedMap.terrainDrawInstanced;
+            grid.pixelError = Mapify.LoadedMap.terrainPixelError;
+            grid.drawInstanced = Mapify.LoadedMap.terrainDrawInstanced;
             grid.vegetationReloadWaitFrames = 2;
             grid.maxConcurrentLoads = 3;
             Layer.Terrain.Apply(grid);
@@ -46,8 +46,8 @@ namespace Mapify.SceneInitializers
             foreach (GameObject obj in grid.generatedTerrains)
             {
                 Terrain terrain = obj.GetComponent<Terrain>();
-                terrain.materialTemplate = Main.LoadedMap.terrainMaterial;
-                terrain.basemapDistance = Main.LoadedMap.terrainBasemapDistance;
+                terrain.materialTemplate = Mapify.LoadedMap.terrainMaterial;
+                terrain.basemapDistance = Mapify.LoadedMap.terrainBasemapDistance;
             }
         }
     }

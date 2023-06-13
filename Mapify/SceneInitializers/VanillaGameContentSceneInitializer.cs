@@ -63,7 +63,7 @@ namespace Mapify.SceneInitializers
                 if (Enum.TryParse(enumName, out VanillaAsset asset))
                     yield return (asset, gameObject.FindChildByName($"Office_0{i}"));
                 else
-                    Main.LogError($"Failed to find {nameof(VanillaAsset)} {enumName}!");
+                    Mapify.LogError($"Failed to find {nameof(VanillaAsset)} {enumName}!");
             }
 
             #endregion
@@ -98,7 +98,7 @@ namespace Mapify.SceneInitializers
                 if (VanillaAsset.TryParse($"StoreItem{itemName}", true, out VanillaAsset asset))
                     yield return (asset, module.gameObject);
                 else
-                    Main.LogError($"Failed to find VanillaAsset for {itemName}");
+                    Mapify.LogError($"Failed to find VanillaAsset for {itemName}");
             }
 
             GameObject shop = shopsParent.FindChildByName("[ItemShop] Harbor");

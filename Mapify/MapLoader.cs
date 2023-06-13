@@ -30,7 +30,7 @@ namespace Mapify
             yield return null;
 
             // Load asset bundles
-            AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Main.GetLoadedMapAssetPath("assets"));
+            AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Mapify.GetLoadedMapAssetPath("assets"));
             DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "assets";
             do
             {
@@ -40,7 +40,7 @@ namespace Mapify
 
             assets = assetsReq.assetBundle;
 
-            AssetBundleCreateRequest scenesReq = AssetBundle.LoadFromFileAsync(Main.GetLoadedMapAssetPath("scenes"));
+            AssetBundleCreateRequest scenesReq = AssetBundle.LoadFromFileAsync(Mapify.GetLoadedMapAssetPath("scenes"));
             DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "scenes";
             do
             {
@@ -87,7 +87,7 @@ namespace Mapify
 
             // Set LevelInfo
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
-            MapInfo mapInfo = Main.LoadedMap = assets.LoadAllAssets<MapInfo>()[0];
+            MapInfo mapInfo = Mapify.LoadedMap = assets.LoadAllAssets<MapInfo>()[0];
             levelInfo.waterLevel = mapInfo.waterLevel;
             levelInfo.worldSize = mapInfo.worldSize;
             levelInfo.worldOffset = Vector3.zero;
@@ -117,7 +117,7 @@ namespace Mapify
             if (collection.names == null || collection.names.Length == 0)
             {
                 // A streamer with no scenes will mark all positions as unloaded, and the game will get stuck on the loading screen.
-                Main.Log("No streamer scenes found, destroying!");
+                Mapify.Log("No streamer scenes found, destroying!");
                 Object.Destroy(streamerObj);
                 return;
             }
@@ -139,32 +139,32 @@ namespace Mapify
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
             if (scene.path == wsi.terrainsScenePath)
             {
-                Main.Log($"Loaded terrain scene at {wsi.terrainsScenePath}");
+                Mapify.Log($"Loaded terrain scene at {wsi.terrainsScenePath}");
                 TerrainSceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == wsi.railwayScenePath)
             {
-                Main.Log($"Loaded railway scene at {wsi.railwayScenePath}");
+                Mapify.Log($"Loaded railway scene at {wsi.railwayScenePath}");
                 RailwaySceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == wsi.gameContentScenePath)
             {
-                Main.Log($"Loaded game content scene at {wsi.gameContentScenePath}");
+                Mapify.Log($"Loaded game content scene at {wsi.gameContentScenePath}");
                 GameContentSceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == originalRailwayScenePath)
             {
-                Main.Log($"Loaded vanilla railway scene at {originalRailwayScenePath}");
+                Mapify.Log($"Loaded vanilla railway scene at {originalRailwayScenePath}");
                 VanillaRailwaySceneInitializer.SceneLoaded(scene);
             }
             else if (scene.path == originalGameContentScenePath)
             {
-                Main.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
+                Mapify.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
                 VanillaGameContentSceneInitializer.SceneLoaded(scene);
                 MonoBehaviourPatch.EnableAllLater();
                 WorldStreamingInit_Awake_Patch.CanInitialize = true;
                 foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
-                    Main.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
+                    Mapify.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
             }
         }
     }

@@ -33,7 +33,7 @@ namespace Mapify.Patches
         {
             if (!Term.StartsWith(PREFIX))
                 return true;
-            string locale = Main.Locale.Get(Term.TrimStart(PREFIX_CHARS));
+            string locale = Mapify.Locale.Get(Term.TrimStart(PREFIX_CHARS));
             __result = LocalizationAPIAccess.Sanitized(Term, locale);
             return false;
         }

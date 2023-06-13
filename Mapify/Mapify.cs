@@ -13,7 +13,7 @@ using UnityModManagerNet;
 
 namespace Mapify
 {
-    public static class Main
+    public static class Mapify
     {
         private static readonly int[] COMPATIBLE_GAME_VERSIONS = { 93 };
 

@@ -36,13 +36,13 @@ namespace Mapify.Patches
                 if (!type.IsSubclassOf(typeof(MonoBehaviour)) || (!string.IsNullOrEmpty(type.Namespace) && type.Namespace.StartsWith("DV.")))
                     continue;
 
-                Main.LogDebug($"Disabling {type.FullName}");
+                Mapify.LogDebug($"Disabling {type.FullName}");
 
                 foreach (string methodName in methodNames)
                 {
                     MethodInfo method = AccessTools.DeclaredMethod(type, methodName);
                     if (method == null) continue;
-                    Main.Harmony.Patch(method, harmonyPrefix);
+                    Mapify.Harmony.Patch(method, harmonyPrefix);
                     patchedMethods.Add(method);
                 }
             }
@@ -56,9 +56,9 @@ namespace Mapify.Patches
         private static IEnumerator EnableLater()
         {
             yield return null;
-            Main.LogDebug("Enabling disabled MonoBehaviours");
+            Mapify.LogDebug("Enabling disabled MonoBehaviours");
             foreach (MethodInfo method in patchedMethods)
-                Main.Harmony.Unpatch(method, prefix);
+                Mapify.Harmony.Unpatch(method, prefix);
             patchedMethods = null;
         }
 

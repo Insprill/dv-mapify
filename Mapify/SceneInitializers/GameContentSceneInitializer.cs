@@ -62,7 +62,7 @@ namespace Mapify.SceneInitializers
             AssetCopier.Instantiate(VanillaAsset.WeatherDV, false);
             AssetCopier.Instantiate(VanillaAsset.WeatherGUITogglerScript, false);
             // I'm not sure where vanilla creates this because it doesn't have auto create enabled.
-            Main.Log("Creating YardTracksOrganizer");
+            Mapify.Log("Creating YardTracksOrganizer");
             new GameObject("[YardTracksOrganizer]").AddComponent<YardTracksOrganizer>();
         }
 

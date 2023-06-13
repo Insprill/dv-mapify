@@ -18,12 +18,11 @@ namespace Mapify
         private static readonly int[] COMPATIBLE_GAME_VERSIONS = { 93 };
 
         public static readonly BasicMapInfo DEFAULT_MAP_INFO = new BasicMapInfo("Default", null);
-        public const string DEFAULT_MAP_NAME = "Default";
         private const string MAPS_FOLDER_NAME = "Maps";
-        private const string LOCALE_PATH = "locale.csv";
+        private const string LOCALE_FILE = "locale.csv";
 
         private static UnityModManager.ModEntry ModEntry;
-        public static Settings Settings { get; private set; }
+        private static Settings Settings { get; set; }
         internal static Harmony Harmony { get; private set; }
 
         public static MapInfo LoadedMap;
@@ -35,51 +34,24 @@ namespace Mapify
 
         private static bool Load(UnityModManager.ModEntry modEntry)
         {
-            if (!COMPATIBLE_GAME_VERSIONS.Contains(BuildInfo.BUILD_VERSION_MAJOR))
-            {
-                LogError($"Incompatible game version {BuildInfo.BUILD_VERSION_MAJOR}! This version of Mapify is only compatible with {string.Join(", ", COMPATIBLE_GAME_VERSIONS)}");
-                return false;
-            }
-
             ModEntry = modEntry;
+
+            if (!IsGameVersionCompatible())
+                return false;
+
             Settings = Settings.Load<Settings>(modEntry);
-            ModEntry.OnGUI = DrawGUI;
-            ModEntry.OnSaveGUI = SaveGUI;
+            ModEntry.OnGUI = entry => Settings.Draw(entry);
+            ModEntry.OnSaveGUI = entry => Settings.Save(entry);
 
             try
             {
-                MapsFolder = Path.Combine(ModEntry.Path, MAPS_FOLDER_NAME);
-                if (!Directory.Exists(MapsFolder))
-                {
-                    Directory.CreateDirectory(MapsFolder);
-                }
-                else
-                {
-                    Log("Searching for maps...");
-                    FindMaps();
-                    Log($"Found {Maps.Count} map(s) ({string.Join(", ", Maps.Keys.ToArray())})");
-                }
-
-                string localePath = Path.Combine(ModEntry.Path, LOCALE_PATH);
-                if (File.Exists(localePath))
-                    Locale = new Locale(CSV.Parse(File.ReadAllText(localePath)));
-                else
-                    LogError($"Failed to find locale file at {localePath}! Please make sure it's there.");
-
-                Log("Patching...");
-                Harmony = new Harmony(ModEntry.Info.Id);
-                Harmony.PatchAll();
-                Log("Successfully patched");
-                // if (IsPassengerJobsEnabled)
-                // {
-                //     Log($"Found {PassengerJobs.Info.DisplayName}, patching...");
-                //     PassengerJobsPatch.Patch(Harmony);
-                //     Log("Successfully patched");
-                // }
+                LoadLocale();
+                LoadMaps();
+                Patch();
             }
             catch (Exception ex)
             {
-                LogException($"Failed to load {ModEntry.Info.DisplayName}:", ex);
+                LogException($"Failed to load {ModEntry.Info.DisplayName}", ex);
                 Harmony?.UnpatchAll();
                 return false;
             }
@@ -87,19 +59,41 @@ namespace Mapify
             return true;
         }
 
-        private static void DrawGUI(UnityModManager.ModEntry entry)
+        private static bool IsGameVersionCompatible()
         {
-            Settings.Draw(entry);
+            if (COMPATIBLE_GAME_VERSIONS.Contains(BuildInfo.BUILD_VERSION_MAJOR))
+                return true;
+            LogError($"Incompatible game version {BuildInfo.BUILD_VERSION_MAJOR}! This version of Mapify is only compatible with {string.Join(", ", COMPATIBLE_GAME_VERSIONS)}");
+            return false;
         }
 
-        private static void SaveGUI(UnityModManager.ModEntry entry)
+        private static void LoadLocale()
         {
-            Settings.Save(entry);
+            string localePath = Path.Combine(ModEntry.Path, LOCALE_FILE);
+            if (File.Exists(localePath))
+                Locale = new Locale(CSV.Parse(File.ReadAllText(localePath)));
+            else
+                LogError($"Failed to find locale file at {localePath}! Please make sure it's there.");
+        }
+
+        private static void LoadMaps()
+        {
+            MapsFolder = Path.Combine(ModEntry.Path, MAPS_FOLDER_NAME);
+            if (!Directory.Exists(MapsFolder))
+            {
+                Directory.CreateDirectory(MapsFolder);
+            }
+            else
+            {
+                Log("Searching for maps...");
+                FindMaps();
+                Log($"Found {Maps.Count} map(s) ({string.Join(", ", Maps.Keys.ToArray())})");
+            }
         }
 
         private static void FindMaps()
         {
-            Maps.Add(DEFAULT_MAP_NAME, (null, null));
+            Maps.Add(DEFAULT_MAP_INFO.mapName, (DEFAULT_MAP_INFO, null));
             foreach (string dir in Directory.GetDirectories(MapsFolder))
             {
                 string mapInfoPath = GetLoadedMapAssetPath("mapInfo.json", dir);
@@ -109,6 +103,14 @@ namespace Mapify
             }
 
             AllMapNames = Maps.Keys.OrderBy(x => x).ToArray();
+        }
+
+        private static void Patch()
+        {
+            Log("Patching...");
+            Harmony = new Harmony(ModEntry.Info.Id);
+            Harmony.PatchAll();
+            Log("Successfully patched");
         }
 
         public static string GetLoadedMapAssetPath(string fileName, string mapDir = null)

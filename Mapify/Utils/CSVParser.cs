@@ -59,7 +59,10 @@ namespace Mapify.Utils
                 }
 
                 if (c == '"')
+                {
                     inQuotes = !inQuotes;
+                    continue;
+                }
 
                 builder.Append(c);
             }

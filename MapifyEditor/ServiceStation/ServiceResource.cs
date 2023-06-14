@@ -21,7 +21,7 @@ namespace Mapify.Editor
             switch (resource)
             {
                 case ServiceResource.Fuel:
-                    return VanillaAsset.RefillMachineFuel;
+                    return VanillaAsset.RefillMachineDiesel;
                 case ServiceResource.Sand:
                     return VanillaAsset.RefillMachineSand;
                 case ServiceResource.Oil:
@@ -31,11 +31,11 @@ namespace Mapify.Editor
                 case ServiceResource.Coal:
                     return VanillaAsset.RefillMachineCoal;
                 case ServiceResource.CarDamage:
-                    return VanillaAsset.RefillMachineCarDamage;
+                    return VanillaAsset.RefillMachineBodyDamage;
                 case ServiceResource.WheelDamage:
                     return VanillaAsset.RefillMachineWheelDamage;
                 case ServiceResource.EngineDamage:
-                    return VanillaAsset.RefillMachineEngineDamage;
+                    return VanillaAsset.RefillMachineMechanicalPowertrain;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(resource), resource, null);
             }

@@ -2,6 +2,8 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
+using Mapify.Map;
+using Mapify.Utils;
 using UnityEngine;
 
 namespace Mapify.Patches
@@ -21,7 +23,9 @@ namespace Mapify.Patches
         private static bool Prefix(BufferStop __instance, Collider other)
         {
             Rigidbody attachedRigidbody = other.attachedRigidbody;
-            float breakSpeed = __instance.GetComponent<Editor.BufferStop>().breakSpeed * 3.6f;
+            float breakSpeed = Maps.IsDefaultMap
+                ? (float)BufferStop_Field_SQR_BREAK_BUFFER_VELOCITY_THRESHOLD.GetValue(null)
+                : __instance.GetComponent<Editor.BufferStop>().breakSpeed * 3.6f;
             return attachedRigidbody != null && attachedRigidbody.velocity.sqrMagnitude <= breakSpeed * breakSpeed;
         }
 
@@ -30,6 +34,8 @@ namespace Mapify.Patches
         /// </summary>
         private static void Postfix(BufferStop __instance)
         {
+            if (Maps.IsDefaultMap)
+                return;
             Rigidbody rigidbody = __instance.gameObject.GetComponent<Rigidbody>();
             if (rigidbody == null)
                 return;
@@ -46,7 +52,7 @@ namespace Mapify.Patches
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
 
             for (int i = 0; i < codes.Count; i++)
-                if (codes[i].opcode == OpCodes.Ldc_R4 && Mathf.Abs((float)codes[i].operand - threshold) < 0.001)
+                if (codes[i].opcode == OpCodes.Ldc_R4 && ((float)codes[i].operand).Eq(threshold))
                 {
                     for (int j = i - 5; j <= i + 1; j++)
                         codes[j].opcode = OpCodes.Nop;

@@ -83,12 +83,14 @@ namespace Mapify.Utils
         {
             if (cachedValues)
                 return true;
-            railwayMeshGenerator = Object.FindObjectOfType<RailwayMeshGenerator>();
-            if (railwayMeshGenerator == null)
+            if ((railwayMeshGenerator = Object.FindObjectOfType<RailwayMeshGenerator>()) == null)
                 return false;
-            spatialHash = (TrackChunkSpatialHash)RailwayMeshGenerator_Field_spatialHash.GetValue(railwayMeshGenerator);
-            activeChunks = (Dictionary<Vector2Int, List<TrackChunk>>)RailwayMeshGenerator_Field_activeChunks.GetValue(railwayMeshGenerator);
-            lookupCells = (Dictionary<Vector2Int, List<TrackChunk>>)TrackChunkSpatialHash_Field_lookupCells.GetValue(spatialHash);
+            if ((spatialHash = (TrackChunkSpatialHash)RailwayMeshGenerator_Field_spatialHash.GetValue(railwayMeshGenerator)) == null)
+                return false;
+            if ((activeChunks = (Dictionary<Vector2Int, List<TrackChunk>>)RailwayMeshGenerator_Field_activeChunks.GetValue(railwayMeshGenerator)) == null)
+                return false;
+            if ((lookupCells = (Dictionary<Vector2Int, List<TrackChunk>>)TrackChunkSpatialHash_Field_lookupCells.GetValue(spatialHash)) == null)
+                return false;
             cachedValues = true;
             return true;
         }

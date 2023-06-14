@@ -2,6 +2,7 @@ using DV;
 using DV.TerrainSystem;
 using DV.Utils;
 using HarmonyLib;
+using Mapify.Map;
 using UnityEngine;
 
 namespace Mapify.Patches
@@ -17,6 +18,9 @@ namespace Mapify.Patches
 
         private static bool Prefix(Vector3 worldPos, ref bool __result)
         {
+            if (Maps.IsDefaultMap)
+                return true;
+
             if (streamers == null)
                 streamers = Object.FindObjectsOfType<Streamer>();
 

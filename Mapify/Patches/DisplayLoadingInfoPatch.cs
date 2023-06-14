@@ -1,6 +1,7 @@
 using System.Reflection;
 using DV.Utils;
 using HarmonyLib;
+using Mapify.Map;
 using TMPro;
 
 namespace Mapify.Patches
@@ -35,6 +36,9 @@ namespace Mapify.Patches
 
         private static bool Prefix(DisplayLoadingInfo __instance, string message, bool isError, float percentageLoaded)
         {
+            if (Maps.IsDefaultMap)
+                return true;
+
             if (lastMessage != message)
             {
                 TextMeshProUGUI loadProgressTMP = (TextMeshProUGUI)DisplayLoadingInfo_Field_loadProgressTMP.GetValue(__instance);
@@ -42,8 +46,9 @@ namespace Mapify.Patches
                 lastMessage = message;
             }
 
+            string formattedWhat = string.IsNullOrWhiteSpace(what) ? "" : $" {what}";
             TextMeshProUGUI percentageLoadedTMP = (TextMeshProUGUI)DisplayLoadingInfo_Field_percentageLoadedTMP.GetValue(__instance);
-            percentageLoadedTMP.text = $"loading{(string.IsNullOrWhiteSpace(what) ? "" : $" {what}")}, please wait... {percentageLoaded}%";
+            percentageLoadedTMP.text = Locale.Get(Locale.LOADING__PLEASE_WAIT, formattedWhat, percentageLoaded.ToString("F0"));
 
             if (!Bootstrap.bootstrapped)
                 return false;

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using DV;
 using HarmonyLib;
+using Mapify.Map;
 
 namespace Mapify.Patches
 {
@@ -17,6 +18,8 @@ namespace Mapify.Patches
 
         private static void Postfix(CommsRadioController __instance)
         {
+            if (Maps.IsDefaultMap)
+                return;
             List<ICommsRadioMode> modes = (List<ICommsRadioMode>)CommsRadioController_Field_allModes.GetValue(__instance);
             modes = modes.Where(mode => mode.GetType() != typeof(CommsRadioCrewVehicle)).ToList();
             CommsRadioController_Field_allModes.SetValue(__instance, modes);

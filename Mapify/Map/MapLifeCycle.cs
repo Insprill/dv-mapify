@@ -11,48 +11,63 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
-namespace Mapify
+namespace Mapify.Map
 {
-    public static class MapLoader
+    public static class MapLifeCycle
     {
-        private static string originalRailwayScenePath;
-        private static string originalGameContentScenePath;
+        private static bool isMapLoaded;
+
         private static AssetBundle assets;
         private static AssetBundle scenes;
-
+        private static string originalRailwayScenePath;
+        private static string originalGameContentScenePath;
         private static int scenesToLoad;
 
-        public static IEnumerator LoadMap()
+        public static IEnumerator LoadMap(BasicMapInfo basicMapInfo)
         {
+            Mapify.LogDebug($"Loading map {basicMapInfo.mapName}");
+
+            if (isMapLoaded)
+                throw new InvalidOperationException("Map is already loaded");
+            isMapLoaded = true;
+
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
-            string loadingMapLogMsg = $"loading map {SingletonBehaviour<SaveGameManager>.Instance.FindStartGameData().GetSaveGameData().GetJObject("mapify").ToObject<BasicMapInfo>()}";
-            wsi.Log(loadingMapLogMsg, 0);
+            DisplayLoadingInfo loadingInfo = Object.FindObjectOfType<DisplayLoadingInfo>();
+
+            string loadingMapLogMsg = Locale.Get(Locale.LOADING__LOADING_MAP, basicMapInfo.mapName);
+            loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, 0);
             yield return null;
 
             // Load asset bundles
-            AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Mapify.GetLoadedMapAssetPath("assets"));
-            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "assets";
+            Mapify.LogDebug($"Loading AssetBundle '{Names.ASSETS_ASSET_BUNDLE}'");
+            string mapDir = Maps.GetDirectory(basicMapInfo);
+            AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(Names.ASSETS_ASSET_BUNDLE, mapDir));
+            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = Names.ASSETS_ASSET_BUNDLE;
             do
             {
-                wsi.Log(loadingMapLogMsg, Mathf.RoundToInt(assetsReq.progress * 100));
+                loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, Mathf.RoundToInt(assetsReq.progress * 100));
                 yield return null;
             } while (!assetsReq.isDone);
 
             assets = assetsReq.assetBundle;
 
-            AssetBundleCreateRequest scenesReq = AssetBundle.LoadFromFileAsync(Mapify.GetLoadedMapAssetPath("scenes"));
-            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "scenes";
+            Mapify.LogDebug($"Loading AssetBundle '{Names.SCENES_ASSET_BUNDLE}'");
+            AssetBundleCreateRequest scenesReq = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(Names.SCENES_ASSET_BUNDLE, mapDir));
+            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = Names.SCENES_ASSET_BUNDLE;
             do
             {
-                wsi.Log(loadingMapLogMsg, Mathf.RoundToInt(scenesReq.progress * 100));
+                loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, Mathf.RoundToInt(scenesReq.progress * 100));
                 yield return null;
             } while (!scenesReq.isDone);
 
             scenes = scenesReq.assetBundle;
 
+            // Register MapInfo
+            MapInfo mapInfo = assets.LoadAllAssets<MapInfo>()[0];
+            Maps.RegisterLoadedMap(mapInfo);
 
             // Load scenes for us to steal assets from
-            MonoBehaviourPatch.DisableAll();
+            MonoBehaviourDisablerPatch.DisableAll();
 
             SceneManager.sceneLoaded += OnStreamerSceneLoaded;
             Streamer streamer = wsi.transform.FindChildByName("[far]").GetComponent<Streamer>();
@@ -68,7 +83,7 @@ namespace Mapify
             DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "vanilla assets";
             while (scenesToLoad > 0)
             {
-                wsi.Log(loadingMapLogMsg, Mathf.RoundToInt((totalScenesToLoad - (float)scenesToLoad) / totalScenesToLoad * 100));
+                loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, Mathf.RoundToInt((totalScenesToLoad - (float)scenesToLoad) / totalScenesToLoad * 100));
                 yield return null;
             }
 
@@ -87,12 +102,17 @@ namespace Mapify
 
             // Set LevelInfo
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
-            MapInfo mapInfo = Mapify.LoadedMap = assets.LoadAllAssets<MapInfo>()[0];
+            //todo: Boundary
+            levelInfo.terrainSize = mapInfo.terrainSize;
             levelInfo.waterLevel = mapInfo.waterLevel;
             levelInfo.worldSize = mapInfo.worldSize;
             levelInfo.worldOffset = Vector3.zero;
             levelInfo.defaultSpawnPosition = mapInfo.defaultSpawnPosition;
             levelInfo.defaultSpawnRotation = mapInfo.defaultSpawnRotation;
+            levelInfo.newCareerSpawnPosition = mapInfo.defaultSpawnPosition;
+            levelInfo.newCareerSpawnRotation = mapInfo.defaultSpawnRotation;
+            levelInfo.enforceBoundary = true;
+            levelInfo.worldBoundaryMargin = mapInfo.worldBoundaryMargin;
 
             SetupStreamer(wsi.gameObject, mapInfo);
 
@@ -121,7 +141,6 @@ namespace Mapify
                 Object.Destroy(streamerObj);
                 return;
             }
-
 
             Streamer streamer = streamerObj.AddComponent<Streamer>();
             streamer.streamerActive = false;
@@ -161,11 +180,35 @@ namespace Mapify
             {
                 Mapify.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
                 VanillaGameContentSceneInitializer.SceneLoaded(scene);
-                MonoBehaviourPatch.EnableAllLater();
+                MonoBehaviourDisablerPatch.EnableAllLater();
                 WorldStreamingInit_Awake_Patch.CanInitialize = true;
                 foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
                     Mapify.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
             }
+            else if (scene.buildIndex == (int)DVScenes.MainMenu)
+            {
+                Cleanup();
+            }
+        }
+
+        private static void Cleanup()
+        {
+            originalRailwayScenePath = null;
+            originalGameContentScenePath = null;
+            scenesToLoad = 0;
+            if (assets != null)
+            {
+                assets.Unload(true);
+                assets = null;
+            }
+
+            if (scenes != null)
+            {
+                scenes.Unload(true);
+                scenes = null;
+            }
+
+            isMapLoaded = false;
         }
     }
 }

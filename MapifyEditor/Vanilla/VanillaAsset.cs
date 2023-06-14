@@ -42,31 +42,17 @@ namespace Mapify.Editor
         #region Service Stations
 
         PitStopStation = 40,
-        RefillMachineFuel = 41,
+        RefillMachineDiesel = 41,
         RefillMachineSand = 42,
         RefillMachineOil = 43,
         RefillMachineWater = 44,
         RefillMachineCoal = 45,
-        RefillMachineCarDamage = 46,
+        RefillMachineBodyDamage = 46,
         RefillMachineWheelDamage = 47,
-        RefillMachineEngineDamage = 48,
+        RefillMachineMechanicalPowertrain = 48,
+        RefillMachineElectricalPowertrain = 51,
         ServiceStationMarkerOpen = 49,
         ServiceStationMarkerClosed = 50,
-
-        #endregion
-
-        #region Required Scene Components
-
-        ItemBuoyancyEnabler = 60,
-        ItemDisablerGrid = 61,
-        JobLogicController = 62,
-        LicensesAndGarages = 63,
-        ShopLogic = 64,
-        SingletonInstanceFinder = 65,
-        StorageLogic = 66,
-        UnderwaterPostProcessing = 67,
-        WeatherDV = 68,
-        WeatherGUITogglerScript = 69,
 
         #endregion
 
@@ -119,7 +105,10 @@ namespace Mapify.Editor
         StoreItemManualSteamBooklet = 113,
         StoreItemRemoteController = 114,
         StoreItemShovel = 115,
-        StoreItemStopwatch = 116
+        StoreItemStopwatch = 116,
+        StoreItemLantern = 117,
+        StoreItemFlashlight = 118,
+        StoreItemEOTLantern = 119,
 
         #endregion
     }

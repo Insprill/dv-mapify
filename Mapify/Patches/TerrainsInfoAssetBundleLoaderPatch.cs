@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using DV.TerrainSystem;
 using HarmonyLib;
+using Mapify.Map;
 using UnityEngine;
 
 namespace Mapify.Patches
@@ -43,12 +45,22 @@ namespace Mapify.Patches
     {
         private static readonly FieldInfo Field_assBunInfo = AccessTools.DeclaredField(typeof(TerrainsInfoAssetBundleLoader), "assBunInfo");
 
-        private static void Postfix(TerrainsInfoAssetBundleLoader __instance)
+        private static void Postfix(TerrainsInfoAssetBundleLoader __instance, string worldName)
         {
-            // Set our own terrain info
-            TerrainsInfoFromAssetBundle bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
-            bundle.terrainSizeInWorld = Mapify.LoadedMap.terrainSize;
-            bundle.numberOfTerrains = Mapify.LoadedMap.terrainCount;
+            TerrainsInfoFromAssetBundle bundle;
+            if (Maps.IsDefaultMap)
+            {
+                // The line we removed in the transpiler
+                bundle = (TerrainsInfoFromAssetBundle)AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, worldName, "info")).LoadAllAssets()[0];
+            }
+            else
+            {
+                // Set our own terrain info
+                bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
+                bundle.terrainSizeInWorld = Maps.LoadedMap.terrainSize;
+                bundle.numberOfTerrains = Maps.LoadedMap.terrainCount;
+            }
+
             Field_assBunInfo.SetValue(__instance, bundle);
         }
     }
@@ -61,7 +73,9 @@ namespace Mapify.Patches
     {
         private static bool Prefix(TerrainsInfoAssetBundleLoader __instance, Vector2Int coord, ref string __result)
         {
-            __result = Mapify.GetLoadedMapAssetPath($"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}");
+            if (Maps.IsDefaultMap)
+                return true;
+            __result = Maps.GetMapAsset($"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}");
             return false;
         }
     }

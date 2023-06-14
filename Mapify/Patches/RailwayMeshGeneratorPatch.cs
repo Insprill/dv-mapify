@@ -3,6 +3,7 @@ using System.Reflection;
 using DV;
 using HarmonyLib;
 using Mapify.Editor;
+using Mapify.Map;
 using MeshXtensions;
 using Unity.Collections;
 using Unity.Jobs;
@@ -26,6 +27,9 @@ namespace Mapify.Patches
 
         private static bool Prefix(RailwayMeshGenerator __instance, TrackChunk chunk)
         {
+            if (Maps.IsDefaultMap)
+                return true;
+
             if (!cachedValues)
             {
                 gravelShapePoints = (Vector2[])RailwayMeshGenerator_Field_gravelShapePoints.GetValue(__instance);
@@ -78,6 +82,9 @@ namespace Mapify.Patches
 
         private static bool Prefix(RailwayMeshGenerator __instance, TrackChunk chunk)
         {
+            if (Maps.IsDefaultMap)
+                return true;
+
             if (!cachedValues)
             {
                 sleepersAnchorsTransformBufferData = (NativeList<float>)RailwayMeshGenerator_Field_sleepersAnchorsTransformBufferData.GetValue(__instance);

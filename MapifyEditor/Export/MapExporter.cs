@@ -140,7 +140,7 @@ namespace Mapify.Editor
 
             BuildUpdater.Cleanup();
 
-            string mapInfoPath = Path.Combine(exportFolderPath, "mapInfo.json");
+            string mapInfoPath = Path.Combine(exportFolderPath, Names.MAP_INFO_FILE);
             if (!success)
             {
                 Debug.LogWarning("Build was canceled or failed!");
@@ -192,11 +192,11 @@ namespace Mapify.Editor
             EditorUtility.ClearProgressBar();
 
             builds.Add(new AssetBundleBuild {
-                assetBundleName = "assets",
+                assetBundleName = Names.ASSETS_ASSET_BUNDLE,
                 assetNames = assetPaths.ToArray()
             });
             builds.Add(new AssetBundleBuild {
-                assetBundleName = "scenes",
+                assetBundleName = Names.SCENES_ASSET_BUNDLE,
                 assetNames = scenePaths.ToArray()
             });
 

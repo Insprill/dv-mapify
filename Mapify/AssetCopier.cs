@@ -14,7 +14,7 @@ namespace Mapify
 
         public static IEnumerable<VanillaAsset> InstantiatableAssets => prefabs.Keys;
 
-        public static GameObject Instantiate(VanillaAsset asset, bool originShift = true, bool active = true)
+        public static GameObject Instantiate(VanillaAsset asset, bool active = true, bool originShift = true)
         {
             GameObject go = GameObject.Instantiate(prefabs[asset], originShift ? WorldMover.Instance.originShiftParent : null);
             go.SetActive(active);
@@ -41,6 +41,12 @@ namespace Mapify
                 while (enumerator.MoveNext())
                 {
                     (VanillaAsset vanillaAsset, GameObject gameObject) = enumerator.Current;
+                    if (gameObject == null)
+                    {
+                        Mapify.LogError($"Failed to find game object for {vanillaAsset}! This MUST be fixed!");
+                        continue;
+                    }
+
                     if (prefabs.ContainsKey(vanillaAsset)) continue;
                     gameObject.SetActive(false);
                     gameObject.transform.SetParent(null);

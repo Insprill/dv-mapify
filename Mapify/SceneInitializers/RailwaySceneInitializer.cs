@@ -12,8 +12,6 @@ namespace Mapify.SceneInitializers
 {
     public static class RailwaySceneInitializer
     {
-        private const float TURNTABLE_HEIGHT_OFFSET = 2.5f;
-
         private static readonly FieldInfo TurntableRailTrack_Field__track = AccessTools.DeclaredField(typeof(TurntableRailTrack), "_track");
 
         public static void SceneLoaded(Scene scene)
@@ -64,8 +62,6 @@ namespace Mapify.SceneInitializers
 
             foreach (Track track in tracks)
                 track.gameObject.SetActive(true);
-
-            VanillaObject[] vanillaObjects = Object.FindObjectsOfType<VanillaObject>();
 
             Mapify.LogDebug("Creating Turntables");
             foreach (Turntable turntable in Object.FindObjectsOfType<Turntable>())

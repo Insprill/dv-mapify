@@ -13,5 +13,10 @@ namespace Mapify.Editor
             this.mapName = mapName;
             this.version = version;
         }
+
+        public bool IsDefault()
+        {
+            return mapName == Names.DEFAULT_MAP_NAME;
+        }
     }
 }

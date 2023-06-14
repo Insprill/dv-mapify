@@ -4,14 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using CommandTerminal;
-using DV.Common;
 using DV.JObjectExtstensions;
-using DV.Logic.Job;
 using DV.PointSet;
 using DV.ThingTypes;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
+using Mapify.Map;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
@@ -141,6 +140,11 @@ namespace Mapify.Utils
 
         #region C# Utils
 
+        public static bool Eq(this float f1, float f2, float tolerance = 0.001f)
+        {
+            return Math.Abs(f1 - f2) < tolerance;
+        }
+
         public static To ConvertByName<From, To>(this From value) where From : Enum where To : Enum
         {
             return (To)Enum.Parse(typeof(To), value.ToString());
@@ -181,7 +185,7 @@ namespace Mapify.Utils
         #region DV
 
         private static readonly MethodInfo CommandArg_Method_TypeError = AccessTools.DeclaredMethod(typeof(CommandArg), "TypeError", new[] { typeof(string) });
-        private static readonly MethodInfo WorldStreamingInit_Method_Info = AccessTools.DeclaredMethod(typeof(WorldStreamingInit), "Info", new[] { typeof(string), typeof(float) });
+        private static readonly MethodInfo DisplayLoadingInfo_Method_OnLoadingStatusChanged = AccessTools.DeclaredMethod(typeof(DisplayLoadingInfo), "OnLoadingStatusChanged", new[] { typeof(string), typeof(bool), typeof(float) });
 
         public static double Double(this CommandArg arg)
         {
@@ -191,9 +195,9 @@ namespace Mapify.Utils
             return 0;
         }
 
-        public static void Log(this WorldStreamingInit wsi, string message, float percentLoaded)
+        public static void UpdateLoadingStatus(this DisplayLoadingInfo loadingInfo, string message, float percentLoaded)
         {
-            WorldStreamingInit_Method_Info.Invoke(wsi, new object[] { message, percentLoaded });
+            DisplayLoadingInfo_Method_OnLoadingStatusChanged.Invoke(loadingInfo, new object[] { message, false, percentLoaded });
         }
 
         public static IEnumerable<Vector2> GetCurvePositions(this RailTrack track, float resolution)
@@ -208,18 +212,29 @@ namespace Mapify.Utils
         public static BasicMapInfo GetBasicMapInfo(this SaveGameManager saveGameManager)
         {
             JObject mapify = saveGameManager.data.GetJObject("mapify");
-            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Mapify.DEFAULT_MAP_INFO;
+            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
         }
 
         public static BasicMapInfo GetBasicMapInfo(this JObject jObject)
         {
             JObject mapify = jObject.GetJObject("mapify");
-            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Mapify.DEFAULT_MAP_INFO;
+            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
         }
 
-        public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo mapInfo)
+        public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo basicMapInfo)
         {
-            jObject.SetJObject("mapify", new JObject(mapInfo));
+            if (basicMapInfo == null || basicMapInfo.IsDefault())
+                jObject.Remove("mapify");
+            else
+                jObject.SetJObject("mapify", JObject.FromObject(basicMapInfo));
+        }
+
+        public static void SetBasicMapInfo(this SaveGameData saveGameData, BasicMapInfo basicMapInfo)
+        {
+            if (basicMapInfo == null || basicMapInfo.IsDefault())
+                saveGameData.RemoveData("mapify");
+            else
+                saveGameData.SetJObject("mapify", JObject.FromObject(basicMapInfo));
         }
 
         #endregion
@@ -233,7 +248,7 @@ namespace Mapify.Utils
 
         public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, originShift, active), preserveTypes, keepChildren);
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, keepChildren);
         }
 
         #endregion

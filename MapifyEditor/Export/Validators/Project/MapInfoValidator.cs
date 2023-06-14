@@ -24,6 +24,8 @@ namespace MapifyEditor.Export.Validators.Project
 
             if (!Regex.IsMatch(mapInfo.mapName, MAP_NAME_REGEX))
                 yield return Result.Error($"Your map name must match the following pattern: {MAP_NAME_REGEX}", mapInfo);
+            if (mapInfo.mapName == Names.DEFAULT_MAP_NAME)
+                yield return Result.Error($"Your map name cannot be {Names.DEFAULT_MAP_NAME}");
 
             if (mapInfo.waterLevel < 0)
                 yield return Result.Error("Water level cannot be lower than 0", mapInfo);

@@ -15,6 +15,8 @@ namespace Mapify.Editor
         public Vector3 defaultSpawnPosition;
         [Tooltip("The player's initial spawn rotation")]
         public Vector3 defaultSpawnRotation;
+        [Tooltip("The closest distance, in meters, the player can get to the edges of the map.")]
+        public float worldBoundaryMargin = 5.0f;
 
         [Header("Loading Gauge")]
         public float loadingGaugeHeight = 5;

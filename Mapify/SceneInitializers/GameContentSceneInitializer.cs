@@ -9,10 +9,12 @@ using DV.Teleporters;
 using DV.ThingTypes;
 using DV.ThingTypes.TransitionHelpers;
 using DV.Utils;
+using DV.WeatherSystem;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Utils;
+using SCPE;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
@@ -29,11 +31,6 @@ namespace Mapify.SceneInitializers
         #endregion
 
         private static readonly FieldInfo StationController_Field_jobBookletSpawnSurface = AccessTools.DeclaredField(typeof(StationController), "jobBookletSpawnSurface");
-        private static readonly MethodInfo LogicController_Method_GetCarTypesThatStationUses = AccessTools.DeclaredMethod(
-            typeof(LogicController),
-            "GetCarTypesThatStationUses",
-            new[] { typeof(StationController) }
-        );
 
         public static void SceneLoaded(Scene scene)
         {
@@ -51,17 +48,18 @@ namespace Mapify.SceneInitializers
 
         private static void SetupGameScene()
         {
-            AssetCopier.Instantiate(VanillaAsset.ItemBuoyancyEnabler, false);
-            AssetCopier.Instantiate(VanillaAsset.ItemDisablerGrid, false);
-            AssetCopier.Instantiate(VanillaAsset.JobLogicController, false);
-            AssetCopier.Instantiate(VanillaAsset.LicensesAndGarages, false);
-            AssetCopier.Instantiate(VanillaAsset.ShopLogic, false, false);
-            AssetCopier.Instantiate(VanillaAsset.SingletonInstanceFinder, false);
-            AssetCopier.Instantiate(VanillaAsset.StorageLogic, false);
-            AssetCopier.Instantiate(VanillaAsset.UnderwaterPostProcessing, false);
-            AssetCopier.Instantiate(VanillaAsset.WeatherDV, false);
-            AssetCopier.Instantiate(VanillaAsset.WeatherGUITogglerScript, false);
-            // I'm not sure where vanilla creates this because it doesn't have auto create enabled.
+            foreach (VanillaAsset vanillaAsset in AssetCopier.InstantiatableAssets)
+            {
+                if ((int)vanillaAsset <= VanillaGameContentSceneInitializer.START_IDX)
+                    continue;
+                GameObject gameObject = AssetCopier.Instantiate(vanillaAsset, false, false);
+                if (gameObject.name.Contains("Weather"))
+                    gameObject.AddComponent<WeatherGUITogglerDV>().guiScript = gameObject.GetComponentInChildren<WeatherEditorGUI>();
+                if (!gameObject.name.Contains("Shop"))
+                    gameObject.SetActive(true);
+            }
+
+            // I'm not sure where vanilla creates this because it doesn't have auto create enabled, nor is it in any of the main three scenes, or created in code.
             Mapify.Log("Creating YardTracksOrganizer");
             new GameObject("[YardTracksOrganizer]").AddComponent<YardTracksOrganizer>();
         }
@@ -92,13 +90,13 @@ namespace Mapify.SceneInitializers
                 stationObject.AddComponent<StationController>();
             }
 
-            LogicController logicController = SingletonBehaviour<LogicController>.Instance;
             foreach (Station station in stations)
             {
                 GameObject stationObject = station.gameObject;
                 StationController stationController = stationObject.GetComponent<StationController>();
 
                 // Station info
+                // todo: a type is required now
                 stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color);
 
                 // Station tracks
@@ -206,7 +204,8 @@ namespace Mapify.SceneInitializers
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
                         GameObject go = vanillaObject.Replace();
-                        Transform youAreHereFlag = go.transform.FindChildByName("youarehere_flag");
+                        // todo: make this show in the correct location instead of removing it
+                        Transform youAreHereFlag = go.transform.FindChildByName("PinRed");
                         if (youAreHereFlag != null)
                             Object.Destroy(youAreHereFlag.gameObject);
                         break;
@@ -224,7 +223,7 @@ namespace Mapify.SceneInitializers
             ServiceStation[] serviceStations = Object.FindObjectsOfType<ServiceStation>();
             foreach (ServiceStation serviceStation in serviceStations)
             {
-                GameObject pitStopStationObject = AssetCopier.Instantiate(VanillaAsset.PitStopStation, active: false);
+                GameObject pitStopStationObject = AssetCopier.Instantiate(VanillaAsset.PitStopStation, false);
                 Transform serviceStationTransform = serviceStation.transform;
                 pitStopStationObject.transform.SetPositionAndRotation(serviceStationTransform.position, serviceStationTransform.rotation);
 
@@ -267,8 +266,8 @@ namespace Mapify.SceneInitializers
                     else if (asset == VanillaAsset.CashRegister)
                     {
                         GameObject cashRegisterObj = vanillaObject.Replace(keepChildren: false);
-                        // CashRegisterWithModules cashRegister = cashRegisterObj.GetComponentInChildren<CashRegisterWithModules>();
-                        // cashRegister.resourceMachines = resourceModules.Cast<ResourceModule>().ToArray();
+                        CashRegisterWithModules cashRegister = cashRegisterObj.GetComponentInChildren<CashRegisterWithModules>();
+                        cashRegister.registerModules = resourceModules.Cast<CashRegisterModule>().ToArray();
                     }
                 }
 
@@ -296,7 +295,7 @@ namespace Mapify.SceneInitializers
 
                 store.itemSpawnReference.localPosition = store.itemSpawnReference.localPosition.SwapAndInvertXZ();
 
-                Transform meshTransform = AssetCopier.Instantiate(VanillaAsset.StoreMesh, active: false).transform;
+                Transform meshTransform = AssetCopier.Instantiate(VanillaAsset.StoreMesh, false).transform;
                 shopTransform.SetParent(meshTransform, false);
                 shopTransform.localPosition += store.cashRegister.localPosition;
                 shopTransform.eulerAngles = shopTransform.eulerAngles.AddY(STORE_Y_ROT_OFFSET);
@@ -305,11 +304,10 @@ namespace Mapify.SceneInitializers
                 shop.itemSpawnTransform = store.itemSpawnReference;
                 gsc.globalShopList.Add(shop);
 
-
                 shop.scanItemResourceModules = new ScanItemCashRegisterModule[store.itemTypes.Length];
                 for (int i = 0; i < store.itemTypes.Length; i++)
                 {
-                    Transform t = AssetCopier.Instantiate(store.itemTypes[i].ToVanillaAsset()).transform;
+                    Transform t = AssetCopier.Instantiate((VanillaAsset)store.itemTypes[i]).transform;
                     t.SetParent(store.moduleReference, false);
                     store.PositionThing(store.moduleReference, t, i);
                     shop.scanItemResourceModules[i] = t.GetComponent<ScanItemCashRegisterModule>();
@@ -329,6 +327,7 @@ namespace Mapify.SceneInitializers
             gsc.gameObject.SetActive(true);
         }
 
+        /// <seealso cref="GraphicsOptions.GlobalPostProcessVolume" />
         private static void SetupPostProcessing()
         {
             GameObject obj = GameObject.Find("[GlobalPostProcessing]") ?? new GameObject("[GlobalPostProcessing]");
@@ -339,6 +338,9 @@ namespace Mapify.SceneInitializers
             if (!profile.HasSettings<AmbientOcclusion>()) profile.AddSettings<AmbientOcclusion>();
             if (!profile.HasSettings<AutoExposure>()) profile.AddSettings<AutoExposure>();
             if (!profile.HasSettings<Bloom>()) profile.AddSettings<Bloom>();
+            if (!profile.HasSettings<ColorGrading>()) profile.AddSettings<ColorGrading>();
+            if (!profile.HasSettings<MotionBlur>()) profile.AddSettings<MotionBlur>();
+            if (!profile.HasSettings<Sunshafts>()) profile.AddSettings<Sunshafts>();
         }
     }
 }

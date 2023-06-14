@@ -11,6 +11,9 @@ namespace Mapify.SceneInitializers
 {
     public static class VanillaGameContentSceneInitializer
     {
+        public const int START_IDX = short.MaxValue;
+        private static int nextIdx = START_IDX;
+
         public static void SceneLoaded(Scene scene)
         {
             AssetCopier.CopyDefaultAssets(scene, ToSave);
@@ -18,27 +21,12 @@ namespace Mapify.SceneInitializers
 
         private static IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
-            switch (gameObject.name)
-            {
-                // Todo: add these
-                case "[LicensesAndGarages]":
-                    yield return (VanillaAsset.LicensesAndGarages, gameObject);
-                    yield break;
-                case "[ItemDisablerGrid]":
-                    yield return (VanillaAsset.ItemDisablerGrid, gameObject);
-                    yield break;
-                case "[JobLogicController]":
-                    yield return (VanillaAsset.JobLogicController, gameObject);
-                    yield break;
-                case "[StorageLogic]":
-                    yield return (VanillaAsset.StorageLogic, gameObject);
-                    yield break;
-                case "[ShopLogic]":
-                    yield return (VanillaAsset.ShopLogic, gameObject);
-                    yield break;
-            }
+            string name = gameObject.name;
 
-            if (gameObject.name != "[origin shift content]")
+            if (name.StartsWith("[") && name.EndsWith("]") && name != WorldStreamingInit.ORIGIN_SHIFT_CONTENT)
+                yield return ((VanillaAsset)nextIdx++, gameObject);
+
+            if (name != WorldStreamingInit.ORIGIN_SHIFT_CONTENT)
                 yield break;
 
             #region Misc
@@ -61,7 +49,7 @@ namespace Mapify.SceneInitializers
             {
                 string enumName = $"StationOffice{i}";
                 if (Enum.TryParse(enumName, out VanillaAsset asset))
-                    yield return (asset, gameObject.FindChildByName($"Office_0{i}"));
+                    yield return (asset, gameObject.FindChildByName($"Office_{i}").transform.parent.gameObject);
                 else
                     Mapify.LogError($"Failed to find {nameof(VanillaAsset)} {enumName}!");
             }
@@ -71,25 +59,37 @@ namespace Mapify.SceneInitializers
             #region Pitstops
 
             GameObject refillStationParent = gameObject.FindChildByName("RefillStations");
-
-            yield return (VanillaAsset.PitStopStation, refillStationParent.FindChildByName("PitStopStation"));
-            yield return (VanillaAsset.RefillMachineFuel, refillStationParent.FindChildByName("Fuel"));
-            yield return (VanillaAsset.RefillMachineSand, refillStationParent.FindChildByName("Sand"));
-            yield return (VanillaAsset.RefillMachineOil, refillStationParent.FindChildByName("Oil"));
-            yield return (VanillaAsset.RefillMachineWater, refillStationParent.FindChildByName("Tender water"));
-            yield return (VanillaAsset.RefillMachineCoal, refillStationParent.FindChildByName("Coal"));
-            yield return (VanillaAsset.RefillMachineCarDamage, refillStationParent.FindChildByName("Body repair"));
-            yield return (VanillaAsset.RefillMachineWheelDamage, refillStationParent.FindChildByName("Wheels repair"));
-            yield return (VanillaAsset.RefillMachineEngineDamage, refillStationParent.FindChildByName("Engine repair"));
-            yield return (VanillaAsset.ServiceStationMarkerOpen, refillStationParent.FindChildByName("ServiceStationMarker-open"));
-            yield return (VanillaAsset.ServiceStationMarkerClosed, refillStationParent.FindChildByName("ServiceStationMarker-closed"));
-            yield return (VanillaAsset.CashRegister, refillStationParent.FindChildByName("CashRegisterWithModules"));
+            if (refillStationParent != null)
+            {
+                yield return (VanillaAsset.PitStopStation, refillStationParent.FindChildByName("PitStopStation"));
+                yield return (VanillaAsset.RefillMachineDiesel, refillStationParent.FindChildByName("Diesel"));
+                yield return (VanillaAsset.RefillMachineSand, refillStationParent.FindChildByName("Sand"));
+                yield return (VanillaAsset.RefillMachineOil, refillStationParent.FindChildByName("Oil"));
+                yield return (VanillaAsset.RefillMachineWater, refillStationParent.FindChildByName("WaterLocoResourceModule"));
+                yield return (VanillaAsset.RefillMachineCoal, refillStationParent.FindChildByName("CoalLocoResourceModule"));
+                yield return (VanillaAsset.RefillMachineBodyDamage, refillStationParent.FindChildByName("Body"));
+                yield return (VanillaAsset.RefillMachineWheelDamage, refillStationParent.FindChildByName("Wheels"));
+                yield return (VanillaAsset.RefillMachineMechanicalPowertrain, refillStationParent.FindChildByName("Mechanical powertrain"));
+                yield return (VanillaAsset.RefillMachineElectricalPowertrain, refillStationParent.FindChildByName("Electrical powertrain"));
+                yield return (VanillaAsset.ServiceStationMarkerOpen, refillStationParent.FindChildByName("ServiceStationMarker-open"));
+                yield return (VanillaAsset.ServiceStationMarkerClosed, refillStationParent.FindChildByName("ServiceStationMarker-closed"));
+                yield return (VanillaAsset.CashRegister, refillStationParent.FindChildByName("CashRegisterResourceModules"));
+            }
+            else
+            {
+                Mapify.LogError("Failed to find RefillStations!");
+            }
 
             #endregion
 
             #region Stores
 
-            GameObject shopsParent = gameObject.FindChildByName("Shops");
+            GameObject shopsParent = gameObject.FindChildByName("[ShopLogic]");
+            if (shopsParent == null)
+            {
+                Mapify.LogError("Failed to find [ShopLogic]!");
+                yield break;
+            }
 
             foreach (ScanItemCashRegisterModule module in shopsParent.GetComponentsInChildren<ScanItemCashRegisterModule>())
             {
@@ -98,15 +98,25 @@ namespace Mapify.SceneInitializers
                 if (VanillaAsset.TryParse($"StoreItem{itemName}", true, out VanillaAsset asset))
                     yield return (asset, module.gameObject);
                 else
-                    Mapify.LogError($"Failed to find VanillaAsset for {itemName}");
+                    Mapify.LogError($"Failed to find {nameof(VanillaAsset)} for shop item {itemName}");
             }
 
             GameObject shop = shopsParent.FindChildByName("[ItemShop] Harbor");
+            if (shop == null)
+            {
+                Mapify.LogError("Failed to find '[ItemShop] Harbor'!");
+                yield break;
+            }
+
             foreach (ScanItemCashRegisterModule module in shop.GetComponentsInChildren<ScanItemCashRegisterModule>())
                 Object.Destroy(module.gameObject);
             Object.Destroy(shop.FindChildByName("Stopwatch"));
 
             yield return (VanillaAsset.Store, shop);
+
+            foreach (Transform transform in shopsParent.transform.GetChildren())
+                Object.Destroy(transform.gameObject);
+            yield return ((VanillaAsset)nextIdx++, shopsParent);
 
             #endregion
         }

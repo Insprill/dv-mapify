@@ -9,5 +9,10 @@ Because of this, make sure to check the [Breaking Changes](#breaking-changes) se
 ## Breaking Changes
 
 All breaking changes between Mapify versions will be listed here.
+Each change is relative to the last version in the list.
+If you're upgrading through multiple versions, read the list bottom-up, starting from the version after the one you're running.
+
+### 0.3.0
+- All Store Item Types must be reassigned.
 
 [github-releases]: https://github.com/Insprill/dv-mapify/releases

@@ -3,7 +3,7 @@
   "Version": "0.2.0",
   "DisplayName": "Mapify",
   "Author": "Insprill",
-  "EntryMethod": "Mapify.Main.Load",
+  "EntryMethod": "Mapify.Mapify.Load",
   "LoadAfter": [
     "PassengerJobs"
   ],

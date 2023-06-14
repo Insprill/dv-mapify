@@ -1,12 +1,12 @@
 using System.Linq;
-using DV.JObjectExtstensions;
 using DV.Localization;
 using DV.UI;
 using DV.UI.PresetEditors;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
-using Newtonsoft.Json.Linq;
+using Mapify.Map;
+using Mapify.Utils;
 using UnityEngine;
 
 namespace Mapify.Patches
@@ -24,7 +24,7 @@ namespace Mapify.Patches
             Object.Destroy(gameObject.FindChildByName("ButtonIcon - session"));
             gameObject.transform.SetSiblingIndex(gameObject.transform.GetSiblingIndex() - 2);
             Selector selector = gameObject.GetComponentInChildren<Selector>();
-            selector.SetValues(Mapify.AllMapNames.ToList());
+            selector.SetValues(Maps.AllMapNames.ToList());
             selector.Clicked += _ => { OnSelectorClicked(__instance, selector); };
             Localize localize = selector.GetComponentInChildren<Localize>();
             localize.key = Locale.SESSION__MAP_SELECTOR;
@@ -36,11 +36,8 @@ namespace Mapify.Patches
         {
             if (__instance.CurrentThing?.GameData == null)
                 return;
-            BasicMapInfo basicMapInfo = Mapify.Maps[Mapify.AllMapNames[selector.SelectedIndex]].Item1;
-            if (basicMapInfo == null)
-                __instance.CurrentThing.GameData.Remove("mapify");
-            else
-                __instance.CurrentThing.GameData.SetJObject("mapify", JObject.FromObject(basicMapInfo));
+            BasicMapInfo basicMapInfo = Maps.FromIndex(selector.SelectedIndex);
+            __instance.CurrentThing.GameData.SetBasicMapInfo(basicMapInfo);
         }
     }
 

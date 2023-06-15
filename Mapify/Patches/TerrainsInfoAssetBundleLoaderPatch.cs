@@ -71,7 +71,7 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), "GetAssetBundleFilePath")]
     public static class TerrainsInfoAssetBundleLoader_GetAssetBundleFilePath_Patch
     {
-        private static bool Prefix(TerrainsInfoAssetBundleLoader __instance, Vector2Int coord, ref string __result)
+        private static bool Prefix(TerrainsInfoAssetBundleLoader __instance, ref Vector2Int coord, ref string __result)
         {
             if (Maps.IsDefaultMap)
                 return true;

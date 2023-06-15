@@ -1,40 +1,14 @@
-using UnityEngine;
-using UnityModManagerNet;
+using BepInEx.Configuration;
 
 namespace Mapify
 {
-    public class Settings : UnityModManager.ModSettings
+    public class Settings
     {
-        // ReSharper disable MemberCanBePrivate.Global
-        public bool ShowHiddenSettings;
-        public bool verboseLogging;
-        // ReSharper restore MemberCanBePrivate.Global
-        public bool VerboseLogging => verboseLogging && ShowHiddenSettings;
+        public readonly ConfigEntry<bool> VerboseLogging;
 
-        public void Draw(UnityModManager.ModEntry modEntry)
+        public Settings(ConfigFile config)
         {
-            #region Hidden Settings
-
-            ShowHiddenSettings = GUILayout.Toggle(ShowHiddenSettings, "Show Hidden Settings");
-
-            #region Verbose Logging
-
-            if (ShowHiddenSettings)
-                verboseLogging = GUILayout.Toggle(verboseLogging, "Verbose Logging");
-
-            #endregion
-
-            #endregion
-        }
-
-        public void OnChange()
-        {
-            // yup
-        }
-
-        public override void Save(UnityModManager.ModEntry modEntry)
-        {
-            Save(this, modEntry);
+            VerboseLogging = config.Bind("Advanced", "Verbose Logging", false, "Whether to log more information than usual. Only use when debugging problems.");
         }
     }
 }

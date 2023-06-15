@@ -34,7 +34,7 @@ namespace Mapify.Patches
         public static string what;
         private static string lastMessage;
 
-        private static bool Prefix(DisplayLoadingInfo __instance, string message, bool isError, float percentageLoaded)
+        private static bool Prefix(DisplayLoadingInfo __instance, string message, bool isError, ref float percentageLoaded)
         {
             if (Maps.IsDefaultMap)
                 return true;

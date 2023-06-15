@@ -14,17 +14,7 @@
         <Reference Include="System.IO.Compression"/>
         <Reference Include="Unity.TextMeshPro"/>
         <Reference Include="UnityEditor"/>
-        <Reference Include="UnityEngine"/>
-        <Reference Include="UnityEngine.AnimationModule"/>
-        <Reference Include="UnityEngine.AudioModule"/>
-        <Reference Include="UnityEngine.AssetBundleModule"/>
-        <Reference Include="UnityEngine.CoreModule"/>
-        <Reference Include="UnityEngine.ImageConversionModule"/>
-        <Reference Include="UnityEngine.IMGUIModule"/>
-        <Reference Include="UnityEngine.JSONSerializeModule"/>
-        <Reference Include="UnityEngine.PhysicsModule"/>
-        <Reference Include="UnityEngine.TerrainModule"/>
-        <Reference Include="UnityEngine.UI"/>
+        <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

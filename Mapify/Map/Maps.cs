@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Mapify.Editor;
 using UnityEngine;
-using UnityModManagerNet;
 
 namespace Mapify.Map
 {
@@ -32,9 +31,9 @@ namespace Mapify.Map
         // name -> (info, directory)
         private static ReadOnlyDictionary<string, (BasicMapInfo, string)> availableMaps;
 
-        public static void LoadMaps(UnityModManager.ModEntry modEntry)
+        public static void LoadMaps(Mapify plugin)
         {
-            MapsFolder = Path.Combine(modEntry.Path, MAPS_FOLDER_NAME);
+            MapsFolder = Path.Combine(plugin.InstallDirectory, MAPS_FOLDER_NAME);
             if (!Directory.Exists(MapsFolder))
             {
                 Directory.CreateDirectory(MapsFolder);

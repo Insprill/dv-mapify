@@ -44,7 +44,7 @@ namespace Mapify.Patches
                     if (method == null) continue;
                     try
                     {
-                        Mapify.Harmony.Patch(method, harmonyPrefix);
+                        Mapify.Instance.harmony.Patch(method, harmonyPrefix);
                         patchedMethods.Add(method);
                     }
                     catch (Exception e)
@@ -69,7 +69,7 @@ namespace Mapify.Patches
             yield return null;
             Mapify.LogDebug("Enabling disabled MonoBehaviours");
             foreach (MethodInfo method in patchedMethods)
-                Mapify.Harmony.Unpatch(method, prefix);
+                Mapify.Instance.harmony.Unpatch(method, prefix);
             patchedMethods = null;
         }
 

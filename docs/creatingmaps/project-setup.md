@@ -16,6 +16,9 @@ If you don't have Unity installed, the easiest way to get it is through [Unity H
 
 Once installed, click [here][unity-download] to download the correct version.
 
+When asked about modules, you only need to check `Windows Build Support (Mono)` if you're running Linux.
+Everything else can be left unchecked.
+
 
 ## Creating The Project
 

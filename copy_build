@@ -23,7 +23,6 @@ if [ ! -f "$DV_INSTALL_DIR/$DERAIL_VALLEY_EXE" ]; then
   exit 1
 fi
 
-PACKAGE_FILE=$(./package | tail -1)
+./package || exit 1
 
-echo "opening $PACKAGE_FILE"
-unzip "$PACKAGE_FILE" -d "$DV_INSTALL_DIR"
+cp -r BepInEx "$DV_INSTALL_DIR"

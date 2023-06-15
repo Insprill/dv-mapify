@@ -52,8 +52,13 @@ Make sure to include the semicolons between each of the paths, but not after the
 
 When building Mapify, it will try to update the mod in your Derail Valley installation directory so you don't have to manually copy it.
 To do this, it needs to know where your game is installed.
-Open the file called `.env` in the root of the project, next to the `LICENSE` file.
-Inside, you'll find all the environment variables that need to be set, along with comments explaining what they do.
 
+Create a new file called `.env` in the root of the project, next to the `LICENSE` file.
+In this file, paste in the following contents, and fill out each variable.
+You can copy everything by clicking the "Copy to clipboard" button in the top right of the code block.
+```dotenv
+# The directory where Derail Valley is installed. (e.g. C:\Program Files (x86)\Steam\steamapps\common\Derail Valley)
+DV_INSTALL_DIR=""
+```
 
 [directory-build-targets-docs]: https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory?view=vs-2022#directorybuildprops-and-directorybuildtargets

@@ -13,5 +13,5 @@ If you're just a user who wants to install and use maps, visit the [Using Maps][
 [derail-valley-website]: https://www.derailvalley.com/
 [project-setup]: creatingmaps/project-setup.md
 [contributing]: contributing/index.md
-[using-maps]: usingmaps/index.md
+[using-maps]: usage/index.md
 [banner-image]: assets/banner.png

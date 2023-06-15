@@ -1,16 +1,12 @@
 # Building The Project
 
-## Dependencies
-
-To build Mapify, you'll need to install the following mods we depend on.
-Simply install them normally, as if you were going to play with them.
-
-- [Passenger Jobs](https://www.nexusmods.com/derailvalley/mods/203)
-
 ## Project Setup
 
-To build Mapify, you'll need to create a new [`Directory.Build.targets`](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2022) file to specify your reference paths.
-There should be two of these files, one in the `Mapify` folder and one in the `MapifyEditor` folder.
+### Reference Directories
+
+To ensure MSBuild and your IDE can find Derail Valley / Unity classes,
+you'll need to create a [`Directory.Build.targets`][directory-build-targets-docs] file to specify your reference paths.
+This file should be created in the root of the project, next to the `LICENSE` file.
 You can use the examples below as templates depending on your operating system.
 
 <details>
@@ -25,9 +21,7 @@ Note that shortcuts like `%ProgramFiles%` *cannot* be used.
     <PropertyGroup>
         <ReferencePath>
             C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\DerailValley_Data\Managed\;
-            C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\DerailValley_Data\Managed\UnityModManager\;
-            C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\Mods\PassengerJobs\;
-            C:\Program Files\Unity\Hub\Editor\2019.4.22f1\Editor\Data\Managed\
+            C:\Program Files\Unity\Hub\Editor\2019.4.40f1\Editor\Data\Managed\
         </ReferencePath>
         <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>
     </PropertyGroup>
@@ -46,9 +40,7 @@ Make sure to include the semicolons between each of the paths, but not after the
     <PropertyGroup>
         <ReferencePath>
             /home/username/.local/share/Steam/steamapps/common/Derail Valley/DerailValley_Data/Managed/;
-            /home/username/.local/share/Steam/steamapps/common/Derail Valley/DerailValley_Data/Managed/UnityModManager/;
-            /home/username/.local/share/Steam/steamapps/common/Derail Valley/Mods/PassengerJobs/;
-            /home/username/.local/share/UnityHub/Editor/2019.4.22f1/Editor/Data/Managed/
+            /home/username/.local/share/UnityHub/Editor/2019.4.40f1/Editor/Data/Managed/
         </ReferencePath>
         <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>
     </PropertyGroup>
@@ -56,5 +48,12 @@ Make sure to include the semicolons between each of the paths, but not after the
 ```
 </details>
 
-To test your changes, `Mapify.dll` and `MapifyEditor.dll` will need to be copied into the mod's install directory (e.g. `...Derail Valley/Mods/Mapify`) along with the `info.json`.
-The DLL's can be found in the `build` folder, and the `info.json` at the root of the repository.
+### Environment Variables
+
+When building Mapify, it will try to update the mod in your Derail Valley installation directory so you don't have to manually copy it.
+To do this, it needs to know where your game is installed.
+Open the file called `.env` in the root of the project, next to the `LICENSE` file.
+Inside, you'll find all the environment variables that need to be set, along with comments explaining what they do.
+
+
+[directory-build-targets-docs]: https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory?view=vs-2022#directorybuildprops-and-directorybuildtargets

@@ -280,11 +280,17 @@ Temporary Items
 # Builds
 build/
 
+# Temp directory while building
+BepInEx/
+
 # Packaged Builds
 Mapify_*.zip
 
 # User-specific refrence paths
 Directory.Build.targets
+
+# User-specific environment variables
+.env*
 
 # Custom map used for testing
 TestMap/

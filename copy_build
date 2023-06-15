@@ -25,4 +25,4 @@ fi
 
 ./package || exit 1
 
-cp -r BepInEx "$DV_INSTALL_DIR"
+cp -rpfu BepInEx "$DV_INSTALL_DIR"

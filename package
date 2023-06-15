@@ -7,14 +7,21 @@ function check_file_exists() {
     fi
 }
 
-INFO_FILE="info.json"
+ZIP_STRUCTURE=BepInEx/plugins/Mapify/
+LICENSE_FILE="LICENSE"
+LOCALE_FILE="locale.csv"
 MAPIFY_DLL="build/Mapify.dll"
 MAPIFY_EDITOR_DLL="build/MapifyEditor.dll"
-DISPLAY_NAME=$(jq -r '.DisplayName' $INFO_FILE)
-VERSION=$(jq -r '.Version' $INFO_FILE)
+VERSION=$(grep -Eo '"([0-9]+\.[0-9]+\.[0-9]+")' Mapify/Mapify.cs | sed 's/"//g')
 
+check_file_exists "$LICENSE_FILE"
+check_file_exists "$LOCALE_FILE"
 check_file_exists "$MAPIFY_DLL"
 check_file_exists "$MAPIFY_EDITOR_DLL"
-check_file_exists "$INFO_FILE"
 
-zip -1 -T -j -u "${DISPLAY_NAME}_v$VERSION.zip" $MAPIFY_DLL $MAPIFY_EDITOR_DLL $INFO_FILE
+mkdir -p $ZIP_STRUCTURE
+cp -pfu $LICENSE_FILE $LOCALE_FILE $MAPIFY_DLL $MAPIFY_EDITOR_DLL $ZIP_STRUCTURE
+
+FILE_NAME="Mapify_v$VERSION.zip"
+zip -1 -T -u "$FILE_NAME" $ZIP_STRUCTURE*
+echo "$FILE_NAME"

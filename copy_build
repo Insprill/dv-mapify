@@ -1,21 +1,29 @@
 #!/bin/bash
 
-BUILD_TARGET_PATH="$1"
-PROJECT_PATH="$2"
-DEST_FOLDER="$HOME/.local/share/Steam/steamapps/common/Derail Valley/Mods/Mapify"
-INFO_FILE="info.json"
-LOCALE_FILE="locale.csv"
+cd "$1../" || exit 1
 
-function copy() {
-    cp -pfu "$1" "$DEST_FOLDER"
-}
+source .env
 
-function copy_root() {
-    copy "$PROJECT_PATH../$1"
-}
+DEFAULT_DV_INSTALL_DIR="$HOME/.local/share/Steam/steamapps/common/Derail Valley"
 
-[ -d "$DEST_FOLDER" ] || exit 0
+if [[ -z "$DV_INSTALL_DIR" ]]; then
+  echo "No DV_INSTALL_DIR environment variable found. Assuming '$DEFAULT_DV_INSTALL_DIR'"
+  DV_INSTALL_DIR="$DEFAULT_DV_INSTALL_DIR"
+fi
 
-copy "$BUILD_TARGET_PATH"
-copy_root "$INFO_FILE"
-copy_root "$LOCALE_FILE"
+if [[ ! -d "$DV_INSTALL_DIR" ]]; then
+  echo "Derail Valley installation directory '$DV_INSTALL_DIR' does not exist. Exiting."
+  exit 1
+fi
+
+DERAIL_VALLEY_EXE="DerailValley.exe"
+
+if [ ! -f "$DV_INSTALL_DIR/$DERAIL_VALLEY_EXE" ]; then
+  echo "Derail Valley installation directory '$DV_INSTALL_DIR' does not contain $DERAIL_VALLEY_EXE. Is it the correct path?"
+  exit 1
+fi
+
+PACKAGE_FILE=$(./package | tail -1)
+
+echo "opening $PACKAGE_FILE"
+unzip "$PACKAGE_FILE" -d "$DV_INSTALL_DIR"

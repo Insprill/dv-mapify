@@ -51,7 +51,7 @@
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p ../build &amp;&amp; cp &quot;$(TargetPath)&quot; ../build/"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="../copy_build $(TargetPath) $(ProjectDir)"/>
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="../copy_build $(ProjectDir)"/>
 
         <Exec Condition="'$(OS)' == 'Windows_NT'" Command="xcopy /d /y &quot;$(TargetPath)&quot; ..\build\"/>
         <Exec Condition="'$(OS)' == 'Windows_NT'" Command="setlocal enabledelayedexpansion &amp;&amp; set DEST=C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\Mods\Mapify &amp;&amp; if exist !DEST! xcopy /d /y &quot;$(TargetPath)&quot; &quot;!DEST!&quot;"/>

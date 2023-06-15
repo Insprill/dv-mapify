@@ -35,6 +35,11 @@ namespace Mapify.Editor
             this.streamingScene = streamingScene;
         }
 
+        public IEnumerable<Scene> AllScenes()
+        {
+            return new[] { terrainScene, railwayScene, gameContentScene, streamingScene };
+        }
+
         public static Scenes FromEnumerable(IEnumerable<Scene> scenes)
         {
             IEnumerable<Scene> arr = scenes as Scene[] ?? scenes.ToArray();

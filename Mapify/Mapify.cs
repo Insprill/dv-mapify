@@ -20,7 +20,6 @@ namespace Mapify
 
         private const string LOCALE_FILE = "locale.csv";
 
-        private Settings Settings;
         internal Harmony harmony { get; private set; }
 
         public string InstallDirectory => Path.GetDirectoryName(Info.Location);
@@ -41,8 +40,6 @@ namespace Mapify
                 Destroy(this);
                 return;
             }
-
-            Settings = new Settings(Config);
 
             try
             {

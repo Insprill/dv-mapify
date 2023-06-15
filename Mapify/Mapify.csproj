@@ -39,14 +39,14 @@
         <Reference Include="Newtonsoft.Json"/>
         <Reference Include="sc.posteffects.runtime"/>
         <!-- Mod Loader -->
-        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-        <PackageReference Include="BepInEx.Core" Version="5.*" />
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.Core" Version="5.*"/>
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*"/>
         <!-- Unity -->
         <Reference Include="Unity.Collections"/>
         <Reference Include="Unity.Postprocessing.Runtime"/>
         <Reference Include="Unity.TextMeshPro"/>
-        <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile" />
+        <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile"/>
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

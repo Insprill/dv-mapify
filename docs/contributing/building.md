@@ -1,5 +1,16 @@
 # Building The Project
 
+## Dependencies
+
+To build Mapify, you'll need to have some dependencies installed.
+
+- [.NET 7][dotnet-download]
+- [PowerShell][powershell-download]
+
+If you're running windows, you should already have PowerShell installed.
+If you're on Linux, you should be able to download it from your package manager.
+
+
 ## Project Setup
 
 ### Reference Directories
@@ -56,4 +67,6 @@ Make sure to include the semicolons between each of the paths, but not after the
 ```
 </details>
 
+[dotnet-download]: https://dotnet.microsoft.com/en-us/download
+[powershell-download]: https://github.com/PowerShell/PowerShell#get-powershell
 [directory-build-targets-docs]: https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory?view=vs-2022#directorybuildprops-and-directorybuildtargets

@@ -68,7 +68,7 @@ namespace Mapify.Map
             }
 
             availableMaps = new ReadOnlyDictionary<string, (BasicMapInfo, string)>(maps);
-            AllMapNames = availableMaps.Keys.OrderBy(x => x).ToArray();
+            AllMapNames = availableMaps.Keys?.OrderBy(x => x).ToArray() ?? Array.Empty<string>();
         }
 
         private static bool ValidateMapInstallation(string dir)

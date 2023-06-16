@@ -79,7 +79,7 @@ namespace Mapify.SceneInitializers
         {
             Transform swTransform = sw.transform;
             VanillaAsset vanillaAsset = sw.GetComponent<VanillaObject>().asset;
-            GameObject prefabClone = AssetCopier.Instantiate(vanillaAsset, active: false);
+            GameObject prefabClone = AssetCopier.Instantiate(vanillaAsset, false);
             Transform prefabCloneTransform = prefabClone.transform;
             Transform inJunction = prefabCloneTransform.Find("in_junction");
             Vector3 offset = prefabCloneTransform.position - inJunction.position;

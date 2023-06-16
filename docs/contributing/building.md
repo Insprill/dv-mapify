@@ -4,10 +4,14 @@
 
 ### Reference Directories
 
-To ensure MSBuild and your IDE can find Derail Valley / Unity classes,
+To ensure MSBuild and your IDE can find Derail Valley / Unity classes, and to avoid having to copy DLLs around,
 you'll need to create a [`Directory.Build.targets`][directory-build-targets-docs] file to specify your reference paths.
 This file should be created in the root of the project, next to the `LICENSE` file.
+
 You can use the examples below as templates depending on your operating system.
+
+- `DvInstallDir` is the directory where Derail Valley is installed (Where `DerailValley.exe` is located).
+- `UnityInstallDir` is the directory where Unity is installed (Where `Unity.exe` or `Unity` is located).
 
 <details>
 <summary>Windows</summary>
@@ -19,9 +23,11 @@ Note that shortcuts like `%ProgramFiles%` *cannot* be used.
 ```xml
 <Project>
     <PropertyGroup>
+        <DvInstallDir>C:\Program Files (x86)\Steam\steamapps\common\Derail Valley</DvInstallDir>
+        <UnityInstallDir>C:\Program Files\Unity\Hub\Editor\2019.4.40f1\Editor</UnityInstallDir>
         <ReferencePath>
-            C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\DerailValley_Data\Managed\;
-            C:\Program Files\Unity\Hub\Editor\2019.4.40f1\Editor\Data\Managed\
+            $(DvInstallDir)\DerailValley_Data\Managed\;
+            $(UnityInstallDir)\Data\Managed\
         </ReferencePath>
         <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>
     </PropertyGroup>
@@ -38,27 +44,16 @@ Make sure to include the semicolons between each of the paths, but not after the
 ```xml
 <Project>
     <PropertyGroup>
+        <DvInstallDir>/home/username/.local/share/Steam/steamapps/common/Derail Valley</DvInstallDir>
+        <UnityInstallDir>/home/username/.local/share/UnityHub/Editor/2019.4.40f1/Editor</UnityInstallDir>
         <ReferencePath>
-            /home/username/.local/share/Steam/steamapps/common/Derail Valley/DerailValley_Data/Managed/;
-            /home/username/.local/share/UnityHub/Editor/2019.4.40f1/Editor/Data/Managed/
+            $(DvInstallDir)/DerailValley_Data/Managed/;
+            $(UnityInstallDir)/Data/Managed/
         </ReferencePath>
         <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>
     </PropertyGroup>
 </Project>
 ```
 </details>
-
-### Environment Variables
-
-When building Mapify, it will try to update the mod in your Derail Valley installation directory so you don't have to manually copy it.
-To do this, it needs to know where your game is installed.
-
-Create a new file called `.env` in the root of the project, next to the `LICENSE` file.
-In this file, paste in the following contents, and fill out each variable.
-You can copy everything by clicking the "Copy to clipboard" button in the top right of the code block.
-```dotenv
-# The directory where Derail Valley is installed. (e.g. C:\Program Files (x86)\Steam\steamapps\common\Derail Valley)
-DV_INSTALL_DIR=""
-```
 
 [directory-build-targets-docs]: https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory?view=vs-2022#directorybuildprops-and-directorybuildtargets

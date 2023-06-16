@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 
 namespace Mapify.Editor
@@ -26,3 +27,4 @@ namespace Mapify.Editor
         }
     }
 }
+#endif

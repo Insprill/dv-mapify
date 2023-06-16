@@ -49,7 +49,7 @@ namespace Mapify
             }
             catch (Exception ex)
             {
-                LogException($"Failed to load", ex);
+                LogException("Failed to load", ex);
                 Destroy(this);
             }
         }

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor.Utils;
-using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Mapify.Editor
 {
@@ -31,12 +33,14 @@ namespace Mapify.Editor
 
         public void Snap()
         {
+#if UNITY_EDITOR
             BezierPoint[] bezierPoints = FindObjectsOfType<BezierPoint>();
             GameObject[] selectedObjects = Selection.gameObjects;
             bool isSelected = selectedObjects.Contains(gameObject);
             TrySnap(bezierPoints, isSelected, 0);
             TrySnap(bezierPoints, isSelected, 1);
             TrySnap(bezierPoints, isSelected, 2);
+#endif
         }
 
         private void TrySnap(IEnumerable<BezierPoint> points, bool move, byte which)

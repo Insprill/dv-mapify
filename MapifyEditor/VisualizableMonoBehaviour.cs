@@ -1,9 +1,11 @@
+using Mapify.Editor.Utils;
+using UnityEngine;
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
-using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEditor.Experimental.SceneManagement;
-using UnityEngine;
+#endif
 
 namespace Mapify.Editor
 {
@@ -17,6 +19,7 @@ namespace Mapify.Editor
 
         protected void UpdateVisuals<T>(T[] things, Transform reference)
         {
+#if UNITY_EDITOR
             if (PrefabStageUtility.GetCurrentPrefabStage() != null || EditorUtility.IsPersistent(gameObject) || visualPrefab == null)
                 return;
             StartCoroutine(UpdateVisualsCoroutine(things, reference));
@@ -33,6 +36,7 @@ namespace Mapify.Editor
                 go.tag = "EditorOnly";
                 PositionThing(reference, go.transform, i);
             }
+#endif
         }
 
         private void DestroyVisuals()

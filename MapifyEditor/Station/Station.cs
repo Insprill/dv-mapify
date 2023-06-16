@@ -1,6 +1,8 @@
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Mapify.Editor
 {
@@ -71,6 +73,8 @@ namespace Mapify.Editor
 
         #region Editor Visualization
 
+#if UNITY_EDITOR
+
         internal bool visualizeJobGenerationRange;
         internal bool visualizeBookletGenerationDistance;
         internal bool visualizeJobDestroyDistance;
@@ -95,6 +99,8 @@ namespace Mapify.Editor
                 Handles.DrawSolidDisc(YardCenter.position, Vector3.up, bookletGenerationDistance);
             }
         }
+
+#endif
 
         #endregion
     }

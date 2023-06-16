@@ -32,7 +32,9 @@ namespace Mapify.Editor
         [Tooltip("The purpose of this track")]
         public TrackType trackType;
 
+#if UNITY_EDITOR
         internal bool showLoadingGauge;
+#endif
 
         public bool isInSnapped { get; private set; }
         public bool isOutSnapped { get; private set; }
@@ -89,7 +91,7 @@ namespace Mapify.Editor
                     break;
             }
         }
-
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (showLoadingGauge)
@@ -193,7 +195,7 @@ namespace Mapify.Editor
             else isOutSnapped = true;
             if (move) point.transform.position = closestPos;
         }
-
+#endif
         internal void Snapped(BezierPoint point)
         {
             if (point == Curve[0])

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Mapify.Components
 {
     /// <summary>
-    /// Disables the attached <see cref="GameObject"/> when Awake is called.
+    ///     Disables the attached <see cref="GameObject" /> when Awake is called.
     /// </summary>
     public class DisableOnAwake : MonoBehaviour
     {

@@ -185,7 +185,8 @@ namespace Mapify.Utils
         #region DV
 
         private static readonly MethodInfo CommandArg_Method_TypeError = AccessTools.DeclaredMethod(typeof(CommandArg), "TypeError", new[] { typeof(string) });
-        private static readonly MethodInfo DisplayLoadingInfo_Method_OnLoadingStatusChanged = AccessTools.DeclaredMethod(typeof(DisplayLoadingInfo), "OnLoadingStatusChanged", new[] { typeof(string), typeof(bool), typeof(float) });
+        private static readonly MethodInfo DisplayLoadingInfo_Method_OnLoadingStatusChanged =
+            AccessTools.DeclaredMethod(typeof(DisplayLoadingInfo), "OnLoadingStatusChanged", new[] { typeof(string), typeof(bool), typeof(float) });
 
         public static double Double(this CommandArg arg)
         {

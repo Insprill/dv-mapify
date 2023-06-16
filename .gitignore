@@ -289,8 +289,8 @@ Mapify_*.zip
 # User-specific refrence paths
 Directory.Build.targets
 
-# User-specific environment variables
-.env*
+# User-specific properties
+UserProperties.props
 
 # Custom map used for testing
 TestMap/

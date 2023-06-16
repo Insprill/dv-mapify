@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Mapify.Editor.Utils;
 using UnityEngine;
 
@@ -41,3 +42,4 @@ namespace Mapify.Editor
         }
     }
 }
+#endif

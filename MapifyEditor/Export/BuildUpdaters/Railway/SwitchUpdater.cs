@@ -1,4 +1,5 @@
-﻿using Mapify.Editor.Utils;
+﻿#if UNITY_EDITOR
+using Mapify.Editor.Utils;
 
 namespace Mapify.Editor.StateUpdaters
 {
@@ -20,3 +21,4 @@ namespace Mapify.Editor.StateUpdaters
         }
     }
 }
+#endif

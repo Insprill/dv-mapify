@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor.Utils;
+using UnityEngine.SceneManagement;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine.SceneManagement;
+#endif
 
 namespace Mapify.Editor
 {
@@ -15,7 +17,7 @@ namespace Mapify.Editor
         public const string STREAMING = "Assets/Scenes/Streaming.unity";
         public const string STREAMING_DIR = "Assets/Scenes/Streaming";
 
-        public static readonly string[] ALL_SCENE_PATHS = {
+        private static readonly string[] ALL_SCENE_PATHS = {
             TERRAIN,
             RAILWAY,
             GAME_CONTENT,
@@ -54,6 +56,8 @@ namespace Mapify.Editor
         {
             List<string> missingScenes = new List<string>(0);
             Dictionary<Scene, bool> sceneStates = new Dictionary<Scene, bool>(ALL_SCENE_PATHS.Length);
+
+#if UNITY_EDITOR
             for (int i = 0; i < ALL_SCENE_PATHS.Length; i++)
             {
                 string scenePath = ALL_SCENE_PATHS[i];
@@ -72,6 +76,7 @@ namespace Mapify.Editor
             }
 
             EditorUtility.ClearProgressBar();
+#endif
 
             return (sceneStates, missingScenes);
         }

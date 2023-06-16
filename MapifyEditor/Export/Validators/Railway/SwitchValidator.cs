@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Editor.Validators;
@@ -21,3 +22,4 @@ namespace MapifyEditor.Export.Validators
         }
     }
 }
+#endif

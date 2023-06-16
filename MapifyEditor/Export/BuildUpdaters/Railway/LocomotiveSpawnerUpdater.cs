@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿#if UNITY_EDITOR
+using System.Linq;
 using Mapify.Editor.Utils;
 
 namespace Mapify.Editor.StateUpdaters
@@ -12,3 +13,4 @@ namespace Mapify.Editor.StateUpdaters
         }
     }
 }
+#endif

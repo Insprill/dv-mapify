@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.SceneManagement;
+#endif
 
 namespace Mapify.Editor.Utils
 {
@@ -74,6 +76,7 @@ namespace Mapify.Editor.Utils
 
         public static void RecordObjectChanges(this IEnumerable<Object> objects, Action func)
         {
+#if UNITY_EDITOR
             Object[] nonNullObjects = objects.Where(obj => obj != null).ToArray();
             Undo.IncrementCurrentGroup();
             Undo.RecordObjects(nonNullObjects, "Object Changes");
@@ -85,6 +88,7 @@ namespace Mapify.Editor.Utils
 
             Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
             EditorSceneManager.SaveOpenScenes();
+#endif
         }
 
         public static float CalculateWorldSize(this IEnumerable<Terrain> terrains)

@@ -19,8 +19,8 @@ namespace Mapify.Map
 
         public static MapInfo LoadedMap {
             get {
-                if (_loadedMap == null) throw new InvalidOperationException("No map has been loaded!");
-
+                if (_loadedMap == null)
+                    throw new InvalidOperationException("No map has been loaded!");
                 return _loadedMap;
             }
             private set => _loadedMap = value;

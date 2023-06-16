@@ -1,14 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="../UserProperties.props" Condition="Exists('../UserProperties.props')"/>
     <PropertyGroup>
-        <TargetFramework>netframework4.8</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>7.3</LangVersion>
         <RootNamespace>Mapify</RootNamespace>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="../MapifyEditor/MapifyEditor.csproj"/>
@@ -50,10 +47,8 @@
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p ../build &amp;&amp; cp &quot;$(TargetPath)&quot; ../build/"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="../copy_build $(ProjectDir)"/>
-
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="xcopy /d /y &quot;$(TargetPath)&quot; ..\build\"/>
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="setlocal enabledelayedexpansion &amp;&amp; set DEST=C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\Mods\Mapify &amp;&amp; if exist !DEST! xcopy /d /y &quot;$(TargetPath)&quot; &quot;!DEST!&quot;"/>
+        <!-- Copy files -->
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="../build/runtime"/>
+        <Copy Condition="'$(IsEditor)' != 'true' And Exists('$(DvInstallDir)')" SourceFiles="$(TargetPath)" DestinationFolder="$(DvInstallDir)"/>
     </Target>
 </Project>

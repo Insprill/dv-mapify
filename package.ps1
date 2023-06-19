@@ -5,7 +5,13 @@ param (
 
 Set-Location "$PSScriptRoot"
 
-$ZipRootDir = "$OutputDirectory/BepInEx"
+$DistDir = "$OutputDirectory/dist"
+if ($NoArchive) {
+    $ZipWorkDir = "$OutputDirectory"
+} else {
+    $ZipWorkDir = "$DistDir/tmp"
+}
+$ZipRootDir = "$ZipWorkDir/BepInEx"
 $ZipInnerDir = "$ZipRootDir/plugins/Mapify/"
 $RuntimeBuildDir = "build/runtime"
 $LicenseFile = "LICENSE"
@@ -19,6 +25,6 @@ Copy-Item -Force -Path $LicenseFile, $LocaleFile, $MapifyDll, $MapifyEditorDll -
 if (!$NoArchive)
 {
     $VERSION = (Select-String -Pattern '([0-9]+\.[0-9]+\.[0-9]+)' -Path Mapify/Mapify.cs).Matches.Value
-    $FILE_NAME = "$OutputDirectory/Mapify_v$VERSION.zip"
+    $FILE_NAME = "$DistDir/Mapify_v$VERSION.zip"
     Compress-Archive -Update -CompressionLevel Fastest -Path "$ZipRootDir" -DestinationPath "$FILE_NAME"
 }

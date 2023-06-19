@@ -277,20 +277,14 @@ Temporary Items
 .apdisk
 
 ### Custom
-# Builds
+# Development builds
 build/
 
-# Temp directory while building
-BepInEx/
-
-# Packaged Builds
-Mapify_*.zip
+# Release builds
+dist/
 
 # User-specific refrence paths
 Directory.Build.targets
-
-# User-specific properties
-UserProperties.props
 
 # Custom map used for testing
 TestMap/

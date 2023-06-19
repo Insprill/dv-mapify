@@ -47,8 +47,11 @@
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <!-- Copy files -->
+        <!-- Copy to build folder -->
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="../build/runtime"/>
-        <Copy Condition="'$(IsEditor)' != 'true' And Exists('$(DvInstallDir)')" SourceFiles="$(TargetPath)" DestinationFolder="$(DvInstallDir)"/>
+
+        <!-- Copy to game install folder -->
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' == 'Windows_NT' And '$(IsEditor)' != 'true'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' != 'Windows_NT' And '$(IsEditor)' != 'true'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
     </Target>
 </Project>

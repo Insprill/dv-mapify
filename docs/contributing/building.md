@@ -1,5 +1,7 @@
 # Building The Project
 
+## Project Setup
+
 ## Dependencies
 
 To build Mapify, you'll need to have some dependencies installed.
@@ -10,8 +12,6 @@ To build Mapify, you'll need to have some dependencies installed.
 If you're running windows, you should already have PowerShell installed.
 If you're on Linux, you should be able to download it from your package manager.
 
-
-## Project Setup
 
 ### Reference Directories
 
@@ -66,6 +66,16 @@ Make sure to include the semicolons between each of the paths, but not after the
 </Project>
 ```
 </details>
+
+
+## Packaging
+
+To package a build for distribution, you can run the `package.ps1` PowerShell script in the root of the project.
+If no parameters are supplied, it will create a `.zip` file ready for distribution in the `dist` directory.
+
+- **Linux:** `pwsh ./package.ps1`
+- **Windows:** `powershell -executionpolicy bypass .\package.ps1`
+
 
 [dotnet-download]: https://dotnet.microsoft.com/en-us/download
 [powershell-download]: https://github.com/PowerShell/PowerShell#get-powershell

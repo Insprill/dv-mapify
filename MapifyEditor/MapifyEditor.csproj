@@ -36,8 +36,8 @@
         <Copy Condition="'$(IsEditor)' == 'true' And Exists('$(TestMapDir)')" SourceFiles="$(TargetPath)" DestinationFolder="$(TestMapDir)"/>
 
         <!-- Copy to game install folder -->
-        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' == 'Windows_NT' And '$(IsEditor)' != 'true'" Command="powershell -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
-        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' != 'Windows_NT' And '$(IsEditor)' != 'true'" Command="pwsh -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' == 'Windows_NT' And '$(IsEditor)' != 'true'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' != 'Windows_NT' And '$(IsEditor)' != 'true'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
 
         <!-- Update package version number -->
         <Exec Condition="'$(OS)' == 'Windows_NT' And '$(IsEditor)' == 'true'" Command="powershell $(UpdateVersionCommand)"/>

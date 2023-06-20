@@ -11,8 +11,12 @@ namespace Mapify.SceneInitializers.Railway
             foreach (Editor.BufferStop bufferStop in Object.FindObjectsOfType<Editor.BufferStop>())
             {
                 foreach (VanillaObject vanillaObject in bufferStop.GetComponentsInChildren<VanillaObject>())
-                    if (vanillaObject.asset == VanillaAsset.BufferStop)
+                    if (vanillaObject.asset == VanillaAsset.BufferStopModel)
                         vanillaObject.Replace();
+
+                Transform detectionPoint = bufferStop.compressionPoint;
+                BufferStopController controller = detectionPoint.gameObject.AddComponent<BufferStopController>();
+                controller.bufferCompressionRange = bufferStop.compressionRange;
 
                 GameObject go = bufferStop.gameObject;
                 go.SetActive(false);

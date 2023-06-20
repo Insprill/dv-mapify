@@ -30,7 +30,7 @@ namespace Mapify.Editor
 
         #region Trackage
 
-        BufferStop = 30,
+        BufferStopModel = 30,
         SwitchLeft = 31,
         SwitchRight = 32,
         SwitchLeftOuterSign = 33,

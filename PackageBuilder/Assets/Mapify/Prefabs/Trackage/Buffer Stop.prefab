@@ -28,7 +28,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3686145638353369881}
-  m_RootOrder: 0
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3106686093192782113
 GameObject:
@@ -85,7 +85,7 @@ GameObject:
   - component: {fileID: 3686145638353369881}
   - component: {fileID: 3537663322169037730}
   - component: {fileID: 7635579125911502294}
-  - component: {fileID: 4451536032481443436}
+  - component: {fileID: 2999222792989396387}
   m_Layer: 0
   m_Name: Buffer Stop
   m_TagString: Untagged
@@ -104,9 +104,10 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 3514755574652454948}
+  - {fileID: 5305420425921261090}
   - {fileID: 4204734149671227995}
   - {fileID: 5974773474733330532}
+  - {fileID: 3514755574652454948}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -124,6 +125,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   breakSpeed: 7
   massAfterBreak: 30000
+  compressionRange: 0
+  compressionPoint: {fileID: 5305420425921261090}
   playerCollider: {fileID: 581514248772350098}
 --- !u!114 &7635579125911502294
 MonoBehaviour:
@@ -139,7 +142,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   referencePoint: {fileID: 3514755574652454948}
   onlySnapToEnds: 1
---- !u!65 &4451536032481443436
+--- !u!65 &2999222792989396387
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -147,11 +150,41 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3686145638353369886}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 2.5, y: 3, z: 0.4}
-  m_Center: {x: 0, y: 1, z: 2.5}
+  m_Size: {x: 2.5, y: 3, z: 1}
+  m_Center: {x: 0, y: 1, z: 2.74}
+--- !u!1 &3949235849853661159
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5305420425921261090}
+  m_Layer: 0
+  m_Name: Compression Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5305420425921261090
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3949235849853661159}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 2.26}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 3686145638353369881}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7513370355166853300
 GameObject:
   m_ObjectHideFlags: 0

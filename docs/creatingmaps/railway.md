@@ -81,6 +81,10 @@ On the `Track Snappable` object, set the Reference Point to the "Snap Point" obj
 The BoxCollider object is used to detect when a train hits it.
 It should be positioned a little in front of the buffer stop itself and about the width and height of the loading gauge.
 
+To allow the buffer stop to interact with train buffers, create a new child called "Compression Point".
+This should be positioned at coupler-height, and should be lined up with the front edge of the buffer.
+On the `Buffer Stop` component, set the Compression Point to this object.
+
 Lastly, create a new child called "Player Collider" with a `Box Collider` component.
 This collider will be used to prevent the buffer stop from spawning inside a train when the game loads,
 and as the collider the player interact with.

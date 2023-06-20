@@ -35,7 +35,7 @@ namespace Mapify.SceneInitializers.Vanilla.Railway
                         yield return (VanillaAsset.TurntableRotateLayered, child.GetComponent<TurntableController>().turntableRotateLayered.gameObject);
                         continue;
                     case "term-buffer":
-                        yield return (VanillaAsset.BufferStop, child.transform.FindChildByName("model").gameObject);
+                        yield return (VanillaAsset.BufferStopModel, child.transform.FindChildByName("model").gameObject);
                         continue;
                 }
 

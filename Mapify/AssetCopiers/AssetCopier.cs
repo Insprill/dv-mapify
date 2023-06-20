@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 namespace Mapify
 {
-    public static class AssetCopier
+    public abstract class AssetCopier
     {
         private static readonly Dictionary<VanillaAsset, GameObject> prefabs = new Dictionary<VanillaAsset, GameObject>(Enum.GetValues(typeof(VanillaAsset)).Length);
 
@@ -21,7 +21,9 @@ namespace Mapify
             return go;
         }
 
-        public static void CopyDefaultAssets(Scene scene, ToSave func)
+        protected abstract IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject);
+
+        public void CopyAssets(Scene scene)
         {
             if (!scene.isLoaded)
             {
@@ -37,7 +39,7 @@ namespace Mapify
                 rootObject.SetActive(false);
                 SceneManager.MoveGameObjectToScene(rootObject, SceneManager.GetActiveScene());
 
-                IEnumerator<(VanillaAsset, GameObject)> enumerator = func.Invoke(rootObject);
+                IEnumerator<(VanillaAsset, GameObject)> enumerator = ToSave(rootObject);
                 while (enumerator.MoveNext())
                 {
                     (VanillaAsset vanillaAsset, GameObject gameObject) = enumerator.Current;
@@ -64,7 +66,5 @@ namespace Mapify
             SceneManager.UnloadScene(scene);
 #pragma warning restore CS0618
         }
-
-        public delegate IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject);
     }
 }

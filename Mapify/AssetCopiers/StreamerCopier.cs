@@ -2,18 +2,12 @@ using System.Collections.Generic;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-namespace Mapify.SceneInitializers
+namespace Mapify.SceneInitializers.Vanilla.Streaming
 {
-    public static class VanillaStreamerSceneInitializer
+    public class StreamerCopier : AssetCopier
     {
-        public static void SceneLoaded(Scene scene)
-        {
-            AssetCopier.CopyDefaultAssets(scene, ToSave);
-        }
-
-        private static IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
+        protected override IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
             foreach (MeshFilter filter in gameObject.GetComponentsInChildren<MeshFilter>(true))
             {

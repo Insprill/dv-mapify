@@ -81,6 +81,12 @@ namespace Mapify.Utils
             return other;
         }
 
+        public static void SetActive(this IEnumerable<Component> components, bool active)
+        {
+            foreach (Component component in components)
+                component.gameObject.SetActive(active);
+        }
+
         public static void PrintHierarchy(this GameObject gameObject, string indent = "")
         {
             Transform t = gameObject.transform;

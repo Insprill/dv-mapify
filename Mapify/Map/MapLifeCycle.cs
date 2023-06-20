@@ -5,7 +5,12 @@ using DV.Utils;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Patches;
-using Mapify.SceneInitializers;
+using Mapify.SceneInitializers.GameContent;
+using Mapify.SceneInitializers.Railway;
+using Mapify.SceneInitializers.Terrain;
+using Mapify.SceneInitializers.Vanilla.GameContent;
+using Mapify.SceneInitializers.Vanilla.Railway;
+using Mapify.SceneInitializers.Vanilla.Streaming;
 using Mapify.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -102,7 +107,6 @@ namespace Mapify.Map
 
             // Set LevelInfo
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
-            //todo: Boundary
             levelInfo.terrainSize = mapInfo.terrainSize;
             levelInfo.waterLevel = mapInfo.waterLevel;
             levelInfo.worldSize = mapInfo.worldSize;
@@ -123,7 +127,7 @@ namespace Mapify.Map
         private static void OnStreamerSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             scenesToLoad--;
-            VanillaStreamerSceneInitializer.SceneLoaded(scene);
+            new StreamerCopier().CopyAssets(scene);
         }
 
         private static void SetupStreamer(GameObject parent, MapInfo mapInfo)
@@ -159,27 +163,27 @@ namespace Mapify.Map
             if (scene.path == wsi.terrainsScenePath)
             {
                 Mapify.Log($"Loaded terrain scene at {wsi.terrainsScenePath}");
-                TerrainSceneInitializer.SceneLoaded(scene);
+                new TerrainSceneInitializer(scene).Run();
             }
             else if (scene.path == wsi.railwayScenePath)
             {
                 Mapify.Log($"Loaded railway scene at {wsi.railwayScenePath}");
-                RailwaySceneInitializer.SceneLoaded(scene);
+                new RailwaySceneInitializer(scene).Run();
             }
             else if (scene.path == wsi.gameContentScenePath)
             {
                 Mapify.Log($"Loaded game content scene at {wsi.gameContentScenePath}");
-                GameContentSceneInitializer.SceneLoaded(scene);
+                new GameContentSceneInitializer(scene).Run();
             }
             else if (scene.path == originalRailwayScenePath)
             {
                 Mapify.Log($"Loaded vanilla railway scene at {originalRailwayScenePath}");
-                VanillaRailwaySceneInitializer.SceneLoaded(scene);
+                new RailwayCopier().CopyAssets(scene);
             }
             else if (scene.path == originalGameContentScenePath)
             {
                 Mapify.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
-                VanillaGameContentSceneInitializer.SceneLoaded(scene);
+                new GameContentCopier().CopyAssets(scene);
                 MonoBehaviourDisablerPatch.EnableAllLater();
                 WorldStreamingInit_Awake_Patch.CanInitialize = true;
                 foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))

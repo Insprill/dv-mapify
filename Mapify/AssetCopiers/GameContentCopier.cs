@@ -4,22 +4,16 @@ using DV.Shops;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
-namespace Mapify.SceneInitializers
+namespace Mapify.SceneInitializers.Vanilla.GameContent
 {
-    public static class VanillaGameContentSceneInitializer
+    public class GameContentCopier : AssetCopier
     {
         public const int START_IDX = short.MaxValue;
         private static int nextIdx = START_IDX;
 
-        public static void SceneLoaded(Scene scene)
-        {
-            AssetCopier.CopyDefaultAssets(scene, ToSave);
-        }
-
-        private static IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
+        protected override IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
             string name = gameObject.name;
 

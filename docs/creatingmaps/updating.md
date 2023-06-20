@@ -14,5 +14,6 @@ If you're upgrading through multiple versions, read the list bottom-up, starting
 
 ### 0.3.0
 - All Store Item Types must be reassigned.
+- All Track ages must be reassigned.
 
 [github-releases]: https://github.com/Insprill/dv-mapify/releases

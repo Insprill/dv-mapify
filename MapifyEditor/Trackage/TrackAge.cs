@@ -2,8 +2,8 @@ namespace Mapify.Editor
 {
     public enum TrackAge
     {
-        New,
-        Medium,
-        Old
+        New = 0,
+        Medium = 50,
+        Old = 100
     }
 }

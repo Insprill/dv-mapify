@@ -3,18 +3,12 @@ using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Utils;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-namespace Mapify.SceneInitializers
+namespace Mapify.SceneInitializers.Vanilla.Railway
 {
-    public static class VanillaRailwaySceneInitializer
+    public class RailwayCopier : AssetCopier
     {
-        public static void SceneLoaded(Scene scene)
-        {
-            AssetCopier.CopyDefaultAssets(scene, ToSave);
-        }
-
-        private static IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
+        protected override IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
             if (gameObject.name != "[railway]")
                 yield break;

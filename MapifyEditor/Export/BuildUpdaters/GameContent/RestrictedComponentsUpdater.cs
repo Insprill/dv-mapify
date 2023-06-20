@@ -9,11 +9,8 @@ namespace Mapify.Editor.StateUpdaters
 {
     public class RestrictedComponentsUpdater : BuildUpdater
     {
-        private Dictionary<Behaviour, bool> components;
-
         protected override void Update(Scenes scenes)
         {
-            components = new Dictionary<Behaviour, bool>();
             foreach (Scene scene in scenes.AllScenes())
             {
                 IEnumerable<Behaviour> behaviours = scene.GetAllComponents<Camera>()
@@ -24,16 +21,9 @@ namespace Mapify.Editor.StateUpdaters
                 {
                     if (behaviour is Light light && light.type != LightType.Directional)
                         continue;
-                    components.Add(behaviour, behaviour.enabled);
-                    behaviour.enabled = false;
+                    behaviour.tag = "EditorOnly";
                 }
             }
-        }
-
-        protected override void Cleanup(Scenes scenes)
-        {
-            foreach (KeyValuePair<Behaviour, bool> pair in components)
-                pair.Key.enabled = pair.Value;
         }
     }
 }

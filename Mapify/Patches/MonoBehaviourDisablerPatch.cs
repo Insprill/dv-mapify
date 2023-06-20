@@ -40,7 +40,8 @@ namespace Mapify.Patches
 
                 foreach (string methodName in methodNames)
                 {
-                    MethodInfo method = AccessTools.DeclaredMethod(type, methodName);
+                    // AccessTools#DeclaredMethod logs a warning if the method isn't found :|
+                    MethodInfo method = type.GetMethod(methodName, AccessTools.allDeclared);
                     if (method == null) continue;
                     try
                     {

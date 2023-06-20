@@ -4,7 +4,6 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>7.3</LangVersion>
         <RootNamespace>Mapify</RootNamespace>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
 
     <ItemGroup>
@@ -51,7 +50,7 @@
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="../build/runtime"/>
 
         <!-- Copy to game install folder -->
-        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' == 'Windows_NT' And '$(IsEditor)' != 'true'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
-        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' != 'Windows_NT' And '$(IsEditor)' != 'true'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' == 'Windows_NT'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' != 'Windows_NT'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
     </Target>
 </Project>

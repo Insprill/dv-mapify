@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using DV.Common;
 using DV.UI;
 using DV.UI.PresetEditors;
+using DV.UIFramework;
 using HarmonyLib;
+using Mapify.Editor;
+using Mapify.Map;
 using Mapify.Utils;
 
 namespace Mapify.Patches
@@ -39,6 +43,32 @@ namespace Mapify.Patches
             List<string> strings = new List<string>(__result.Split('\n'));
             strings.Insert(2, LauncherControllerAccess.KeyValueFormat(Locale.LAUNCHER__SESSION_MAP, data.session.GameData.GetBasicMapInfo().mapName));
             __result = string.Join("\n", strings);
+        }
+    }
+
+    [HarmonyPatch(typeof(LauncherController), "OnRunClicked")]
+    public static class LauncherController_OnRunClicked_Patch
+    {
+        private static bool Prefix(LauncherController __instance, ISaveGame ___saveGame)
+        {
+            BasicMapInfo basicMapInfo = ___saveGame.Data.GetBasicMapInfo();
+            if (Maps.AllMapNames.Contains(basicMapInfo.mapName))
+                return true;
+
+            PopupManager popupManager = null;
+            __instance.FindPopupManager(ref popupManager);
+
+            if (!popupManager.CanShowPopup())
+            {
+                Mapify.LogError("Cannot show popup!");
+                return false;
+            }
+
+            Popup okPopupPrefab = __instance.GetComponentInParent<InitialScreenController>().continueLoadNewController.career.okPopupPrefab;
+
+            Popup popup = popupManager.ShowPopup(okPopupPrefab);
+            popup.labelTMPro.text = Locale.Get(Locale.LAUNCHER__SESSION_MAP_NOT_INSTALLED, basicMapInfo.mapName);
+            return false;
         }
     }
 }

@@ -25,6 +25,8 @@ namespace Mapify.Editor.Validators
                     yield return Result.Error($"Station '{station.name}' must have a name", station);
                 if (string.IsNullOrWhiteSpace(station.stationID))
                     yield return Result.Error($"Station '{station.name}' must have an ID", station);
+                if (station.color.a < 0.001)
+                    yield return Result.Error($"Station '{station.name}' must have a color with an alpha value greater than 0", station);
 
                 #endregion
 

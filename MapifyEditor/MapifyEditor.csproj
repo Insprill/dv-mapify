@@ -8,7 +8,7 @@
         <IsEditor>true</IsEditor>
         <PackageBuilderDir>../PackageBuilder/Assets/Mapify/Scripts/</PackageBuilderDir>
         <TestMapDir>../TestMap/Assets/Mapify/Scripts</TestMapDir>
-        <UpdateVersionCommand>-Command "(Select-String -Pattern '([0-9]+\.[0-9]+\.[0-9]+)' -Path ../Mapify/Mapify.cs).Matches.Value | Out-File -FilePath '../PackageBuilder/Assets/Mapify/version.txt'"</UpdateVersionCommand>
+        <UpdateVersionCommand>-Command "(Select-String -Pattern '([0-9]+\.[0-9]+\.[0-9]+)' -Path ../Mapify/Mapify.cs).Matches.Value | Out-File -Encoding UTF8 -FilePath '../PackageBuilder/Assets/Mapify/version.txt'"</UpdateVersionCommand>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(IsEditor)' == 'true'">

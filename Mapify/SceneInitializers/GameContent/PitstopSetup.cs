@@ -31,7 +31,7 @@ namespace Mapify.SceneInitializers.GameContent
                 for (int i = 0; i < serviceStation.resources.Length; i++)
                 {
                     ServiceResource resource = serviceStation.resources[i];
-                    GameObject moduleObj = AssetCopier.Instantiate(resource.ToVanillaAsset());
+                    GameObject moduleObj = AssetCopier.Instantiate((VanillaAsset)resource);
                     serviceStation.PositionThing(manualServiceIndicatorTransform, moduleObj.transform, i);
                     LocoResourceModule resourceModule = moduleObj.GetComponentInChildren<LocoResourceModule>();
                     resourceModules.Add(resourceModule);

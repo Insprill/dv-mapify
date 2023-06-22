@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor.Utils;
@@ -18,6 +19,8 @@ namespace Mapify.Editor.Validators
             {
                 if (serviceStation.resources.Length == 0)
                     yield return Result.Error("Service stations must have at least one resource", serviceStation);
+                else if (serviceStation.resources.Contains(ServiceResource.Diesel) && serviceStation.resources[serviceStation.resources.Length - 1] != ServiceResource.Diesel)
+                    yield return Result.Error("Service stations with Diesel resource must have it as the last in the list!", serviceStation);
 
                 var duplicateResources = serviceStation.resources.GroupBy(e => e)
                     .Where(g => g.Count() > 1)
@@ -30,12 +33,12 @@ namespace Mapify.Editor.Validators
                     yield return Result.Error($"Service stations need exactly one '{ServiceStation.MANUAL_SERVICE_INDICATOR_NAME}'", serviceStation);
 
                 VanillaObject[] vanillaObjects = serviceStation.GetComponentsInChildren<VanillaObject>();
-                if (vanillaObjects.All(vo => vo.asset != serviceStation.markerType.ToVanillaAsset()))
+                if (Array.TrueForAll(vanillaObjects, vo => vo.asset != serviceStation.markerType.ToVanillaAsset()))
                     yield return Result.Error("Service stations must have a server station marker", serviceStation);
-                else if (vanillaObjects.First(vo => vo.asset == serviceStation.markerType.ToVanillaAsset()).GetComponent<BoxCollider>() == null)
+                else if (Array.Find(vanillaObjects, vo => vo.asset == serviceStation.markerType.ToVanillaAsset()).GetComponent<BoxCollider>() == null)
                     yield return Result.Error("Service station markers must have a BoxCollider", serviceStation);
 
-                if (vanillaObjects.All(vo => vo.asset != VanillaAsset.CashRegister))
+                if (Array.TrueForAll(vanillaObjects, vo => vo.asset != VanillaAsset.CashRegister))
                     yield return Result.Error("Service stations must have a cash register", serviceStation);
             }
         }

@@ -50,9 +50,9 @@ namespace Mapify.Editor
         RefillMachineBodyDamage = 46,
         RefillMachineWheelDamage = 47,
         RefillMachineMechanicalPowertrain = 48,
-        RefillMachineElectricalPowertrain = 51,
-        ServiceStationMarkerOpen = 49,
-        ServiceStationMarkerClosed = 50,
+        RefillMachineElectricalPowertrain = 49,
+        ServiceStationMarkerOpen = 50,
+        ServiceStationMarkerClosed = 51,
 
         #endregion
 

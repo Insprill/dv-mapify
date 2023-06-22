@@ -104,6 +104,12 @@ namespace Mapify.Map
             LoadedMap = mapInfo;
         }
 
+        public static void UnreigsterLoadedMap()
+        {
+            IsDefaultMap = true;
+            LoadedMap = null;
+        }
+
         public static string GetMapAsset(string fileName, string mapDir = null)
         {
             return Path.Combine(MapsFolder, mapDir ?? availableMaps[LoadedMap.mapName].Item2, fileName);

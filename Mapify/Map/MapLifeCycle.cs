@@ -159,7 +159,14 @@ namespace Mapify.Map
 
         private static void OnSceneLoad(Scene scene, LoadSceneMode mode)
         {
+            if (scene.buildIndex == (int)DVScenes.MainMenu)
+            {
+                Cleanup();
+                return;
+            }
+
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
+            if (wsi == null) return;
             if (scene.path == wsi.terrainsScenePath)
             {
                 Mapify.Log($"Loaded terrain scene at {wsi.terrainsScenePath}");
@@ -189,14 +196,12 @@ namespace Mapify.Map
                 foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
                     Mapify.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
             }
-            else if (scene.buildIndex == (int)DVScenes.MainMenu)
-            {
-                Cleanup();
-            }
         }
 
         private static void Cleanup()
         {
+            Maps.UnreigsterLoadedMap();
+            SceneManager.sceneLoaded -= OnSceneLoad;
             originalRailwayScenePath = null;
             originalGameContentScenePath = null;
             scenesToLoad = 0;

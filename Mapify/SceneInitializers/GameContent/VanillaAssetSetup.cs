@@ -22,6 +22,12 @@ namespace Mapify.SceneInitializers.GameContent
                     case VanillaAsset.PlayerHouse:
                         vanillaObject.Replace();
                         break;
+                    case VanillaAsset.PitStopStationCoal1:
+                    case VanillaAsset.PitStopStationCoal2:
+                    case VanillaAsset.PitStopStationWater1:
+                    case VanillaAsset.PitStopStationWater2:
+                        vanillaObject.Replace(keepChildren: false);
+                        break;
                     case VanillaAsset.StationOffice1:
                     case VanillaAsset.StationOffice2:
                     case VanillaAsset.StationOffice3:

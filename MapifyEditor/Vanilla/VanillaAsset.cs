@@ -53,6 +53,10 @@ namespace Mapify.Editor
         RefillMachineElectricalPowertrain = 49,
         ServiceStationMarkerOpen = 50,
         ServiceStationMarkerClosed = 51,
+        PitStopStationCoal1 = 52,
+        PitStopStationCoal2 = 53,
+        PitStopStationWater1 = 54,
+        PitStopStationWater2 = 55,
 
         #endregion
 

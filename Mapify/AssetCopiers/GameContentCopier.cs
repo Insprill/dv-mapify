@@ -55,6 +55,10 @@ namespace Mapify.SceneInitializers.Vanilla.GameContent
             GameObject refillStationParent = gameObject.FindChildByName("RefillStations");
             if (refillStationParent != null)
             {
+                yield return (VanillaAsset.PitStopStationCoal1, refillStationParent.FindChildByName("CoalServiceStation01"));
+                yield return (VanillaAsset.PitStopStationCoal2, refillStationParent.FindChildByName("CoalServiceStation02"));
+                yield return (VanillaAsset.PitStopStationWater1, refillStationParent.FindChildByName("WaterServiceStation01"));
+                yield return (VanillaAsset.PitStopStationWater2, refillStationParent.FindChildByName("WaterServiceStation02"));
                 yield return (VanillaAsset.PitStopStation, refillStationParent.FindChildByName("PitStopStation"));
                 yield return (VanillaAsset.RefillMachineDiesel, refillStationParent.FindChildByName("Diesel"));
                 yield return (VanillaAsset.RefillMachineSand, refillStationParent.FindChildByName("Sand"));

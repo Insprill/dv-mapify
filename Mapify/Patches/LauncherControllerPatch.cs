@@ -51,6 +51,9 @@ namespace Mapify.Patches
     {
         private static bool Prefix(LauncherController __instance, ISaveGame ___saveGame)
         {
+            if (___saveGame == null)
+                return true;
+
             BasicMapInfo basicMapInfo = ___saveGame.Data.GetBasicMapInfo();
             if (Maps.AllMapNames.Contains(basicMapInfo.mapName))
                 return true;

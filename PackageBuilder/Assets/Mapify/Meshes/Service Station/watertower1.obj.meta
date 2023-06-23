@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 7507bbed2102943df825ed0caa1b3edb
+guid: 7a5b0e38be84e2f9e9c0143bb65376a1
 ModelImporter:
   serializedVersion: 19301
   internalIDToNameTable: []
@@ -37,7 +37,7 @@ ModelImporter:
     globalScale: 1
     meshCompression: 0
     addColliders: 0
-    useSRGBMaterialColor: 0
+    useSRGBMaterialColor: 1
     sortHierarchyByName: 1
     importVisibility: 1
     importBlendShapes: 1

@@ -36,13 +36,10 @@ namespace Mapify.Patches
 
         private static bool Prefix(DisplayLoadingInfo __instance, string message, bool isError, ref float percentageLoaded)
         {
-            if (Maps.IsDefaultMap)
-                return true;
-
             if (lastMessage != message)
             {
                 TextMeshProUGUI loadProgressTMP = (TextMeshProUGUI)DisplayLoadingInfo_Field_loadProgressTMP.GetValue(__instance);
-                loadProgressTMP.text += "\n" + (isError ? "[error]" : "") + message;
+                loadProgressTMP.text += $"\n{(isError ? "[error]" : "")}{message}";
                 lastMessage = message;
             }
 

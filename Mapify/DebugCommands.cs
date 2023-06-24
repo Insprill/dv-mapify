@@ -1,5 +1,6 @@
 using System;
 using CommandTerminal;
+using DV;
 using DV.InventorySystem;
 using DV.ThingTypes;
 using DV.ThingTypes.TransitionHelpers;
@@ -85,6 +86,22 @@ namespace Mapify
             bool on = args.Length == 0 ? SingletonBehaviour<SaveGameManager>.Instance.disableAutosave : args[0].Bool;
             SingletonBehaviour<SaveGameManager>.Instance.disableAutosave = !on;
             Debug.Log($"{(on ? "Enabled" : "Disabled")} saving");
+        }
+
+        [RegisterCommand("mapify.spawner", Help = "Toggles the ability to spawn cars with the comms radio. Only works in career sessions.", MaxArgCount = 0)]
+        private static void EnableSpawner(CommandArg[] args)
+        {
+            CommsRadioController controller = Object.FindObjectOfType<CommsRadioController>();
+            if (controller == null)
+            {
+                Debug.LogError("Failed to find CommsRadioController");
+                return;
+            }
+
+            bool status = !controller.cheatModeOverride;
+            controller.cheatModeOverride = status;
+            controller.UpdateModesAvailability();
+            Debug.Log($"{(status ? "Enabled" : "Disabled")} car spawning");
         }
     }
 }

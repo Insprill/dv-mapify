@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using DV.CashRegister;
 using DV.Utils;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -193,9 +195,16 @@ namespace Mapify.Map
                 new GameContentCopier().CopyAssets(scene);
                 MonoBehaviourDisablerPatch.EnableAllLater();
                 WorldStreamingInit_Awake_Patch.CanInitialize = true;
+                InitializeLists();
                 foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
                     Mapify.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
             }
+        }
+
+        private static void InitializeLists()
+        {
+            StationController.allStations = new List<StationController>();
+            CashRegisterBase.allCashRegisters = new List<CashRegisterBase>();
         }
 
         private static void Cleanup()

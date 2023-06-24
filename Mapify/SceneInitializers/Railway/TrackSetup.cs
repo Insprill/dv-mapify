@@ -19,10 +19,10 @@ namespace Mapify.SceneInitializers.Railway
             Mapify.LogDebug("Creating Junctions");
             CreateJunctions();
 
+            tracks.SetActive(true);
+
             Mapify.LogDebug("Connecting tracks");
             ConnectTracks(tracks);
-
-            tracks.SetActive(true);
 
             RailManager.AlignAllTrackEnds();
             RailManager.TestConnections();

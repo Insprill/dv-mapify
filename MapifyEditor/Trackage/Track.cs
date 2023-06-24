@@ -10,7 +10,7 @@ namespace Mapify.Editor
     public class Track : MonoBehaviour
     {
         public const float SNAP_RANGE = 1.0f;
-        public const float SNAP_UPDATE_RANGE = 500f;
+        public const float SNAP_UPDATE_RANGE_SQR = 250000;
 
         [Header("Visuals")]
         [Tooltip("The age of the track. Older tracks are rougher and more rusted, newer tracks are smoother and cleaner")]
@@ -96,7 +96,7 @@ namespace Mapify.Editor
         {
             if (showLoadingGauge)
                 DrawLoadingGauge();
-            if ((transform.position - Camera.current.transform.position).sqrMagnitude >= SNAP_UPDATE_RANGE * SNAP_UPDATE_RANGE)
+            if (Curve[0].transform.DistToSceneCamera() >= SNAP_UPDATE_RANGE_SQR && Curve.Last().transform.DistToSceneCamera() >= SNAP_UPDATE_RANGE_SQR)
                 return;
             if (!isInSnapped)
                 DrawDisconnectedIcon(Curve[0].position);
@@ -189,7 +189,8 @@ namespace Mapify.Editor
                     closestDist = dist;
                 }
 
-            if (closestDist >= float.MaxValue) return;
+            if (closestDist >= float.MaxValue)
+                return;
 
             if (first) isInSnapped = true;
             else isOutSnapped = true;

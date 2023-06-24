@@ -26,7 +26,7 @@ namespace Mapify.Editor
 
         private void OnDrawGizmos()
         {
-            if ((transform.position - Camera.current.transform.position).sqrMagnitude >= Track.SNAP_UPDATE_RANGE * Track.SNAP_UPDATE_RANGE)
+            if (transform.DistToSceneCamera() >= Track.SNAP_UPDATE_RANGE_SQR)
                 return;
             Snap();
         }

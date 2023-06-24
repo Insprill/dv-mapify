@@ -15,6 +15,15 @@ namespace Mapify.Editor.Utils
     {
         #region GameObjects & Components
 
+        public static float DistToSceneCamera(this Transform t)
+        {
+#if UNITY_EDITOR
+            return (t.position - Camera.current.transform.position).sqrMagnitude;
+#else
+            throw new InvalidOperationException($"{nameof(Extensions)}.{nameof(DistToSceneCamera)} can only be used in the editor");
+#endif
+        }
+
         public static T GetComponentInSelfOrParent<T>(this Component component)
         {
             T self = component.GetComponent<T>();

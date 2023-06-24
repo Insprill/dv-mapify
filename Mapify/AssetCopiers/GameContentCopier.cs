@@ -18,7 +18,11 @@ namespace Mapify.SceneInitializers.Vanilla.GameContent
             string name = gameObject.name;
 
             if (name.StartsWith("[") && name.EndsWith("]") && name != WorldStreamingInit.ORIGIN_SHIFT_CONTENT)
-                yield return ((VanillaAsset)nextIdx++, gameObject);
+            {
+                VanillaAsset idx = (VanillaAsset)nextIdx++;
+                Mapify.LogDebug($"Saved Vanilla Asset {idx} ({name})");
+                yield return (idx, gameObject);
+            }
 
             if (name != WorldStreamingInit.ORIGIN_SHIFT_CONTENT)
                 yield break;

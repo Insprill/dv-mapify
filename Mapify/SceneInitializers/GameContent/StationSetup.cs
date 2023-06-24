@@ -26,9 +26,12 @@ namespace Mapify.SceneInitializers.GameContent
             stations.SetActive(false);
 
             foreach (Station station in stations)
+                station.gameObject.AddComponent<StationController>();
+
+            foreach (Station station in stations)
             {
                 GameObject stationObject = station.gameObject;
-                StationController stationController = stationObject.AddComponent<StationController>();
+                StationController stationController = stationObject.GetComponent<StationController>();
 
                 // Station info
                 stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color);

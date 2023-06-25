@@ -5,6 +5,7 @@ using System.Reflection;
 using DV.Teleporters;
 using DV.ThingTypes;
 using DV.ThingTypes.TransitionHelpers;
+using DV.Utils;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -47,14 +48,10 @@ namespace Mapify.SceneInitializers.GameContent
                 SetupWarehouseMachines(station, stationController);
                 SetupTeleportAnchor(station);
                 SetupLocomotiveSpawners(station, locomotiveSpawners);
-
-                // Todo: If this doesn't pick up our stuff, can we just re-call the Awake and Start functions?
-                // logicController.YardIdToStationController.Add(stationController.stationInfo.YardID, stationController);
-                // logicController.stationToSupportedCarTypes.Add(stationController,
-                //     (HashSet<TrainCarType_v2>)LogicController_Method_GetCarTypesThatStationUses.Invoke(logicController, new object[] { stationController }));
             }
 
             stations.SetActive(true);
+            SingletonBehaviour<LogicController>.Instance.gameObject.SetActive(true);
         }
 
         private static void SetupJobBookletSpawnSurface(Station station, StationController stationController)

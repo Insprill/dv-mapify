@@ -1,4 +1,4 @@
-﻿using DV.Shops;
+﻿using DV.Utils;
 using DV.WeatherSystem;
 using Mapify.Editor;
 using Mapify.SceneInitializers.Vanilla.GameContent;
@@ -19,14 +19,34 @@ namespace Mapify.SceneInitializers.GameContent
                 Mapify.LogDebug($"Instantiated Vanilla Asset {vanillaAsset} ({gameObject.name})");
                 if (gameObject.name.Contains("Weather"))
                     gameObject.AddComponent<WeatherGUITogglerDV>().guiScript = gameObject.GetComponentInChildren<WeatherEditorGUI>();
-                // The GlobalShopController object must be enabled *after* shops are added.
-                if (gameObject.GetComponent<GlobalShopController>() != null)
+
+                if (!ShouldEnable(gameObject))
                     continue;
+
                 gameObject.SetActive(true);
             }
 
             // I'm not sure where vanilla creates this because it doesn't have auto create enabled, nor is it in any of the four main scenes, or created in code.
             new GameObject("[YardTracksOrganizer]").AddComponent<YardTracksOrganizer>();
+        }
+
+        private bool ShouldEnable(GameObject gameObject)
+        {
+            // The GlobalShopController must be enabled after shops are added. It gets enabled in StoreSetup.
+            if (gameObject.TryGetComponent(out __SingletonBehaviourBase gsc))
+            {
+                gsc.CheckInstance();
+                return false;
+            }
+
+            // The LogicController must be enabled after stations are setup. It gets enabled in StationSetup.
+            if (gameObject.TryGetComponent(out __SingletonBehaviourBase lc))
+            {
+                lc.CheckInstance();
+                return false;
+            }
+
+            return true;
         }
     }
 }

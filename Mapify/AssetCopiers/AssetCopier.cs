@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DV.Utils;
+using HarmonyLib;
 using Mapify.Editor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -26,9 +28,7 @@ namespace Mapify
         public void CopyAssets(Scene scene)
         {
             if (!scene.isLoaded)
-            {
                 throw new InvalidOperationException($"Tried to copy vanilla assets from {scene.name} but it isn't loaded!");
-            }
 
             Mapify.LogDebug($"Copying default assets from vanilla scene {scene.name}");
 
@@ -49,6 +49,8 @@ namespace Mapify
                     }
 
                     if (prefabs.ContainsKey(vanillaAsset)) continue;
+                    foreach (__SingletonBehaviourBase behaviour in gameObject.GetComponentsInChildren<__SingletonBehaviourBase>())
+                        AccessTools.Method(behaviour.GetType(), "OnDestroy")?.Invoke(behaviour, null);
                     gameObject.SetActive(false);
                     gameObject.transform.SetParent(null);
                     gameObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);

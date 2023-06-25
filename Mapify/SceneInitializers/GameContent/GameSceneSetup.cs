@@ -1,4 +1,4 @@
-﻿using DV.Utils;
+﻿using DV.Shops;
 using DV.WeatherSystem;
 using Mapify.Editor;
 using Mapify.SceneInitializers.Vanilla.GameContent;
@@ -33,14 +33,16 @@ namespace Mapify.SceneInitializers.GameContent
         private bool ShouldEnable(GameObject gameObject)
         {
             // The GlobalShopController must be enabled after shops are added. It gets enabled in StoreSetup.
-            if (gameObject.TryGetComponent(out __SingletonBehaviourBase gsc))
+            GlobalShopController gsc = gameObject.GetComponentInChildren<GlobalShopController>();
+            if (gsc != null)
             {
                 gsc.CheckInstance();
                 return false;
             }
 
             // The LogicController must be enabled after stations are setup. It gets enabled in StationSetup.
-            if (gameObject.TryGetComponent(out __SingletonBehaviourBase lc))
+            LogicController lc = gameObject.GetComponentInChildren<LogicController>();
+            if (lc != null)
             {
                 lc.CheckInstance();
                 return false;

@@ -1,4 +1,5 @@
 ﻿using DV.TerrainSystem;
+using DV.Utils;
 using Mapify.Map;
 using Mapify.Utils;
 using UnityEngine;
@@ -20,13 +21,14 @@ namespace Mapify.SceneInitializers.Terrain
             grid.vegetationReloadWaitFrames = 2;
             grid.maxConcurrentLoads = 3;
             Layer.Terrain.Apply(grid);
-            TerrainGrid.Initialized += () => OnTerrainInitialized(grid);
+            TerrainGrid.Initialized += OnTerrainInitialized;
             gridObject.SetActive(true);
         }
 
-        private static void OnTerrainInitialized(TerrainGrid grid)
+        private static void OnTerrainInitialized()
         {
-            foreach (GameObject obj in grid.generatedTerrains)
+            TerrainGrid.Initialized -= OnTerrainInitialized;
+            foreach (GameObject obj in SingletonBehaviour<TerrainGrid>.Instance.generatedTerrains)
             {
                 UnityEngine.Terrain terrain = obj.GetComponent<UnityEngine.Terrain>();
                 terrain.materialTemplate = Maps.LoadedMap.terrainMaterial;

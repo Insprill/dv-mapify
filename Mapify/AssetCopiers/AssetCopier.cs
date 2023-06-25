@@ -23,6 +23,13 @@ namespace Mapify
             return go;
         }
 
+        public static void Cleanup()
+        {
+            foreach (GameObject go in prefabs.Values)
+                Object.Destroy(go);
+            prefabs.Clear();
+        }
+
         protected abstract IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject);
 
         public void CopyAssets(Scene scene)

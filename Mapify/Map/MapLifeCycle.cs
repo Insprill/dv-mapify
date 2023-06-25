@@ -215,6 +215,8 @@ namespace Mapify.Map
         {
             Maps.UnreigsterLoadedMap();
             SceneManager.sceneLoaded -= OnSceneLoad;
+            WorldStreamingInit_Awake_Patch.CanInitialize = false;
+            AssetCopier.Cleanup();
             originalRailwayScenePath = null;
             originalGameContentScenePath = null;
             scenesToLoad = 0;

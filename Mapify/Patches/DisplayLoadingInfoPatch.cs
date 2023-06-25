@@ -19,6 +19,15 @@ namespace Mapify.Patches
         }
     }
 
+    [HarmonyPatch(typeof(DisplayLoadingInfo), "OnDestroy")]
+    public static class DisplayLoadingInfo_OnDestroy_Patch
+    {
+        private static void Postfix()
+        {
+            WorldStreamingInit_Awake_Patch.CanLoad = false;
+        }
+    }
+
     /// <summary>
     ///     Part of dynamic loading percentages.
     ///     Prevents the same message from being listed twice, while also allowing

@@ -27,8 +27,7 @@ namespace Mapify
         {
             if (!scene.isLoaded)
             {
-                Mapify.LogError($"Tried to copy vanilla assets from {scene.name} but it isn't loaded!");
-                return;
+                throw new InvalidOperationException($"Tried to copy vanilla assets from {scene.name} but it isn't loaded!");
             }
 
             Mapify.LogDebug($"Copying default assets from vanilla scene {scene.name}");
@@ -61,10 +60,7 @@ namespace Mapify
             }
 
             Mapify.LogDebug($"Unloading vanilla scene {scene.name}");
-            // cope
-#pragma warning disable CS0618
-            SceneManager.UnloadScene(scene);
-#pragma warning restore CS0618
+            SceneManager.UnloadSceneAsync(scene);
         }
     }
 }

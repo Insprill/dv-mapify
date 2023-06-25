@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using DV.CashRegister;
 using DV.Utils;
 using Mapify.Editor;
@@ -22,8 +23,9 @@ namespace Mapify.Map
 {
     public static class MapLifeCycle
     {
-        private static bool isMapLoaded;
+        private static readonly Regex STREAMER_SCENE_PATTERN = new Regex("[a-zA-Z]+__x[0-9]+_z[0-9]+");
 
+        private static bool isMapLoaded;
         private static AssetBundle assets;
         private static AssetBundle scenes;
         private static string originalRailwayScenePath;
@@ -76,36 +78,39 @@ namespace Mapify.Map
             // Load scenes for us to steal assets from
             MonoBehaviourDisablerPatch.DisableAll();
 
-            SceneManager.sceneLoaded += OnStreamerSceneLoaded;
-            Streamer streamer = wsi.transform.FindChildByName("[far]").GetComponent<Streamer>();
-            string[] names = streamer.sceneCollection.names;
-            scenesToLoad = names.Length;
+            // Register scene loaded hook
+            SceneManager.sceneLoaded += OnSceneLoad;
+
+            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "vanilla assets";
+            string[] names = wsi.transform.FindChildByName("[far]").GetComponent<Streamer>().sceneCollection.names;
+            scenesToLoad = names.Length + 2; // Railway and GameContent
             int totalScenesToLoad = scenesToLoad;
             foreach (string name in names)
                 SceneManager.LoadSceneAsync(name.Replace(".unity", ""), LoadSceneMode.Additive);
-
             foreach (Streamer s in wsi.GetComponentsInChildren<Streamer>())
                 Object.Destroy(s);
 
-            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = "vanilla assets";
+            originalRailwayScenePath = wsi.railwayScenePath;
+            originalGameContentScenePath = wsi.gameContentScenePath;
+
+            // Load our scenes, not the vanilla ones
+            wsi.terrainsScenePath = Scenes.TERRAIN;
+            wsi.railwayScenePath = Scenes.RAILWAY;
+            wsi.gameContentScenePath = Scenes.GAME_CONTENT;
+
+            SceneManager.LoadSceneAsync(originalRailwayScenePath, LoadSceneMode.Additive);
+            SceneManager.LoadSceneAsync(originalGameContentScenePath, LoadSceneMode.Additive);
+
             while (scenesToLoad > 0)
             {
                 loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, Mathf.RoundToInt((totalScenesToLoad - (float)scenesToLoad) / totalScenesToLoad * 100));
                 yield return null;
             }
 
-            SceneManager.sceneLoaded -= OnStreamerSceneLoaded;
             DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = null;
 
-            originalRailwayScenePath = wsi.railwayScenePath;
-            SceneManager.LoadScene(originalRailwayScenePath, LoadSceneMode.Additive);
-            originalGameContentScenePath = wsi.gameContentScenePath;
-            SceneManager.LoadScene(originalGameContentScenePath, LoadSceneMode.Additive);
-
-            // Load our scenes, not the vanilla ones
-            wsi.terrainsScenePath = Scenes.TERRAIN;
-            wsi.railwayScenePath = Scenes.RAILWAY;
-            wsi.gameContentScenePath = Scenes.GAME_CONTENT;
+            Mapify.Log("Vanilla scenes unloaded");
+            MonoBehaviourDisablerPatch.EnableAll();
 
             // Set LevelInfo
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
@@ -122,14 +127,11 @@ namespace Mapify.Map
 
             SetupStreamer(wsi.gameObject, mapInfo);
 
-            // Register scene loaded hook
-            SceneManager.sceneLoaded += OnSceneLoad;
-        }
+            InitializeLists();
+            WorldStreamingInit_Awake_Patch.CanInitialize = true;
 
-        private static void OnStreamerSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            scenesToLoad--;
-            new StreamerCopier().CopyAssets(scene);
+            foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
+                Mapify.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
         }
 
         private static void SetupStreamer(GameObject parent, MapInfo mapInfo)
@@ -188,16 +190,18 @@ namespace Mapify.Map
             {
                 Mapify.Log($"Loaded vanilla railway scene at {originalRailwayScenePath}");
                 new RailwayCopier().CopyAssets(scene);
+                scenesToLoad--;
             }
             else if (scene.path == originalGameContentScenePath)
             {
                 Mapify.Log($"Loaded vanilla game content scene at {originalGameContentScenePath}");
                 new GameContentCopier().CopyAssets(scene);
-                MonoBehaviourDisablerPatch.EnableAllLater();
-                WorldStreamingInit_Awake_Patch.CanInitialize = true;
-                InitializeLists();
-                foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
-                    Mapify.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
+                scenesToLoad--;
+            }
+            else if (STREAMER_SCENE_PATTERN.IsMatch(scene.name))
+            {
+                new StreamerCopier().CopyAssets(scene);
+                scenesToLoad--;
             }
         }
 

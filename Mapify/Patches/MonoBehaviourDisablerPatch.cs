@@ -56,18 +56,8 @@ namespace Mapify.Patches
             }
         }
 
-        public static void EnableAllLater()
+        public static void EnableAll()
         {
-            // Mapify.LogDebug("Enabling disabled MonoBehaviours");
-            // foreach (MethodInfo method in patchedMethods)
-            //     Mapify.Harmony.Unpatch(method, prefix);
-            // patchedMethods = null;
-            SingletonBehaviour<CoroutineManager>.Instance.StartCoroutine(EnableLater());
-        }
-
-        private static IEnumerator EnableLater()
-        {
-            yield return null;
             Mapify.LogDebug("Enabling disabled MonoBehaviours");
             foreach (MethodInfo method in patchedMethods)
                 Mapify.Instance.harmony.Unpatch(method, prefix);

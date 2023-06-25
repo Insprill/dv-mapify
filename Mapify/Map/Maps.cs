@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using BepInEx;
 using Mapify.Editor;
 using UnityEngine;
 
@@ -10,7 +11,8 @@ namespace Mapify.Map
 {
     public static class Maps
     {
-        private const string MAPS_FOLDER_NAME = "Maps";
+        private const string CONTENT_FOLDER_NAME = "content";
+        private const string MAPS_FOLDER_NAME = "maps";
         public static readonly BasicMapInfo DEFAULT_MAP_INFO = new BasicMapInfo(Names.DEFAULT_MAP_NAME, null);
         private static readonly string[] requiredFiles = { Names.MAP_INFO_FILE, Names.ASSETS_ASSET_BUNDLE, Names.SCENES_ASSET_BUNDLE };
 
@@ -31,9 +33,9 @@ namespace Mapify.Map
         // name -> (info, directory)
         private static ReadOnlyDictionary<string, (BasicMapInfo, string)> availableMaps;
 
-        public static void LoadMaps(Mapify plugin)
+        public static void LoadMaps()
         {
-            MapsFolder = Path.Combine(plugin.InstallDirectory, MAPS_FOLDER_NAME);
+            MapsFolder = Path.Combine(Paths.BepInExRootPath, CONTENT_FOLDER_NAME, MAPS_FOLDER_NAME);
             if (!Directory.Exists(MapsFolder))
             {
                 Directory.CreateDirectory(MapsFolder);

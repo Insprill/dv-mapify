@@ -22,8 +22,6 @@ namespace Mapify
 
         internal Harmony harmony { get; private set; }
 
-        public string InstallDirectory => Path.GetDirectoryName(Info.Location);
-
         private void Awake()
         {
             if (Instance != null)
@@ -44,7 +42,7 @@ namespace Mapify
             try
             {
                 LoadLocale();
-                Maps.LoadMaps(this);
+                Maps.LoadMaps();
                 Patch();
             }
             catch (Exception ex)
@@ -71,7 +69,14 @@ namespace Mapify
 
         private void LoadLocale()
         {
-            string localePath = Path.Combine(InstallDirectory, LOCALE_FILE);
+            string installDir = Path.GetDirectoryName(Info.Location);
+            if (installDir == null)
+            {
+                Logger.LogError("Failed to find install directory!");
+                return;
+            }
+
+            string localePath = Path.Combine(installDir, LOCALE_FILE);
             if (!Locale.Load(localePath))
                 Logger.LogError($"Failed to find locale file at {localePath}! Please make sure it's there.");
         }

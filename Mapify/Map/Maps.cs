@@ -28,7 +28,7 @@ namespace Mapify.Map
             private set => _loadedMap = value;
         }
 
-        public static string[] AllMapNames { get; private set; } = { DEFAULT_MAP_INFO.mapName };
+        public static string[] AllMapNames { get; private set; }
         private static string MapsFolder;
         // name -> (info, directory)
         private static ReadOnlyDictionary<string, (BasicMapInfo, string)> availableMaps;
@@ -37,15 +37,10 @@ namespace Mapify.Map
         {
             MapsFolder = Path.Combine(Paths.BepInExRootPath, CONTENT_FOLDER_NAME, MAPS_FOLDER_NAME);
             if (!Directory.Exists(MapsFolder))
-            {
                 Directory.CreateDirectory(MapsFolder);
-            }
-            else
-            {
-                Mapify.Log("Searching for maps...");
-                FindMaps();
-                Mapify.Log($"Found {availableMaps.Count} map(s) ({string.Join(", ", availableMaps.Keys.ToArray())})");
-            }
+            Mapify.Log("Searching for maps...");
+            FindMaps();
+            Mapify.Log($"Found {availableMaps.Count} map(s) ({string.Join(", ", availableMaps.Keys.ToArray())})");
         }
 
         private static void FindMaps()

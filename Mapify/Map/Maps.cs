@@ -28,7 +28,7 @@ namespace Mapify.Map
             private set => _loadedMap = value;
         }
 
-        public static string[] AllMapNames { get; private set; }
+        public static string[] AllMapNames { get; private set; } = { DEFAULT_MAP_INFO.mapName };
         private static string MapsFolder;
         // name -> (info, directory)
         private static ReadOnlyDictionary<string, (BasicMapInfo, string)> availableMaps;

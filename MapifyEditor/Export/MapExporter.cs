@@ -59,17 +59,19 @@ namespace Mapify.Editor
                 return;
             LastReleaseExportPath = exportFilePath;
 
-            string tmpFolder = Path.Combine(Path.GetTempPath(), mapName);
+            string tmpFolder = Path.Combine(Path.GetTempPath(), $"dv-mapify-{Path.GetRandomFileName()}");
+            string bepInExDir = Path.Combine(tmpFolder, "BepInEx");
+            string exportDir = Path.Combine(bepInExDir, "content", "maps", mapName);
             if (Directory.Exists(tmpFolder))
                 Directory.Delete(tmpFolder, true);
-            Directory.CreateDirectory(tmpFolder);
+            Directory.CreateDirectory(exportDir);
 
-            bool success = Export(tmpFolder, false);
+            bool success = Export(exportDir, false);
 
             if (success)
             {
                 EditorUtility.DisplayProgressBar("Mapify", "Creating zip file", 0);
-                ZipFile.CreateFromDirectory(tmpFolder, exportFilePath, CompressionLevel.NoCompression, true);
+                ZipFile.CreateFromDirectory(bepInExDir, exportFilePath, CompressionLevel.NoCompression, true);
                 EditorUtility.ClearProgressBar();
                 if (EditorUtility.DisplayDialog("Mapify", "Export complete!", "Open Folder", "Ok"))
                     EditorUtility.RevealInFinder(exportFilePath);

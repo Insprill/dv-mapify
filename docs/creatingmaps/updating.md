@@ -13,7 +13,9 @@ Each change is relative to the last version in the list.
 If you're upgrading through multiple versions, read the list bottom-up, starting from the version after the one you're running.
 
 ### 0.3.0
+- The Unity version has been bumped to 2019.4.40f1.
 - All Store Item Types must be reassigned.
 - All Track ages must be reassigned.
+- All service station resources must be reassigned.
 
 [github-releases]: https://github.com/Insprill/dv-mapify/releases

@@ -16,10 +16,13 @@
         <OutDir>bin/$(Configuration)/Editor</OutDir>
     </PropertyGroup>
 
+    <ItemGroup Condition="'$(IsEditor)' == 'true'">
+        <Reference Include="UnityEditor"/>
+    </ItemGroup>
+
     <ItemGroup>
         <Reference Include="BezierCurves"/>
         <Reference Include="Unity.TextMeshPro"/>
-        <Reference Include="UnityEditor"/>
         <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile"/>
     </ItemGroup>
 

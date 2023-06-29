@@ -18,7 +18,7 @@ namespace Mapify.Editor
 {
     public static class MapExporter
     {
-        private const string DEFAULT_MAPS_FOLDER_PATH = "/Steam/steamapps/common/Derail Valley/Mods/Mapify/Maps";
+        private const string DEFAULT_MAPS_FOLDER_PATH = "steamapps/common/Derail Valley/BepInEx/content/maps";
 
         private static string LastReleaseExportPath {
             get => EditorPrefs.GetString("Mapify.Export.Release.LastExportPath");
@@ -92,7 +92,7 @@ namespace Mapify.Editor
             }
             else
             {
-                startingPath = GetMapsFolder();
+                startingPath = GetDefaultMapsFolder();
                 name = mapName;
             }
 
@@ -206,7 +206,7 @@ namespace Mapify.Editor
             return builds.ToArray();
         }
 
-        private static string GetMapsFolder()
+        private static string GetDefaultMapsFolder()
         {
             // search for the user's DV install
             try
@@ -230,10 +230,10 @@ namespace Mapify.Editor
             foreach (DriveInfo drive in DriveInfo.GetDrives())
             {
                 string driveRoot = drive.RootDirectory.FullName;
-                string potentialPath = Path.Combine(driveRoot, "Program Files", DEFAULT_MAPS_FOLDER_PATH);
+                string potentialPath = Path.Combine(driveRoot, "Program Files", "Steam", DEFAULT_MAPS_FOLDER_PATH);
                 if (Directory.Exists(potentialPath)) return potentialPath;
 
-                potentialPath = Path.Combine(driveRoot, "Program Files (x86)", DEFAULT_MAPS_FOLDER_PATH);
+                potentialPath = Path.Combine(driveRoot, "Program Files (x86)", "Steam", DEFAULT_MAPS_FOLDER_PATH);
                 if (Directory.Exists(potentialPath)) return potentialPath;
             }
 
@@ -243,7 +243,7 @@ namespace Mapify.Editor
         private static string GetLinuxMapsFolder()
         {
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string potentialPath = Path.Combine(homePath, ".local", "share", DEFAULT_MAPS_FOLDER_PATH);
+            string potentialPath = Path.Combine(homePath, ".steam", "steam", DEFAULT_MAPS_FOLDER_PATH);
             return Directory.Exists(potentialPath) ? potentialPath : null;
         }
     }

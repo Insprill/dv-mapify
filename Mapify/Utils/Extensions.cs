@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using CommandTerminal;
 using DV.JObjectExtstensions;
 using DV.PointSet;
@@ -159,24 +158,6 @@ namespace Mapify.Utils
         public static List<To> ConvertByName<From, To>(this IEnumerable<From> values) where From : Enum where To : Enum
         {
             return values.Select(c => c.ConvertByName<From, To>()).ToList();
-        }
-
-        public static string ToSpacedString<TEnum>(this TEnum value) where TEnum : Enum
-        {
-            string stringValue = value.ToString();
-            StringBuilder spacedStringBuilder = new StringBuilder(stringValue.Length);
-            char lastChar = char.MinValue;
-
-            foreach (char c in stringValue)
-            {
-                if (lastChar != char.MinValue && ((char.IsUpper(c) && !char.IsUpper(lastChar)) || (char.IsNumber(c) && !char.IsNumber(lastChar))))
-                    spacedStringBuilder.Append(' ');
-
-                spacedStringBuilder.Append(c);
-                lastChar = c;
-            }
-
-            return spacedStringBuilder.ToString();
         }
 
         public static float ScaleNumber(this float value, float minValue, float maxValue, float newMinValue, float newMaxValue)

@@ -14,8 +14,6 @@ namespace Mapify
     [BepInProcess("DerailValley.exe")]
     public class Mapify : BaseUnityPlugin
     {
-        private static readonly int[] COMPATIBLE_GAME_VERSIONS = { 93 };
-
         public static Mapify Instance { get; private set; }
 
         private const string LOCALE_FILE = "locale.csv";
@@ -32,12 +30,6 @@ namespace Mapify
             }
 
             Instance = this;
-
-            if (!IsGameVersionCompatible())
-            {
-                Destroy(this);
-                return;
-            }
 
             try
             {
@@ -57,14 +49,6 @@ namespace Mapify
             Log("Unpatching");
             harmony?.UnpatchSelf();
             Instance = null;
-        }
-
-        private bool IsGameVersionCompatible()
-        {
-            if (COMPATIBLE_GAME_VERSIONS.Contains(BuildInfo.BUILD_VERSION_MAJOR))
-                return true;
-            Logger.LogFatal($"Incompatible game version {BuildInfo.BUILD_VERSION_MAJOR}! This version of Mapify is only compatible with {string.Join(", ", COMPATIBLE_GAME_VERSIONS)}");
-            return false;
         }
 
         private void LoadLocale()

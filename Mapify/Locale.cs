@@ -9,13 +9,13 @@ namespace Mapify
 {
     public static class Locale
     {
-        private const string PREFIX = "mapify/";
         private const string DEFAULT_LANGUAGE = "English";
-        public const string SESSION__MAP_SELECTOR = "mapify/session/map_selector";
-        public const string LAUNCHER__SESSION_MAP = "mapify/launcher/session_map";
-        public const string LAUNCHER__SESSION_MAP_NOT_INSTALLED = "mapify/launcher/session_map_not_installed";
-        public const string LOADING__PLEASE_WAIT = "mapify/loading/please_wait";
-        public const string LOADING__LOADING_MAP = "mapify/loading/loading_map";
+        private const string PREFIX = "mapify/";
+        public const string SESSION__MAP_SELECTOR = PREFIX + "session/map_selector";
+        public const string LAUNCHER__SESSION_MAP = PREFIX + "launcher/session_map";
+        public const string LAUNCHER__SESSION_MAP_NOT_INSTALLED = PREFIX + "launcher/session_map_not_installed";
+        public const string LOADING__PLEASE_WAIT = PREFIX + "loading/please_wait";
+        public const string LOADING__LOADING_MAP = PREFIX + "loading/loading_map";
         private static readonly char[] PREFIX_CHARS = PREFIX.ToCharArray();
 
         private static bool initializeAttempted;

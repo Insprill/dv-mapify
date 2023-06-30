@@ -23,7 +23,7 @@ namespace Mapify.Map
 {
     public static class MapLifeCycle
     {
-        private static readonly Regex STREAMER_SCENE_PATTERN = new Regex("[a-zA-Z]+__x[0-9]+_z[0-9]+");
+        private static readonly Regex STREAMER_SCENE_PATTERN = new Regex("Far__x[0-9]+_z[0-9]+");
 
         private static bool isMapLoaded;
         private static AssetBundle assets;

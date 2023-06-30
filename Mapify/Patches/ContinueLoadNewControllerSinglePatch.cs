@@ -14,7 +14,8 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(ContinueLoadNewControllerSingle), "Awake")]
     public static class ContinueLoadNewControllerSingle_Awake_Patch
     {
-        public static GameObject MapSelector;
+        public static GameObject CareerMapSelector;
+        public static GameObject SandboxMapSelector;
 
         private static void Postfix(ContinueLoadNewControllerSingle __instance)
         {
@@ -29,7 +30,10 @@ namespace Mapify.Patches
             Localize localize = selector.GetComponentInChildren<Localize>();
             localize.key = Locale.SESSION__MAP_SELECTOR;
             localize.UpdateLocalization();
-            MapSelector = gameObject;
+            if (__instance.name.Contains("Career"))
+                CareerMapSelector = gameObject;
+            else
+                SandboxMapSelector = gameObject;
         }
 
         private static void OnSelectorClicked(ContinueLoadNewControllerSingle __instance, Selector selector)
@@ -46,7 +50,7 @@ namespace Mapify.Patches
     {
         private static void Postfix(ContinueLoadNewControllerSingle __instance)
         {
-            GameObject mapSelector = ContinueLoadNewControllerSingle_Awake_Patch.MapSelector;
+            GameObject mapSelector = __instance.name.Contains("Career") ? ContinueLoadNewControllerSingle_Awake_Patch.CareerMapSelector : ContinueLoadNewControllerSingle_Awake_Patch.SandboxMapSelector;
             if (mapSelector == null)
                 return;
             mapSelector.SetActive(__instance.CurrentThing?.LatestSave == null);

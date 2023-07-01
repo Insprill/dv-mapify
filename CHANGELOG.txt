@@ -1,11 +1,19 @@
-0.x.x:
+0.3.0:
 Runtime:
+- Added support for Simulator.
 - Fixed issues if there is a piece of track shorter than 0.75m.
+- Fixed regular tracks not connecting to each other.
+- Switched to BepInEx.
 
 Map Creation Package:
+- Bumped the Unity version to 2019.4.40f1.
 - Added support for custom buffer stops.
+- Added the new coaling and water towers.
 - Added a validation and startup warning if an incorrect Unity version is being used.
 - Fixed an error during validation if a Terrain object was missing its TerrainData.
+- Fixed tracks not snapping if the camera was too far from the Track root.
+- Fixed the default debug export path on Linux.
+- GameObject's with Camera or Directional Lights are now excluded from the build.
 
 
 0.2.0:

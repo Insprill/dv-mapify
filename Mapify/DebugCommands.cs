@@ -5,6 +5,7 @@ using DV.InventorySystem;
 using DV.ThingTypes;
 using DV.ThingTypes.TransitionHelpers;
 using DV.Utils;
+using DV.WeatherSystem;
 using Mapify.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -13,6 +14,13 @@ namespace Mapify
 {
     public static class DebugCommands
     {
+        private static WeatherEditorGUI weatherEditorGui;
+
+        public static void SetWeatherEditorGUI(WeatherEditorGUI gui)
+        {
+            weatherEditorGui = gui;
+        }
+
         [RegisterCommand("mapify.license", Help = "Modifies a licenses", MinArgCount = 0, MaxArgCount = 2)]
         private static void ModifyLicense(CommandArg[] args)
         {
@@ -102,6 +110,18 @@ namespace Mapify
             controller.cheatModeOverride = status;
             controller.UpdateModesAvailability();
             Debug.Log($"{(status ? "Enabled" : "Disabled")} car spawning");
+        }
+
+        [RegisterCommand("mapify.weather", Help = "Toggles the weather editor GUI", MaxArgCount = 0)]
+        private static void Weather(CommandArg[] args)
+        {
+            if (weatherEditorGui == null)
+            {
+                Debug.LogError("WeatherEditorGUI not initialized!");
+                return;
+            }
+
+            weatherEditorGui.enabled = !weatherEditorGui.enabled;
         }
     }
 }

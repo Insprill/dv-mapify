@@ -17,8 +17,13 @@ namespace Mapify.SceneInitializers.GameContent
                     continue;
                 GameObject gameObject = AssetCopier.Instantiate(vanillaAsset, false, false);
                 Mapify.LogDebug($"Instantiated Vanilla Asset {vanillaAsset} ({gameObject.name})");
-                if (gameObject.name.Contains("Weather"))
-                    gameObject.AddComponent<WeatherGUITogglerDV>().guiScript = gameObject.GetComponentInChildren<WeatherEditorGUI>();
+
+                WeatherEditorGUI weatherEditorGui = gameObject.GetComponentInChildren<WeatherEditorGUI>();
+                if (weatherEditorGui != null)
+                {
+                    weatherEditorGui.enabled = false;
+                    DebugCommands.SetWeatherEditorGUI(weatherEditorGui);
+                }
 
                 if (!ShouldEnable(gameObject))
                     continue;

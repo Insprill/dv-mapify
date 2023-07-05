@@ -54,8 +54,14 @@ namespace Mapify.SceneInitializers.Railway
                 foreach (Transform child in prefabCloneTransform)
                     child.transform.position += offset;
                 prefabCloneTransform.SetPositionAndRotation(swTransform.position, swTransform.rotation);
-                Junction junction = inJunction.gameObject.GetComponent<Junction>();
-                junction.selectedBranch = 1;
+                Junction junction = inJunction.GetComponent<Junction>();
+                junction.selectedBranch = sw.IsLeft
+                    ? sw.defaultState == Switch.StandSide.THROUGH
+                        ? 1
+                        : 0
+                    : sw.defaultState == Switch.StandSide.THROUGH
+                        ? 0
+                        : 1;
                 foreach (Junction.Branch branch in junction.outBranches)
                     branch.track.generateColliders = true;
                 prefabClone.SetActive(true);

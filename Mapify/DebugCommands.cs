@@ -81,6 +81,9 @@ namespace Mapify
             if (go == null)
             {
                 Debug.LogError($"Failed to find item {args[0].String}");
+                Debug.Log($"Available items are as follows:");
+                foreach (GameObject prefab in Resources.LoadAll<GameObject>(""))
+                  Debug.Log(prefab.name);
                 return;
             }
 

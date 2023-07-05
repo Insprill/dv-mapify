@@ -1,3 +1,8 @@
+0.x.x:
+Map Creation Package:
+- Fixed stations not initializing properly if their last warehouse machine was removed.
+
+
 0.3.0:
 Runtime:
 - Added support for Simulator.

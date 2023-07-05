@@ -50,8 +50,9 @@ namespace Mapify.Editor.StateUpdaters
 
                 #region Warehouse Machines
 
-                if (warehouses.TryGetValue(station, out List<WarehouseMachine> machines))
-                    station.warehouseMachines = machines;
+                station.warehouseMachines = warehouses.TryGetValue(station, out List<WarehouseMachine> machines)
+                    ? machines
+                    : new List<WarehouseMachine>(0);
 
                 #endregion
             }

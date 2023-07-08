@@ -10,8 +10,8 @@ using Mapify.Map;
 
 namespace Mapify
 {
-    [BepInPlugin("net.insprill.dv-mapify", "Mapify", "0.3.0")]
     [BepInProcess("DerailValley.exe")]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "0.3.0")]
     public class Mapify : BaseUnityPlugin
     {
         public static Mapify Instance { get; private set; }

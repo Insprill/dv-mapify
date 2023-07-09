@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
 using DV.Teleporters;
 using DV.ThingTypes;
-using DV.ThingTypes.TransitionHelpers;
 using DV.Utils;
 using HarmonyLib;
 using Mapify.Editor;
-using Mapify.Editor.Utils;
+using Mapify.SceneInitializers.Railway;
 using Mapify.Utils;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Mapify.SceneInitializers.GameContent
 {
@@ -22,7 +18,6 @@ namespace Mapify.SceneInitializers.GameContent
         public override void Run()
         {
             Station[] stations = Object.FindObjectsOfType<Station>();
-            Dictionary<Station, List<LocomotiveSpawner>> locomotiveSpawners = Object.FindObjectsOfType<LocomotiveSpawner>().MapToClosestStation();
 
             stations.SetActive(false);
 
@@ -47,7 +42,7 @@ namespace Mapify.SceneInitializers.GameContent
                 SetupJobRules(station, stationController);
                 SetupWarehouseMachines(station, stationController);
                 SetupTeleportAnchor(station);
-                SetupLocomotiveSpawners(station, locomotiveSpawners);
+                SetupLocomotiveSpawners(station);
             }
 
             stations.SetActive(true);
@@ -114,24 +109,10 @@ namespace Mapify.SceneInitializers.GameContent
             teleporter.playerTeleportMapMarkerAnchor = teleportAnchor;
         }
 
-        private static void SetupLocomotiveSpawners(Station station, Dictionary<Station, List<LocomotiveSpawner>> locomotiveSpawners)
+        private static void SetupLocomotiveSpawners(Station station)
         {
-            if (!locomotiveSpawners.TryGetValue(station, out List<LocomotiveSpawner> spawners))
-                return;
-            foreach (LocomotiveSpawner locomotiveSpawner in spawners)
-            {
-                GameObject gameObject = station.gameObject.NewChild("LocomotiveSpawner");
-                StationLocoSpawner locoSpawner = gameObject.AddComponent<StationLocoSpawner>();
-                locoSpawner.spawnRotationFlipped = locomotiveSpawner.flipOrientation;
-                locoSpawner.locoSpawnTrackName = locomotiveSpawner.Track.name;
-                locoSpawner.locoTypeGroupsToSpawn = locomotiveSpawner.condensedLocomotiveTypes
-                    .Select(rollingStockTypes =>
-                        new ListTrainCarTypeWrapper(rollingStockTypes.Split(',').Select(rollingStockType =>
-                                ((TrainCarType)Enum.Parse(typeof(TrainCarType), rollingStockType)).ToV2()
-                            ).ToList()
-                        )
-                    ).ToList();
-            }
+            foreach (LocomotiveSpawner spawner in station.GetComponentsInChildren<LocomotiveSpawner>())
+                LocomotiveSpawnerSetup.SetupLocomotiveSpawner(spawner);
         }
     }
 }

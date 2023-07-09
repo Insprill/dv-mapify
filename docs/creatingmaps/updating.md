@@ -12,6 +12,9 @@ All breaking changes between Mapify versions will be listed here.
 Each change is relative to the last version in the list.
 If you're upgrading through multiple versions, read the list bottom-up, starting from the version after the one you're running.
 
+### 0.4.0
+- All `Locomotive Spawner` components must be replaced with `Vanilla Locomotive Spawner`s, and all values must be reassigned.
+
 ### 0.3.0
 - The Unity version has been bumped to 2019.4.40f1.
 - All Store Item Types must be reassigned.

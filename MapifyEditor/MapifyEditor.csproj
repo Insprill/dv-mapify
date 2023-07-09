@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="../UserProperties.props" Condition="Exists('../UserProperties.props')"/>
+    <Import Project="../UserProperties.props" Condition="Exists('../UserProperties.props')" />
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>7.3</LangVersion>
+        <LangVersion>8.0</LangVersion>
         <RootNamespace>MapifyEditor</RootNamespace>
         <OutDir>bin/$(Configuration)/Runtime</OutDir>
         <IsEditor>true</IsEditor>
@@ -17,33 +17,33 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'$(IsEditor)' == 'true'">
-        <Reference Include="UnityEditor"/>
+        <Reference Include="UnityEditor" />
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="BezierCurves"/>
-        <Reference Include="Unity.TextMeshPro"/>
-        <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile"/>
+        <Reference Include="BezierCurves" />
+        <Reference Include="Unity.TextMeshPro" />
+        <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <!-- Build the runtime version, without any UnityEditor references. This is super sketchy, but I couldn't find a better way to do it. -->
-        <Exec Condition="'$(IsEditor)' == 'true'" Command="dotnet build -c $(Configuration) -p:IsEditor='false'"/>
+        <Exec Condition="'$(IsEditor)' == 'true'" Command="dotnet build -c $(Configuration) -p:IsEditor='false'" />
 
         <!-- Copy to build folder -->
-        <Copy Condition="'$(IsEditor)' == 'true'" SourceFiles="$(TargetPath)" DestinationFolder="../build/editor"/>
-        <Copy Condition="'$(IsEditor)' != 'true'" SourceFiles="$(TargetPath)" DestinationFolder="../build/runtime"/>
+        <Copy Condition="'$(IsEditor)' == 'true'" SourceFiles="$(TargetPath)" DestinationFolder="../build/editor" />
+        <Copy Condition="'$(IsEditor)' != 'true'" SourceFiles="$(TargetPath)" DestinationFolder="../build/runtime" />
 
         <!-- Copy to package build and test map -->
-        <Copy Condition="'$(IsEditor)' == 'true'" SourceFiles="$(TargetPath);$(OutDir)BezierCurves.dll" DestinationFolder="$(PackageBuilderDir);"/>
-        <Copy Condition="'$(IsEditor)' == 'true' And Exists('$(TestMapDir)')" SourceFiles="$(TargetPath)" DestinationFolder="$(TestMapDir)"/>
+        <Copy Condition="'$(IsEditor)' == 'true'" SourceFiles="$(TargetPath);$(OutDir)BezierCurves.dll" DestinationFolder="$(PackageBuilderDir);" />
+        <Copy Condition="'$(IsEditor)' == 'true' And Exists('$(TestMapDir)')" SourceFiles="$(TargetPath)" DestinationFolder="$(TestMapDir)" />
 
         <!-- Copy to game install folder -->
-        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' == 'Windows_NT' And '$(IsEditor)' != 'true'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
-        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' != 'Windows_NT' And '$(IsEditor)' != 'true'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;"/>
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' == 'Windows_NT' And '$(IsEditor)' != 'true'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;" />
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(OS)' != 'Windows_NT' And '$(IsEditor)' != 'true'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)')&quot;" />
 
         <!-- Update package version number -->
-        <Exec Condition="'$(OS)' == 'Windows_NT' And '$(IsEditor)' == 'true'" Command="powershell $(UpdateVersionCommand)"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT' And '$(IsEditor)' == 'true'" Command="pwsh $(UpdateVersionCommand)"/>
+        <Exec Condition="'$(OS)' == 'Windows_NT' And '$(IsEditor)' == 'true'" Command="powershell $(UpdateVersionCommand)" />
+        <Exec Condition="'$(OS)' != 'Windows_NT' And '$(IsEditor)' == 'true'" Command="pwsh $(UpdateVersionCommand)" />
     </Target>
 </Project>

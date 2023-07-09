@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor.Utils;
 
@@ -8,8 +9,13 @@ namespace Mapify.Editor.StateUpdaters
     {
         protected override void Update(Scenes scenes)
         {
-            foreach (LocomotiveSpawner spawner in scenes.railwayScene.GetAllComponents<LocomotiveSpawner>())
-                spawner.condensedLocomotiveTypes = spawner.locomotiveTypesToSpawn.Select(types => string.Join(",", types.rollingStockTypes.Select(type => type.ToString()))).ToList();
+            IEnumerable<LocomotiveSpawner> spawners = new[] {
+                scenes.railwayScene,
+                scenes.gameContentScene
+            }.SelectMany(s => s.GetAllComponents<LocomotiveSpawner>());
+
+            foreach (LocomotiveSpawner spawner in spawners)
+                spawner.condensedLocomotiveTypes = spawner.CondenseLocomotiveTypes().ToArray();
         }
     }
 }

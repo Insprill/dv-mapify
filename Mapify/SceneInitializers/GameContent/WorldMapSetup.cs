@@ -15,9 +15,11 @@ namespace Mapify.SceneInitializers.GameContent
     public class WorldMapSetup : SceneSetup
     {
         private static bool modifiedMaterial;
+        private static Texture defaultTexture;
 
         public override void Run()
         {
+            MapLifeCycle.OnCleanup += () => modifiedMaterial = false;
             Transform originShiftParent = WorldMover.Instance.originShiftParent;
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapPaperOffice"))
                 UpdateMap(transform);
@@ -71,8 +73,9 @@ namespace Mapify.SceneInitializers.GameContent
                 }
 
                 Material material = mapObject.GetComponent<Renderer>().sharedMaterial;
-                Texture2D mapTexture = DrawTracksOnMap();
-                material.mainTexture = mapTexture;
+                if (defaultTexture == null)
+                    defaultTexture = material.mainTexture;
+                material.mainTexture = Maps.IsDefaultMap ? defaultTexture : DrawTracksOnMap();
                 modifiedMaterial = true;
             }
 

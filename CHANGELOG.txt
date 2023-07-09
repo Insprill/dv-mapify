@@ -1,4 +1,7 @@
 0.x.x:
+Runtime:
+- Fixed world maps not updating when changing map.
+
 Map Creation Package:
 - Added the ability to set the default state of switches.
 - Fixed validation failing without a directional light (no longer required).

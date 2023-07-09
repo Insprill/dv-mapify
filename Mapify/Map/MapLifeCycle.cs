@@ -23,7 +23,9 @@ namespace Mapify.Map
 {
     public static class MapLifeCycle
     {
-        private static readonly Regex STREAMER_SCENE_PATTERN = new Regex("Far__x[0-9]+_z[0-9]+");
+        private static readonly Regex VANILLA_STREAMER_SCENE_PATTERN = new Regex("Far__x[0-9]+_z[0-9]+");
+
+        public static Action OnCleanup;
 
         private static bool isMapLoaded;
         private static AssetBundle assets;
@@ -198,7 +200,7 @@ namespace Mapify.Map
                 new GameContentCopier().CopyAssets(scene);
                 scenesToLoad--;
             }
-            else if (STREAMER_SCENE_PATTERN.IsMatch(scene.name))
+            else if (VANILLA_STREAMER_SCENE_PATTERN.IsMatch(scene.name))
             {
                 new StreamerCopier().CopyAssets(scene);
                 scenesToLoad--;
@@ -213,6 +215,7 @@ namespace Mapify.Map
 
         private static void Cleanup()
         {
+            OnCleanup();
             Maps.UnreigsterLoadedMap();
             SceneManager.sceneLoaded -= OnSceneLoad;
             WorldStreamingInit_Awake_Patch.CanInitialize = false;

@@ -10,6 +10,7 @@ namespace Mapify
     public static class Locale
     {
         private const string DEFAULT_LANGUAGE = "English";
+        private const string MISSING_TRANSLATION = "[ MISSING TRANSLATION ]";
         private const string PREFIX = "mapify/";
         public const string SESSION__MAP_SELECTOR = PREFIX + "session/map_selector";
         public const string LAUNCHER__SESSION_MAP = PREFIX + "launcher/session_map";
@@ -39,12 +40,19 @@ namespace Mapify
 
             if (!csv.ContainsKey(locale))
             {
+                if (locale == DEFAULT_LANGUAGE)
+                {
+                    Mapify.LogError($"Failed to find locale language {locale}! Something is broken, this shouldn't happen. Dumping CSV data:");
+                    Mapify.LogError($"\n{CSV.Dump(csv)}");
+                    return MISSING_TRANSLATION;
+                }
+
                 locale = DEFAULT_LANGUAGE;
                 Mapify.LogWarning($"Failed to find locale language {locale}");
             }
 
             Dictionary<string, string> localeDict = csv[locale];
-            return localeDict.TryGetValue(key.TrimStart(PREFIX_CHARS), out string value) ? value : "[ MISSING TRANSLATION ]";
+            return localeDict.TryGetValue(key.TrimStart(PREFIX_CHARS), out string value) ? value : MISSING_TRANSLATION;
         }
 
         public static string Get(string key, params object[] placeholders)

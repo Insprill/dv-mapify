@@ -72,5 +72,37 @@ namespace Mapify.Utils
 
             return values;
         }
+
+        public static string Dump(ReadOnlyDictionary<string, Dictionary<string, string>> data)
+        {
+            StringBuilder result = new StringBuilder();
+
+            foreach (KeyValuePair<string, Dictionary<string, string>> column in data)
+                result.Append($"{column.Key},");
+
+            result.Remove(result.Length - 1, 1);
+            result.Append('\n');
+
+            int rowCount = data.Values.FirstOrDefault()?.Count ?? 0;
+
+            for (int i = 0; i < rowCount; i++)
+            {
+                foreach (KeyValuePair<string, Dictionary<string, string>> column in data)
+                    if (column.Value.Count > i)
+                    {
+                        string value = column.Value.ElementAt(i).Value;
+                        result.Append(value.Contains(',') ? $"\"{value}\"," : $"{value},");
+                    }
+                    else
+                    {
+                        result.Append(',');
+                    }
+
+                result.Remove(result.Length - 1, 1);
+                result.Append('\n');
+            }
+
+            return result.ToString();
+        }
     }
 }

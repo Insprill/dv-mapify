@@ -52,6 +52,12 @@ namespace Mapify.Utils
 
             foreach (char c in line)
             {
+                if (c == '\r')
+                {
+                    Mapify.LogWarning("Encountered carriage return in CSV! Please use Unix-style line endings (LF).");
+                    continue;
+                }
+
                 if (c == '\n' || (!inQuotes && c == ','))
                 {
                     FinishLine();

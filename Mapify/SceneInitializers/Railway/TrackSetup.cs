@@ -33,6 +33,8 @@ namespace Mapify.SceneInitializers.Railway
             foreach (Track track in tracks)
             {
                 track.gameObject.SetActive(false);
+                if (!track.IsSwitch && !track.IsTurntable)
+                    track.GenerateName();
                 RailTrack railTrack = track.gameObject.AddComponent<RailTrack>();
                 railTrack.generateColliders = !track.IsTurntable;
                 railTrack.dontChange = false;

@@ -33,6 +33,8 @@ namespace Mapify.Editor
         public TrackType trackType;
 
 #if UNITY_EDITOR
+        [SerializeField]
+        [HideInInspector]
         internal bool showLoadingGauge;
 #endif
 
@@ -58,6 +60,15 @@ namespace Mapify.Editor
 
         public bool IsSwitch => ParentSwitch != null;
         public bool IsTurntable => GetComponentInParent<Turntable>() != null;
+
+        public void GenerateName()
+        {
+            gameObject.name = trackType == TrackType.Road
+                ? !generateSigns
+                    ? $"[#] {name}"
+                    : name
+                : $"[Y]_[{stationId}]_[{yardId}-{trackId:D2}-{trackType.LetterId()}]";
+        }
 
         private void OnValidate()
         {

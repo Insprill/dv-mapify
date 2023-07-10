@@ -7,6 +7,7 @@ Map Creation Package:
 - Refactored how locomotive spawners work. Refer to documentation for more information.
 - Fixed validation failing without a directional light (no longer required).
 - Fixed stations not initializing properly if their last warehouse machine was removed.
+- Removed the ManualShunterBooklet and ManualSteamBooklet store item types.
 
 
 0.3.0:

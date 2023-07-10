@@ -1,6 +1,7 @@
 0.x.x:
 Runtime:
 - Fixed world maps not updating when changing map.
+- Fixed the streamer scene disappearing when going above Y 10.
 
 Map Creation Package:
 - Added the ability to set the default state of switches.

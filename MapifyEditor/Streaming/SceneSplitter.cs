@@ -102,6 +102,7 @@ namespace Mapify.Editor
             return new SceneSplitData {
                 names = sceneNames.ToArray(),
                 xSize = chunkSize,
+                ySize = 0, // We don't support vertical chunks
                 zSize = chunkSize
             };
         }

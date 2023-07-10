@@ -6,6 +6,7 @@ Map Creation Package:
 - Added the ability to set the default state of switches.
 - Added validation for terrain shape and Y position.
 - Refactored how locomotive spawners work. Refer to documentation for more information.
+- Improved readability of the validation menu.
 - Fixed validation failing without a directional light (no longer required).
 - Fixed stations not initializing properly if their last warehouse machine was removed.
 - Removed the ManualShunterBooklet and ManualSteamBooklet store item types.

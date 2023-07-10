@@ -11,8 +11,8 @@ namespace Mapify.Editor
     public class MapValidationGui : EditorWindow
     {
         private const string WINDOW_TITLE = "Map Validation Result";
-        private const string ERROR_COLOR = "maroon";
-        private const string WARNING_COLOR = "orange";
+        private const string ERROR_COLOR = "#ff496e";
+        private const string WARNING_COLOR = "#ffa347";
 
         private static MapValidationGui window;
 
@@ -72,7 +72,7 @@ namespace Mapify.Editor
             foreach (Result result in results)
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label($"• <color={color}>{result.message}</color>", style);
+                GUILayout.Label($"<color={color}>•</color> {result.message}", style);
                 if (result.context != null && GUILayout.Button("View Object", GUILayout.Width(100)))
                     Selection.activeObject = result.context;
                 GUILayout.EndHorizontal();

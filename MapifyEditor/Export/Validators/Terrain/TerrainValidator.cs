@@ -36,25 +36,43 @@ namespace MapifyEditor.Export.Validators
             if (anyFailed)
                 yield break;
 
-            Terrain[] duplicateTerrains = terrains.GroupBy(t => t.terrainData)
-                .Where(g => g.Count() > 1)
-                .SelectMany(g => g)
-                .ToArray();
-            foreach (Terrain terrain in duplicateTerrains)
+            foreach (Terrain terrain in terrains
+                         .GroupBy(t => t.terrainData)
+                         .Where(g => g.Count() > 1)
+                         .SelectMany(g => g))
                 yield return Result.Error($"Terrain '{terrain.name}' shares TerrainData '{terrain.terrainData.name}' with another Terrain!", terrain);
 
+            #region Material & Size
+
             Material m = terrains[0].materialTemplate;
-            float xSize = terrains[0].terrainData.size.x;
-            float ySize = terrains[0].terrainData.size.y;
+            Vector3 terrainSize = terrains[0].terrainData.size;
+            float yPosition = terrains[0].transform.position.y;
             foreach (Terrain terrain in terrains)
             {
                 if (m != terrain.materialTemplate)
                     yield return Result.Error("All terrains must use the same material", terrain);
-                if (Mathf.Abs(xSize - terrain.terrainData.size.x) > 0.001 || Mathf.Abs(xSize - terrain.terrainData.size.z) > 0.001)
-                    yield return Result.Error("All terrains must be the same size on the X and Z axis", terrain);
-                if (Mathf.Abs(ySize - terrain.terrainData.size.y) > 0.001)
-                    yield return Result.Error("All terrains must have the same height", terrain);
+                if (!terrain.terrainData.size.Equals(terrainSize))
+                    yield return Result.Error("All terrains must be the same size", terrain);
+                if (!Mathf.Approximately(terrain.transform.position.y, yPosition))
+                    yield return Result.Error("All terrains must be at the same Y level", terrain);
             }
+
+            #endregion
+
+            # region Forms a square
+
+            int rowCount = (int)Mathf.Sqrt(terrains.Length);
+            int columnCount = terrains.Length / rowCount;
+            for (int i = 0; i < terrains.Length; i++)
+            {
+                int row = i / columnCount;
+                int column = i % columnCount;
+                Vector3 expectedPosition = new Vector3(column * terrainSize.x, yPosition, row * terrainSize.x);
+                if (!terrains[i].transform.position.Equals(expectedPosition))
+                    yield return Result.Error("All terrains must form a perfect square!", terrains[i]);
+            }
+
+            #endregion
         }
     }
 }

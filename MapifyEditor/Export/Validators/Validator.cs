@@ -38,13 +38,19 @@ namespace Mapify.Editor.Validators
                 EditorUtility.DisplayProgressBar("Validating map", null, i / (float)validators.Length);
 
                 Validator validator = validators[i];
-                IEnumerator<Result> validation = validator.Validate(scenes);
-                while (validation.MoveNext())
+                List<Result> results;
+                try
                 {
-                    Result curr = validation.Current;
-                    if (curr != null)
-                        yield return curr;
+                    results = validator.Validate(scenes).ToList();
                 }
+                catch (Exception e)
+                {
+                    results = new List<Result> { Result.Error("An error occurred while validating the map!") };
+                    Debug.LogException(e);
+                }
+
+                foreach (Result result in results)
+                    yield return result;
             }
 
             foreach (KeyValuePair<Scene, bool> data in sceneStates)

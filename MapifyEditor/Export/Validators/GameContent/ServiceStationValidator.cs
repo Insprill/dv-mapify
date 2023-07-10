@@ -34,7 +34,7 @@ namespace Mapify.Editor.Validators
 
                 VanillaObject[] vanillaObjects = serviceStation.GetComponentsInChildren<VanillaObject>();
                 if (Array.TrueForAll(vanillaObjects, vo => vo.asset != serviceStation.markerType.ToVanillaAsset()))
-                    yield return Result.Error("Service stations must have a server station marker", serviceStation);
+                    yield return Result.Error("Service stations must have a service station marker", serviceStation);
                 else if (Array.Find(vanillaObjects, vo => vo.asset == serviceStation.markerType.ToVanillaAsset()).GetComponent<BoxCollider>() == null)
                     yield return Result.Error("Service station markers must have a BoxCollider", serviceStation);
 

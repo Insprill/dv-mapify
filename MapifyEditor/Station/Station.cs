@@ -21,11 +21,9 @@ namespace Mapify.Editor
         [Header("Job Generation")]
         [Tooltip("The area where job booklets should spawn. Not required when using a vanilla station")]
         public BoxCollider bookletSpawnArea;
-#pragma warning disable CS0649
         [SerializeField]
         [Tooltip("The rough center of the yard. Used at the reference point for generating jobs. Will use the station if unset")]
         private Transform yardCenter;
-#pragma warning restore CS0649
         public Transform YardCenter => yardCenter != null ? yardCenter : transform;
         [Tooltip("The distance, in meters, the player has to be relative to the station for job overview booklets to generate")]
         public float bookletGenerationDistance = 150;
@@ -55,13 +53,11 @@ namespace Mapify.Editor
         // Another workaround for Unity's excuse of a game engine
         [HideInNormalInspector]
         public int inputCargoGroupsCount;
-#pragma warning disable CS0649
+
         [SerializeField]
         internal List<CargoSet> inputCargoGroups;
         [SerializeField]
         internal List<CargoSet> outputCargoGroups;
-#pragma warning restore CS0649
-
         [HideInInspector]
         public List<string> storageTrackNames;
         [HideInInspector]

@@ -12,10 +12,8 @@ namespace Mapify.Editor
     public abstract class VisualizableMonoBehaviour : MonoBehaviour
     {
         [Header("Editor Visualization")]
-#pragma warning disable CS0649
         [SerializeField]
         internal GameObject visualPrefab;
-#pragma warning restore CS0649
 
         protected void UpdateVisuals<T>(T[] things, Transform reference)
         {

@@ -17,12 +17,9 @@ namespace Mapify.Editor
         [HideInInspector]
         [Tooltip("The Track ID of the track this LocomotiveSpawner should spawn on")]
         public byte loadingTrackId;
-
-#pragma warning disable CS0649
         [SerializeField]
         [Tooltip("Whether to flip the orientation of the spawned locomotive(s)")]
         public bool flipOrientation;
-#pragma warning restore CS0649
 
         [HideInInspector] // You can't edit the property drawer of collections themselves :|
         public string[] condensedLocomotiveTypes; // Workaround for Unity being stupid as always

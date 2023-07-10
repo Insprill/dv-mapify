@@ -30,13 +30,15 @@ namespace Mapify.Patches
 
         public static void DisableAll()
         {
+            Mapify.LogDebug("Disabling MonoBehaviours");
+
             patchedMethods = new HashSet<MethodInfo>();
             foreach (Type type in Assembly.GetAssembly(typeof(TrainCar)).GetTypes())
             {
                 if (!type.IsSubclassOf(typeof(MonoBehaviour)) || (type.Namespace != null && !type.Namespace.StartsWith("DV.")))
                     continue;
 
-                Mapify.LogDebug($"Disabling {type.FullName}");
+                Mapify.LogDebugExtreme($"Disabling {type.FullName}");
 
                 foreach (string methodName in methodNames)
                 {

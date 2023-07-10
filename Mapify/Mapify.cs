@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
-using DV;
 using HarmonyLib;
 using Mapify.Map;
 
@@ -20,6 +19,8 @@ namespace Mapify
 
         internal Harmony harmony { get; private set; }
 
+        private ConfigEntry<bool> extremeDebugLogging;
+
         private void Awake()
         {
             if (Instance != null)
@@ -30,6 +31,9 @@ namespace Mapify
             }
 
             Instance = this;
+
+
+            extremeDebugLogging = Config.Bind("Debug", "Super Extreme Ultra Mega Debug Logging", false);
 
             try
             {
@@ -73,6 +77,12 @@ namespace Mapify
         }
 
         #region Logging
+
+        public static void LogDebugExtreme(object msg)
+        {
+            if (Instance.extremeDebugLogging.Value)
+                LogDebug($"{msg}");
+        }
 
         public static void LogDebug(object msg)
         {

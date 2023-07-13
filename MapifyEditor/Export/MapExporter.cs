@@ -107,27 +107,36 @@ namespace Mapify.Editor
                 EditorUtility.RevealInFinder(exportFolderPath);
         }
 
-        private static bool Export(string exportFolderPath, bool uncompressed)
+        private static bool Export(string rootExportDir, bool uncompressed)
         {
-            DirectoryInfo directory = new DirectoryInfo(exportFolderPath);
+            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
+            mapInfo.mapifyVersion = File.ReadLines("Assets/Mapify/version.txt").First().Trim();
 
-            if (directory.GetFiles().Length > 0 || directory.GetDirectories().Length > 0)
+            string mapExportDir = Path.Combine(rootExportDir, mapInfo.name);
+
+            DirectoryInfo mapExportDirInfo = new DirectoryInfo(mapExportDir);
+
+            if (mapExportDirInfo.Exists && (mapExportDirInfo.GetFiles().Length > 0 || mapExportDirInfo.GetDirectories().Length > 0))
             {
                 int result = EditorUtility.DisplayDialogComplex("Clear Folder",
-                    "The directory you selected isn't empty, would you like to clear the files from the folder before proceeding? \n \n WARNING: THIS WILL DELETE ALL FILES (EXCLUDING DIRECTORIES) IN THE FOLDER.",
-                    "Clear Folder",
+                    "The map's export directory isn't empty. " +
+                    "If you've exported this map before, you may skip this to improve export speed. " +
+                    "If you've made significant changes to your map, or the files are from something else, " +
+                    "you should either move the files to trash or cancel and see what they are.",
+                    "Move to Trash",
                     "Cancel",
                     "Skip");
                 switch (result)
                 {
                     case 0:
-                        foreach (FileInfo file in directory.GetFiles())
-                            file.Delete();
+                        EditorFileUtil.MoveToTrash(mapExportDir);
                         break;
                     case 1:
                         return false;
                 }
             }
+
+            mapExportDirInfo.Create();
 
             BuildUpdater.Update();
 

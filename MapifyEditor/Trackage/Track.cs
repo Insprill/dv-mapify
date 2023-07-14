@@ -33,9 +33,9 @@ namespace Mapify.Editor
         public TrackType trackType;
 
 #if UNITY_EDITOR
+        [Header("Editor Visualization")]
         [SerializeField]
-        [HideInInspector]
-        internal bool showLoadingGauge;
+        private bool showLoadingGauge;
 #endif
 
         public bool isInSnapped { get; private set; }

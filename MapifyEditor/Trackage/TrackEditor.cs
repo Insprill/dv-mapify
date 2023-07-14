@@ -20,20 +20,15 @@ namespace Mapify.Editor
         {
             base.OnInspectorGUI();
 
-            if (GUILayout.Button("Generate Track Name"))
-                foreach (Track track in tracks)
-                {
-                    Undo.RecordObject(track.gameObject, "Generate Track Name");
-                    track.name = track.LogicName;
-                }
-
             GUILayout.Space(10);
-            GUILayout.Label("Editor Visualization", EditorStyles.boldLabel);
-            SerializedProperty showLoadingGaugeProp = serializedObject.FindProperty(nameof(Track.showLoadingGauge));
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(showLoadingGaugeProp, new GUIContent("Show Loading Gauge"), true);
-            if (EditorGUI.EndChangeCheck())
-                serializedObject.ApplyModifiedProperties();
+            if (!GUILayout.Button("Generate Track Name"))
+                return;
+
+            foreach (Track track in tracks)
+            {
+                Undo.RecordObject(track.gameObject, "Generate Track Name");
+                track.name = track.LogicName;
+            }
         }
     }
 }

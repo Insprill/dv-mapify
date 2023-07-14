@@ -70,9 +70,13 @@ namespace Mapify.Editor
 
 #if UNITY_EDITOR
 
-        internal bool visualizeJobGenerationRange;
-        internal bool visualizeBookletGenerationDistance;
-        internal bool visualizeJobDestroyDistance;
+        [Header("Editor Visualization")]
+        [SerializeField]
+        private bool visualizeJobGenerationRange;
+        [SerializeField]
+        private bool visualizeBookletGenerationDistance;
+        [SerializeField]
+        private bool visualizeJobDestroyDistance;
 
         private void OnDrawGizmos()
         {

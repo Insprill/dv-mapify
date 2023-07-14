@@ -211,7 +211,7 @@ namespace Mapify.Utils
 
         public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo basicMapInfo)
         {
-            if (basicMapInfo == null || basicMapInfo.IsDefault())
+            if (basicMapInfo.IsDefault())
                 jObject.Remove("mapify");
             else
                 jObject.SetJObject("mapify", JObject.FromObject(basicMapInfo));
@@ -219,7 +219,7 @@ namespace Mapify.Utils
 
         public static void SetBasicMapInfo(this SaveGameData saveGameData, BasicMapInfo basicMapInfo)
         {
-            if (basicMapInfo == null || basicMapInfo.IsDefault())
+            if (basicMapInfo.IsDefault())
                 saveGameData.RemoveData("mapify");
             else
                 saveGameData.SetJObject("mapify", JObject.FromObject(basicMapInfo));

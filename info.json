@@ -1,0 +1,10 @@
+{
+  "Id": "Mapify",
+  "Version": "0.3.0",
+  "DisplayName": "Mapify",
+  "Author": "Insprill",
+  "EntryMethod": "Mapify.Mapify.Load",
+  "ManagerVersion": "0.26.0",
+  "HomePage": "https://www.nexusmods.com/derailvalley/mods/593",
+  "Repository": "https://raw.githubusercontent.com/Insprill/dv-mapify/master/repository.json"
+}

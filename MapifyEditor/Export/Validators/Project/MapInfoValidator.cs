@@ -23,13 +23,13 @@ namespace MapifyEditor.Export.Validators.Project
 
             MapInfo mapInfo = mapInfos[0];
 
-            if (!Regex.IsMatch(mapInfo.mapName, MAP_NAME_REGEX))
+            if (!Regex.IsMatch(mapInfo.name, MAP_NAME_REGEX))
                 yield return Result.Error($"Your map name must match the following pattern: {MAP_NAME_REGEX}", mapInfo);
-            if (mapInfo.mapName == Names.DEFAULT_MAP_NAME)
+            if (mapInfo.name == Names.DEFAULT_MAP_NAME)
                 yield return Result.Error($"Your map name cannot be {Names.DEFAULT_MAP_NAME}");
 
-            if (mapInfo.waterLevel < 0)
-                yield return Result.Error("Water level cannot be lower than 0", mapInfo);
+            if (mapInfo.waterLevel < -1)
+                yield return Result.Error("Water level cannot be lower than -1", mapInfo);
 
             Terrain[] terrains = scenes.terrainScene.GetAllComponents<Terrain>();
             float worldSize = terrains.CalculateWorldSize();

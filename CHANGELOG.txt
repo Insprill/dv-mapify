@@ -1,18 +1,22 @@
 0.x.x:
 Runtime:
+- Switched back to Unity Mod Manager.
 - Fixed world maps not updating when changing map.
 - Fixed the streamer scene disappearing when going above Y 10.
 
 Map Creation Package:
-- Added the ability to set the default state of switches.
-- Added validation for terrain shape and Y position.
 - Added a button to generate track names.
+- Added the ability to set the default state of switches.
 - Added the ability to toggle loading gauge visualization for multiple tracks at once.
-- Refactored how locomotive spawners work. Refer to documentation for more information.
-- Improved readability of the validation menu.
-- Fixed validation failing without a directional light (no longer required).
+- Added validation for terrain shape and Y position.
+- Added validation for the installed build support.
+- Changed the default height of water to -1 to reduce collisions with flat terrain.
+- Existing files in the export directory are now moved to trash instead of being deleted.
 - Fixed stations not initializing properly if their last warehouse machine was removed.
-- Track names are no longer get overriden when exporting.
+- Fixed track names getting overriden when exporting.
+- Fixed validation failing without a directional light (no longer required).
+- Improved readability of the validation menu.
+- Refactored how locomotive spawners work. Refer to documentation for more information.
 - Removed the ManualShunterBooklet and ManualSteamBooklet store item types.
 
 

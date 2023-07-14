@@ -18,7 +18,7 @@ namespace Mapify.Editor
 {
     public static class MapExporter
     {
-        private const string DEFAULT_MAPS_FOLDER_PATH = "steamapps/common/Derail Valley/BepInEx/content/maps";
+        private const string MODS_PATH = "steamapps/common/Derail Valley/Mods";
 
         private static string LastReleaseExportPath {
             get => EditorPrefs.GetString("Mapify.Export.Release.LastExportPath");
@@ -32,7 +32,7 @@ namespace Mapify.Editor
 
         public static void OpenExportPrompt(bool releaseMode)
         {
-            string mapName = EditorAssets.FindAsset<MapInfo>()?.mapName;
+            string mapName = EditorAssets.FindAsset<MapInfo>()?.name;
             if (releaseMode)
                 ExportRelease(mapName);
             else
@@ -60,18 +60,16 @@ namespace Mapify.Editor
             LastReleaseExportPath = exportFilePath;
 
             string tmpFolder = Path.Combine(Path.GetTempPath(), $"dv-mapify-{Path.GetRandomFileName()}");
-            string bepInExDir = Path.Combine(tmpFolder, "BepInEx");
-            string exportDir = Path.Combine(bepInExDir, "content", "maps", mapName);
             if (Directory.Exists(tmpFolder))
                 Directory.Delete(tmpFolder, true);
-            Directory.CreateDirectory(exportDir);
+            Directory.CreateDirectory(tmpFolder);
 
-            bool success = Export(exportDir, false);
+            bool success = Export(tmpFolder, false);
 
             if (success)
             {
                 EditorUtility.DisplayProgressBar("Mapify", "Creating zip file", 0);
-                ZipFile.CreateFromDirectory(bepInExDir, exportFilePath, CompressionLevel.NoCompression, true);
+                ZipFile.CreateFromDirectory(tmpFolder, exportFilePath, CompressionLevel.Fastest, true);
                 EditorUtility.ClearProgressBar();
                 if (EditorUtility.DisplayDialog("Mapify", "Export complete!", "Open Folder", "Ok"))
                     EditorUtility.RevealInFinder(exportFilePath);
@@ -142,30 +140,26 @@ namespace Mapify.Editor
 
             AssetBundleBuild[] builds = CreateBuilds(EditorSceneManager.GetSceneByPath(Scenes.TERRAIN));
 
-            AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(
-                exportFolderPath,
+            bool success = BuildPipeline.BuildAssetBundles(
+                mapExportDir,
                 builds,
                 uncompressed ? BuildAssetBundleOptions.UncompressedAssetBundle : BuildAssetBundleOptions.None,
                 BuildTarget.StandaloneWindows64
             );
-            bool success = manifest != null;
 
             BuildUpdater.Cleanup();
 
-            string mapInfoPath = Path.Combine(exportFolderPath, Names.MAP_INFO_FILE);
+            string mapInfoPath = Path.Combine(mapExportDir, Names.MAP_INFO_FILE);
+            string modInfoPath = Path.Combine(rootExportDir, Names.MOD_INFO_FILE);
             if (!success)
             {
-                Debug.LogWarning("Build was canceled or failed!");
+                Debug.LogError("Build was canceled or failed!");
                 File.Delete(mapInfoPath); // Prevents the mod from loading an incomplete asset bundle
             }
             else
             {
-                using (StreamWriter writer = File.CreateText(mapInfoPath))
-                {
-                    MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
-                    string version = File.ReadLines("Assets/Mapify/version.txt").First().Trim();
-                    writer.Write(JsonUtility.ToJson(new BasicMapInfo(mapInfo.mapName, version)));
-                }
+                CreateMapInfo(mapInfoPath, mapInfo);
+                CreateModInfo(modInfoPath, mapInfo);
             }
 
             return success;
@@ -193,7 +187,7 @@ namespace Mapify.Editor
                 string assetPath = allAssetPaths[i];
                 if (!assetPath.StartsWith("Assets/")) continue;
                 AssetImporter importer = AssetImporter.GetAtPath(assetPath);
-                if (importer == null || importer.GetType() == typeof(MonoImporter)) continue;
+                if (importer == null || importer is MonoImporter || importer is PluginImporter) continue;
                 Object obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
                 if (obj is TerrainData) continue;
                 (obj is SceneAsset ? scenePaths : assetPaths).Add(assetPath);
@@ -213,6 +207,23 @@ namespace Mapify.Editor
             });
 
             return builds.ToArray();
+        }
+
+        private static void CreateMapInfo(string filePath, MapInfo mapInfo)
+        {
+            File.WriteAllText(filePath, JsonUtility.ToJson(BasicMapInfo.FromMapInfo(mapInfo)));
+        }
+
+        private static void CreateModInfo(string filePath, MapInfo mapInfo)
+        {
+            UnityModManagerInfo modInfo = new UnityModManagerInfo {
+                Id = mapInfo.name,
+                Version = mapInfo.version,
+                DisplayName = mapInfo.name,
+                ManagerVersion = "0.26.0",
+                HomePage = mapInfo.homePage
+            };
+            File.WriteAllText(filePath, JsonUtility.ToJson(modInfo));
         }
 
         private static string GetDefaultMapsFolder()
@@ -239,11 +250,12 @@ namespace Mapify.Editor
             foreach (DriveInfo drive in DriveInfo.GetDrives())
             {
                 string driveRoot = drive.RootDirectory.FullName;
-                string potentialPath = Path.Combine(driveRoot, "Program Files", "Steam", DEFAULT_MAPS_FOLDER_PATH);
-                if (Directory.Exists(potentialPath)) return potentialPath;
-
-                potentialPath = Path.Combine(driveRoot, "Program Files (x86)", "Steam", DEFAULT_MAPS_FOLDER_PATH);
-                if (Directory.Exists(potentialPath)) return potentialPath;
+                foreach (string s in new[] { "Program Files", "Program Files (x86)" })
+                {
+                    string potentialPath = Path.Combine(driveRoot, s, "Steam", MODS_PATH);
+                    if (Directory.Exists(potentialPath))
+                        return potentialPath;
+                }
             }
 
             return null;
@@ -252,7 +264,7 @@ namespace Mapify.Editor
         private static string GetLinuxMapsFolder()
         {
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string potentialPath = Path.Combine(homePath, ".steam", "steam", DEFAULT_MAPS_FOLDER_PATH);
+            string potentialPath = Path.Combine(homePath, ".steam", "steam", MODS_PATH);
             return Directory.Exists(potentialPath) ? potentialPath : null;
         }
     }

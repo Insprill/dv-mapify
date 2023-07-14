@@ -20,7 +20,7 @@ namespace Mapify.SceneInitializers.Vanilla.GameContent
             if (name.StartsWith("[") && name.EndsWith("]") && name != WorldStreamingInit.ORIGIN_SHIFT_CONTENT)
             {
                 VanillaAsset idx = (VanillaAsset)nextIdx++;
-                Mapify.LogDebug($"Saved Vanilla Asset {idx} ({name})");
+                Mapify.LogDebug(() => $"Saved Vanilla Asset {idx} ({name})");
                 yield return (idx, gameObject);
             }
 
@@ -79,7 +79,7 @@ namespace Mapify.SceneInitializers.Vanilla.GameContent
             }
             else
             {
-                Mapify.LogError("Failed to find RefillStations!");
+                Mapify.LogCritical("Failed to find RefillStations!");
             }
 
             #endregion

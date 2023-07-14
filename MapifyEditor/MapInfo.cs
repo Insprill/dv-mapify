@@ -7,20 +7,28 @@ namespace Mapify.Editor
     {
         [Header("Map Information")]
         [Tooltip("The display name of the map")]
-        public string mapName = "My Custom Map";
+        public new string name = "My Custom Map";
+        [Tooltip("The version of your map, in semver format (https://semver.org/)")]
+        public string version = "0.1.0";
+        [Tooltip("The home page of your mod, most likely being the Nexus Mods page")]
+        public string homePage = "https://www.nexusmods.com/derailvalley/mods/MOD-ID-HERE";
+
+        [Header("Loading Gauge")]
+        [Tooltip("The height of the loading gauge, in meters")]
+        public float loadingGaugeHeight = 5;
+        [Tooltip("The width of the loading gauge, in meters")]
+        public float loadingGaugeWidth = 4;
+
+        [Header("World")]
+        [Min(-1)]
         [Tooltip("The height at which water will appear")]
-        [Min(0)]
-        public float waterLevel;
+        public float waterLevel = -1;
         [Tooltip("The player's initial spawn position")]
         public Vector3 defaultSpawnPosition;
         [Tooltip("The player's initial spawn rotation")]
         public Vector3 defaultSpawnRotation;
         [Tooltip("The closest distance, in meters, the player can get to the edges of the map.")]
         public float worldBoundaryMargin = 5.0f;
-
-        [Header("Loading Gauge")]
-        public float loadingGaugeHeight = 5;
-        public float loadingGaugeWidth = 4;
 
         [Header("Procedural Maps")]
         [Tooltip("How large tracks should be on the map")]
@@ -69,6 +77,8 @@ namespace Mapify.Editor
 
         #region Internal Stuff
 
+        [HideInInspector]
+        public string mapifyVersion;
         [HideInNormalInspector]
         public float worldSize;
         [HideInNormalInspector]

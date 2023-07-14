@@ -1,112 +1,100 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
-using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
+using DV.UI;
 using HarmonyLib;
 using Mapify.Map;
+using Mapify.Patches;
+using UnityModManagerNet;
+using Object = UnityEngine.Object;
 
 namespace Mapify
 {
-    [BepInProcess("DerailValley.exe")]
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, "0.3.0")]
-    public class Mapify : BaseUnityPlugin
+    public static class Mapify
     {
-        public static Mapify Instance { get; private set; }
-
+        private static UnityModManager.ModEntry ModEntry { get; set; }
+        private static Settings Settings;
         private const string LOCALE_FILE = "locale.csv";
 
-        internal Harmony harmony { get; private set; }
+        internal static Harmony Harmony { get; private set; }
 
-        private ConfigEntry<bool> extremeDebugLogging;
-
-        private void Awake()
+        private static bool Load(UnityModManager.ModEntry modEntry)
         {
-            if (Instance != null)
-            {
-                Logger.LogFatal("Mapify is already loaded!");
-                Destroy(this);
-                return;
-            }
+            ModEntry = modEntry;
 
-            Instance = this;
-
-
-            extremeDebugLogging = Config.Bind("Debug", "Super Extreme Ultra Mega Debug Logging", false);
+            Settings = Settings.Load<Settings>(ModEntry);
+            ModEntry.OnGUI = entry => Settings.Draw(entry);
+            ModEntry.OnSaveGUI = entry => Settings.Save(entry);
 
             try
             {
                 LoadLocale();
-                Maps.LoadMaps();
+                Maps.Init();
                 Patch();
             }
             catch (Exception ex)
             {
                 LogException("Failed to load", ex);
-                Destroy(this);
-            }
-        }
-
-        private void OnDestroy()
-        {
-            Log("Unpatching");
-            harmony?.UnpatchSelf();
-            Instance = null;
-        }
-
-        private void LoadLocale()
-        {
-            string installDir = Path.GetDirectoryName(Info.Location);
-            if (installDir == null)
-            {
-                Logger.LogError("Failed to find install directory!");
-                return;
+                return false;
             }
 
-            string localePath = Path.Combine(installDir, LOCALE_FILE);
+            // We load after the LauncherControllerAccess has been initialized, so force a refresh to show the map for the last loaded save.
+            Object.FindObjectOfType<LauncherController>()?.RefreshInterface();
+
+            return true;
+        }
+
+        private static void LoadLocale()
+        {
+            string localePath = Path.Combine(ModEntry.Path, LOCALE_FILE);
             if (!Locale.Load(localePath))
-                Logger.LogError($"Failed to find locale file at {localePath}! Please make sure it's there.");
+                LogError($"Failed to find locale file at {localePath}! Please make sure it's there.");
         }
 
-        private void Patch()
+        private static void Patch()
         {
-            Logger.LogInfo("Patching...");
-            harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
-            Logger.LogInfo("Successfully patched");
+            Log("Patching...");
+            Harmony = new Harmony(ModEntry.Info.Id);
+            Harmony.PatchAll();
+            Log("Successfully patched");
         }
 
         #region Logging
 
-        public static void LogDebugExtreme(object msg)
+        public static void LogDebugExtreme(Func<object> resolver)
         {
-            if (Instance.extremeDebugLogging.Value)
-                LogDebug($"{msg}");
+            if (Settings.ExtremelyVerboseLogging)
+                LogDebug(resolver);
         }
 
-        public static void LogDebug(object msg)
+        public static void LogDebug(Func<object> resolver)
         {
-            Instance.Logger.LogDebug($"{msg}");
+            if (Settings.VerboseLogging)
+                ModEntry.Logger.Log($"[Debug] {resolver.Invoke()}");
         }
 
         public static void Log(object msg)
         {
-            Instance.Logger.LogInfo($"{msg}");
+            ModEntry.Logger.Log($"[Info] {msg}");
         }
 
         public static void LogWarning(object msg)
         {
-            Instance.Logger.LogWarning($"{msg}");
+            ModEntry.Logger.Warning($"{msg}");
         }
 
         public static void LogError(object msg)
         {
-            Instance.Logger.LogError($"{msg}");
+            ModEntry.Logger.Error($"{msg}");
         }
 
-        public static void LogException(object msg, Exception e, LogLevel level = LogLevel.Error)
+        public static void LogCritical(object msg)
         {
-            Instance.Logger.Log(level, $"{msg}: {e}");
+            ModEntry.Logger.Critical($"{msg}");
+        }
+
+        public static void LogException(object msg, Exception e)
+        {
+            ModEntry.Logger.LogException($"{msg}", e);
         }
 
         #endregion

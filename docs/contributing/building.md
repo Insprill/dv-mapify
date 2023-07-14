@@ -38,6 +38,7 @@ Note that shortcuts like `%ProgramFiles%` *cannot* be used.
         <UnityInstallDir>C:\Program Files\Unity\Hub\Editor\2019.4.40f1\Editor</UnityInstallDir>
         <ReferencePath>
             $(DvInstallDir)\DerailValley_Data\Managed\;
+            $(DvInstallDir)\DerailValley_Data\Managed\UnityModManager\;
             $(UnityInstallDir)\Data\Managed\
         </ReferencePath>
         <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>
@@ -59,6 +60,7 @@ Make sure to include the semicolons between each of the paths, but not after the
         <UnityInstallDir>/home/username/.local/share/UnityHub/Editor/2019.4.40f1/Editor</UnityInstallDir>
         <ReferencePath>
             $(DvInstallDir)/DerailValley_Data/Managed/;
+            $(DvInstallDir)/DerailValley_Data/Managed/UnityModManager/;
             $(UnityInstallDir)/Data/Managed/
         </ReferencePath>
         <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>

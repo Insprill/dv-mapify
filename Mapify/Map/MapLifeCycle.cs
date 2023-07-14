@@ -36,7 +36,7 @@ namespace Mapify.Map
 
         public static IEnumerator LoadMap(BasicMapInfo basicMapInfo)
         {
-            Mapify.LogDebug($"Loading map {basicMapInfo.mapName}");
+            Mapify.LogDebug(() => $"Loading map {basicMapInfo.name}");
 
             if (isMapLoaded)
                 throw new InvalidOperationException("Map is already loaded");
@@ -45,12 +45,12 @@ namespace Mapify.Map
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
             DisplayLoadingInfo loadingInfo = Object.FindObjectOfType<DisplayLoadingInfo>();
 
-            string loadingMapLogMsg = Locale.Get(Locale.LOADING__LOADING_MAP, basicMapInfo.mapName);
+            string loadingMapLogMsg = Locale.Get(Locale.LOADING__LOADING_MAP, basicMapInfo.name);
             loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, 0);
             yield return null;
 
             // Load asset bundles
-            Mapify.LogDebug($"Loading AssetBundle '{Names.ASSETS_ASSET_BUNDLE}'");
+            Mapify.LogDebug(() => $"Loading AssetBundle '{Names.ASSETS_ASSET_BUNDLE}'");
             string mapDir = Maps.GetDirectory(basicMapInfo);
             AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(Names.ASSETS_ASSET_BUNDLE, mapDir));
             DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = Names.ASSETS_ASSET_BUNDLE;
@@ -62,7 +62,7 @@ namespace Mapify.Map
 
             assets = assetsReq.assetBundle;
 
-            Mapify.LogDebug($"Loading AssetBundle '{Names.SCENES_ASSET_BUNDLE}'");
+            Mapify.LogDebug(() => $"Loading AssetBundle '{Names.SCENES_ASSET_BUNDLE}'");
             AssetBundleCreateRequest scenesReq = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(Names.SCENES_ASSET_BUNDLE, mapDir));
             DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = Names.SCENES_ASSET_BUNDLE;
             do

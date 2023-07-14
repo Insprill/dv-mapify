@@ -1,7 +1,6 @@
 using System.Reflection;
 using DV.Utils;
 using HarmonyLib;
-using Mapify.Map;
 using TMPro;
 
 namespace Mapify.Patches

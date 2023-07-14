@@ -14,7 +14,7 @@ namespace Mapify.Patches
         private static bool Prefix(IGameSession session, ref (bool canRun, string reasonLocKey) __result)
         {
             BasicMapInfo basicMapInfo = session.GameData.GetBasicMapInfo();
-            if (Maps.AllMapNames.Contains(basicMapInfo.mapName))
+            if (Maps.AllMapNames.Contains(basicMapInfo.name))
                 return true;
             __result = (false, Locale.LAUNCHER__SESSION_MAP_NOT_INSTALLED);
             return false;

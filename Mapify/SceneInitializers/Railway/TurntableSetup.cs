@@ -13,7 +13,7 @@ namespace Mapify.SceneInitializers.Railway
 
         public override void Run()
         {
-            Mapify.LogDebug("Creating turntables");
+            Mapify.LogDebug(() => "Creating turntables");
             foreach (Turntable turntable in Object.FindObjectsOfType<Turntable>())
             {
                 (TurntableController controller, bool usingDefaultTrack) = SetupVanillaObjects(turntable);

@@ -16,7 +16,7 @@ namespace Mapify.SceneInitializers.GameContent
                 if ((int)vanillaAsset < GameContentCopier.START_IDX)
                     continue;
                 GameObject gameObject = AssetCopier.Instantiate(vanillaAsset, false, false);
-                Mapify.LogDebug($"Instantiated Vanilla Asset {vanillaAsset} ({gameObject.name})");
+                Mapify.LogDebug(() => $"Instantiated Vanilla Asset {vanillaAsset} ({gameObject.name})");
 
                 WeatherEditorGUI weatherEditorGui = gameObject.GetComponentInChildren<WeatherEditorGUI>();
                 if (weatherEditorGui != null)

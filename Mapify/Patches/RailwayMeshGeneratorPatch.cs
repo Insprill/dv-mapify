@@ -13,7 +13,8 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(RailwayMeshGenerator), "ScheduleGenerateBaseAndRail")]
     public class RailwayMeshGenerator_ScheduleGenerateBaseAndRail_Patch
     {
-        private static bool Prefix(RailwayMeshGenerator __instance, TrackChunk chunk, List<(MeshSweeperJob, JobHandle, Mesh)> ___activeJobs, Vector2[] ___gravelShapePoints, Vector2[] ___leftRailShapePoints, Vector2[] ___rightRailShapePoints)
+        private static bool Prefix(RailwayMeshGenerator __instance, TrackChunk chunk, List<(MeshSweeperJob, JobHandle, Mesh)> ___activeJobs, Vector2[] ___gravelShapePoints, Vector2[] ___leftRailShapePoints,
+            Vector2[] ___rightRailShapePoints)
         {
             if (Maps.IsDefaultMap)
                 return true;

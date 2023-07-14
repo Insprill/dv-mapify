@@ -13,15 +13,15 @@ namespace Mapify.SceneInitializers.Railway
         {
             Track[] tracks = Object.FindObjectsOfType<Track>().Where(t => !t.IsSwitch).ToArray();
 
-            Mapify.LogDebug("Creating RailTracks");
+            Mapify.LogDebug(() => "Creating RailTracks");
             CreateRailTracks(tracks);
 
-            Mapify.LogDebug("Creating Junctions");
+            Mapify.LogDebug(() => "Creating Junctions");
             CreateJunctions();
 
             tracks.SetActive(true);
 
-            Mapify.LogDebug("Connecting tracks");
+            Mapify.LogDebug(() => "Connecting tracks");
             ConnectTracks(tracks);
 
             RailManager.AlignAllTrackEnds();

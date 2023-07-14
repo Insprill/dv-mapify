@@ -1,8 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using DV.Utils;
+using DV.Booklets.Testing;
 using HarmonyLib;
 using UnityEngine;
 
@@ -30,15 +29,17 @@ namespace Mapify.Patches
 
         public static void DisableAll()
         {
-            Mapify.LogDebug("Disabling MonoBehaviours");
+            Mapify.LogDebug(() => "Disabling MonoBehaviours");
 
             patchedMethods = new HashSet<MethodInfo>();
             foreach (Type type in Assembly.GetAssembly(typeof(TrainCar)).GetTypes())
             {
                 if (!type.IsSubclassOf(typeof(MonoBehaviour)) || (type.Namespace != null && !type.Namespace.StartsWith("DV.")))
                     continue;
+                if (type == typeof(ALicenseSpawner<>))
+                    continue; // Causes an error while trying to patch
 
-                Mapify.LogDebugExtreme($"Disabling {type.FullName}");
+                Mapify.LogDebugExtreme(() => $"Disabling {type.FullName}");
 
                 foreach (string methodName in methodNames)
                 {
@@ -47,7 +48,7 @@ namespace Mapify.Patches
                     if (method == null) continue;
                     try
                     {
-                        Mapify.Instance.harmony.Patch(method, harmonyPrefix);
+                        Mapify.Harmony.Patch(method, harmonyPrefix);
                         patchedMethods.Add(method);
                     }
                     catch (Exception e)
@@ -60,9 +61,9 @@ namespace Mapify.Patches
 
         public static void EnableAll()
         {
-            Mapify.LogDebug("Enabling disabled MonoBehaviours");
+            Mapify.LogDebug(() => "Enabling disabled MonoBehaviours");
             foreach (MethodInfo method in patchedMethods)
-                Mapify.Instance.harmony.Unpatch(method, prefix);
+                Mapify.Harmony.Unpatch(method, prefix);
             patchedMethods = null;
         }
 

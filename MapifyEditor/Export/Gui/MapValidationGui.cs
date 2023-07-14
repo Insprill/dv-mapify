@@ -11,7 +11,8 @@ namespace Mapify.Editor
     public class MapValidationGui : EditorWindow
     {
         private const string WINDOW_TITLE = "Map Validation Result";
-        private const string ERROR_COLOR = "#ff496e";
+        public const string SUCCESS_COLOR = "#1bd96a";
+        public const string ERROR_COLOR = "#ff496e";
         private const string WARNING_COLOR = "#ffa347";
 
         private static MapValidationGui window;

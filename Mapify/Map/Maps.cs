@@ -1,21 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using BepInEx;
+using DV;
 using Mapify.Editor;
 using UnityEngine;
+using UnityModManagerNet;
 
 namespace Mapify.Map
 {
     public static class Maps
     {
-        private const string CONTENT_FOLDER_NAME = "content";
-        private const string MAPS_FOLDER_NAME = "maps";
-        public static readonly BasicMapInfo DEFAULT_MAP_INFO = new BasicMapInfo(Names.DEFAULT_MAP_NAME, null);
-        private static readonly string[] requiredFiles = { Names.MAP_INFO_FILE, Names.ASSETS_ASSET_BUNDLE, Names.SCENES_ASSET_BUNDLE };
+        public static readonly BasicMapInfo DEFAULT_MAP_INFO = new BasicMapInfo(Names.DEFAULT_MAP_NAME, $"{BuildInfo.BUILD_VERSION_MAJOR}", null);
 
+        public static Action OnMapsUpdated;
         public static bool IsDefaultMap { get; private set; } = true;
         private static MapInfo _loadedMap;
 
@@ -29,56 +27,73 @@ namespace Mapify.Map
         }
 
         public static string[] AllMapNames { get; private set; }
-        private static string MapsFolder;
-        // name -> (info, directory)
-        private static ReadOnlyDictionary<string, (BasicMapInfo, string)> availableMaps;
+        /// <summary>
+        ///     name -> (info, mod, directory)
+        /// </summary>
+        private static readonly Dictionary<string, (BasicMapInfo, UnityModManager.ModEntry, string)> availableMaps = new Dictionary<string, (BasicMapInfo, UnityModManager.ModEntry, string)> {
+            { DEFAULT_MAP_INFO.name, (DEFAULT_MAP_INFO, null, null) }
+        };
 
-        public static void LoadMaps()
+        public static void Init()
         {
-            MapsFolder = Path.Combine(Paths.BepInExRootPath, CONTENT_FOLDER_NAME, MAPS_FOLDER_NAME);
-            if (!Directory.Exists(MapsFolder))
-                Directory.CreateDirectory(MapsFolder);
-            Mapify.Log("Searching for maps...");
-            FindMaps();
-            Mapify.Log($"Found {availableMaps.Count} map(s) ({string.Join(", ", availableMaps.Keys.ToArray())})");
+            UnityModManager.toggleModsListen += ToggleModsListen;
+            foreach (UnityModManager.ModEntry entry in UnityModManager.modEntries)
+                FindMaps(entry);
         }
 
-        private static void FindMaps()
+        private static void ToggleModsListen(UnityModManager.ModEntry modEntry, bool result)
         {
-            Dictionary<string, (BasicMapInfo, string)> maps = new Dictionary<string, (BasicMapInfo, string)> {
-                { DEFAULT_MAP_INFO.mapName, (DEFAULT_MAP_INFO, null) }
-            };
-
-            foreach (string dir in Directory.GetDirectories(MapsFolder))
+            if (result)
             {
-                if (!ValidateMapInstallation(dir))
+                Mapify.LogDebug(() => $"New mod enabled ({modEntry.Info.DisplayName}), checking for maps...");
+                FindMaps(modEntry);
+                return;
+            }
+
+            foreach ((BasicMapInfo, UnityModManager.ModEntry, string) map in availableMaps.Values)
+            {
+                if (map.Item2 != modEntry)
                     continue;
+                if (_loadedMap == null || _loadedMap.name != map.Item1.name)
+                    continue;
+                Mapify.LogWarning($"Tried to disable mod ({modEntry.Info.DisplayName}) with map ({map.Item1.name}) loaded. Re-enabling mod!");
+                modEntry.Load();
+                break;
+            }
+        }
+
+        private static void FindMaps(UnityModManager.ModEntry modEntry)
+        {
+            bool foundMap = false;
+            foreach (string dir in Directory.GetDirectories(modEntry.Path))
+            {
                 string mapInfoPath = GetMapAsset(Names.MAP_INFO_FILE, dir);
+                if (!File.Exists(mapInfoPath))
+                    continue;
+
                 BasicMapInfo mapInfo = JsonUtility.FromJson<BasicMapInfo>(File.ReadAllText(mapInfoPath));
-                if (mapInfo.mapName == Names.DEFAULT_MAP_NAME)
+                if (mapInfo.name == Names.DEFAULT_MAP_NAME)
                 {
-                    Mapify.LogError($"Skipping map in {dir} due to restricted name: {Names.DEFAULT_MAP_NAME}");
+                    Mapify.LogError($"Skipping map in '{dir}' due to restricted name: '{Names.DEFAULT_MAP_NAME}'");
                     continue;
                 }
 
-                maps.Add(mapInfo.mapName, (mapInfo, dir));
-            }
-
-            availableMaps = new ReadOnlyDictionary<string, (BasicMapInfo, string)>(maps);
-            AllMapNames = availableMaps.Keys?.OrderBy(x => x).ToArray() ?? Array.Empty<string>();
-        }
-
-        private static bool ValidateMapInstallation(string dir)
-        {
-            foreach (string requiredFile in requiredFiles)
-            {
-                if (File.Exists(GetMapAsset(requiredFile, dir)))
+                if (availableMaps.TryGetValue(mapInfo.name, out (BasicMapInfo, UnityModManager.ModEntry, string) existingMap))
+                {
+                    if (existingMap.Item2 != modEntry)
+                        Mapify.LogError($"Skipping map from '{modEntry.Info.DisplayName}' in '{dir}' due to duplicate name '{mapInfo.name}' (Already added by '{existingMap.Item2.Info.DisplayName}')");
                     continue;
-                Mapify.LogError($"Failed to find file '{requiredFile}' for map in '{dir}'!");
-                return false;
+                }
+
+                Mapify.LogDebug(() => $"Found map '{mapInfo.name}' from '{modEntry.Info.DisplayName}' in '{dir}'");
+                availableMaps.Add(mapInfo.name, (mapInfo, modEntry, dir));
+                foundMap = true;
             }
 
-            return true;
+            if (!foundMap)
+                return;
+            AllMapNames = availableMaps.Keys.OrderBy(x => x).ToArray();
+            OnMapsUpdated?.Invoke();
         }
 
         /// <summary>
@@ -92,12 +107,12 @@ namespace Mapify.Map
 
         public static string GetDirectory(BasicMapInfo basicMapInfo)
         {
-            return availableMaps[basicMapInfo.mapName].Item2;
+            return availableMaps[basicMapInfo.name].Item3;
         }
 
         public static void RegisterLoadedMap(MapInfo mapInfo)
         {
-            IsDefaultMap = mapInfo.mapName == DEFAULT_MAP_INFO.mapName;
+            IsDefaultMap = mapInfo.name == DEFAULT_MAP_INFO.name;
             LoadedMap = mapInfo;
         }
 
@@ -109,7 +124,7 @@ namespace Mapify.Map
 
         public static string GetMapAsset(string fileName, string mapDir = null)
         {
-            return Path.Combine(MapsFolder, mapDir ?? availableMaps[LoadedMap.mapName].Item2, fileName);
+            return Path.Combine(mapDir ?? availableMaps[LoadedMap.name].Item3, fileName);
         }
     }
 }

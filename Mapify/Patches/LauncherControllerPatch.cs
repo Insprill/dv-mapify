@@ -13,14 +13,22 @@ using Mapify.Utils;
 
 namespace Mapify.Patches
 {
+    [HarmonyPatch]
     public static class LauncherControllerAccess
     {
         private static readonly Type type = typeof(LauncherController);
-        private static readonly MethodInfo Method_KeyValueFormat = AccessTools.DeclaredMethod(type, "KeyValueFormat", new[] { typeof(string), typeof(string) });
+        private static readonly MethodInfo Method_RefreshInterface = AccessTools.DeclaredMethod(type, "RefreshInterface");
 
+        [HarmonyReversePatch]
+        [HarmonyPatch(typeof(LauncherController), "KeyValueFormat")]
         public static string KeyValueFormat(string locKey, string value)
         {
-            return (string)Method_KeyValueFormat.Invoke(null, new object[] { locKey, value });
+            throw new NotImplementedException();
+        }
+
+        public static void RefreshInterface(this LauncherController launcherController)
+        {
+            Method_RefreshInterface.Invoke(launcherController, null);
         }
     }
 
@@ -30,7 +38,7 @@ namespace Mapify.Patches
         private static void Postfix(ISaveGame saveGame, ref string __result)
         {
             List<string> strings = new List<string>(__result.Split('\n'));
-            strings.Insert(2, LauncherControllerAccess.KeyValueFormat(Locale.LAUNCHER__SESSION_MAP, saveGame.Data.GetBasicMapInfo().mapName));
+            strings.Insert(2, LauncherControllerAccess.KeyValueFormat(Locale.LAUNCHER__SESSION_MAP, saveGame.Data.GetBasicMapInfo().name));
             __result = string.Join("\n", strings);
         }
     }
@@ -41,7 +49,7 @@ namespace Mapify.Patches
         private static void Postfix(UIStartGameData data, ref string __result)
         {
             List<string> strings = new List<string>(__result.Split('\n'));
-            strings.Insert(2, LauncherControllerAccess.KeyValueFormat(Locale.LAUNCHER__SESSION_MAP, data.session.GameData.GetBasicMapInfo().mapName));
+            strings.Insert(2, LauncherControllerAccess.KeyValueFormat(Locale.LAUNCHER__SESSION_MAP, data.session.GameData.GetBasicMapInfo().name));
             __result = string.Join("\n", strings);
         }
     }
@@ -55,7 +63,7 @@ namespace Mapify.Patches
                 return true;
 
             BasicMapInfo basicMapInfo = ___saveGame.Data.GetBasicMapInfo();
-            if (Maps.AllMapNames.Contains(basicMapInfo.mapName))
+            if (Maps.AllMapNames.Contains(basicMapInfo.name))
                 return true;
 
             PopupManager popupManager = null;
@@ -70,7 +78,7 @@ namespace Mapify.Patches
             Popup okPopupPrefab = __instance.GetComponentInParent<InitialScreenController>().continueLoadNewController.career.okPopupPrefab;
 
             Popup popup = popupManager.ShowPopup(okPopupPrefab);
-            popup.labelTMPro.text = Locale.Get(Locale.LAUNCHER__SESSION_MAP_NOT_INSTALLED, basicMapInfo.mapName);
+            popup.labelTMPro.text = Locale.Get(Locale.LAUNCHER__SESSION_MAP_NOT_INSTALLED, basicMapInfo.name);
             return false;
         }
     }

@@ -5,26 +5,25 @@ param (
 
 Set-Location "$PSScriptRoot"
 
+$FilesToInclude = "info.json","build/runtime/*","LICENSE","locale.csv"
+
+$modInfo = Get-Content -Raw -Path "info.json" | ConvertFrom-Json
+$modId = $modInfo.Id
+$modVersion = $modInfo.Version
+
 $DistDir = "$OutputDirectory/dist"
 if ($NoArchive) {
     $ZipWorkDir = "$OutputDirectory"
 } else {
     $ZipWorkDir = "$DistDir/tmp"
 }
-$ZipRootDir = "$ZipWorkDir/BepInEx"
-$ZipInnerDir = "$ZipRootDir/plugins/Mapify/"
-$RuntimeBuildDir = "build/runtime"
-$LicenseFile = "LICENSE"
-$LocaleFile = "locale.csv"
-$MapifyDll = "$RuntimeBuildDir/Mapify.dll"
-$MapifyEditorDll = "$RuntimeBuildDir/MapifyEditor.dll"
+$ZipOutDir = "$ZipWorkDir/Mapify"
 
-New-Item "$ZipInnerDir" -ItemType Directory -Force
-Copy-Item -Force -Path $LicenseFile, $LocaleFile, $MapifyDll, $MapifyEditorDll -Destination $ZipInnerDir
+New-Item "$ZipOutDir" -ItemType Directory -Force
+Copy-Item -Force -Path $FilesToInclude -Destination "$ZipOutDir"
 
 if (!$NoArchive)
 {
-    $VERSION = (Select-String -Pattern '([0-9]+\.[0-9]+\.[0-9]+)' -Path Mapify/Mapify.cs).Matches.Value
-    $FILE_NAME = "$DistDir/Mapify_v$VERSION.zip"
-    Compress-Archive -Update -CompressionLevel Fastest -Path "$ZipRootDir" -DestinationPath "$FILE_NAME"
+    $FILE_NAME = "$DistDir/${modId}_v$modVersion.zip"
+    Compress-Archive -Update -CompressionLevel Fastest -Path "$ZipWorkDir" -DestinationPath "$FILE_NAME"
 }

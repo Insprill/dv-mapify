@@ -24,7 +24,7 @@ namespace Mapify.Editor
                 foreach (Track track in tracks)
                 {
                     Undo.RecordObject(track.gameObject, "Generate Track Name");
-                    track.GenerateName();
+                    track.name = track.LogicName;
                 }
 
             GUILayout.Space(10);

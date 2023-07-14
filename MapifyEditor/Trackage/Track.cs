@@ -61,14 +61,12 @@ namespace Mapify.Editor
         public bool IsSwitch => ParentSwitch != null;
         public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
-        public void GenerateName()
-        {
-            gameObject.name = trackType == TrackType.Road
+        public string LogicName =>
+            trackType == TrackType.Road
                 ? !generateSigns
                     ? $"[#] {name}"
                     : name
                 : $"[Y]_[{stationId}]_[{yardId}-{trackId:D2}-{trackType.LetterId()}]";
-        }
 
         private void OnValidate()
         {

@@ -27,13 +27,13 @@ namespace Mapify.Editor.StateUpdaters
                     switch (track.trackType)
                     {
                         case TrackType.Storage:
-                            station.storageTrackNames.Add(track.name);
+                            station.storageTrackNames.Add(track.LogicName);
                             break;
                         case TrackType.In:
-                            station.transferInTrackNames.Add(track.name);
+                            station.transferInTrackNames.Add(track.LogicName);
                             break;
                         case TrackType.Out:
-                            station.transferOutTrackNames.Add(track.name);
+                            station.transferOutTrackNames.Add(track.LogicName);
                             break;
                     }
                 }

@@ -21,6 +21,8 @@ namespace Mapify.Editor.Utils
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 string destFileName = Path.Combine(GetLinuxTrashPath(), Path.GetFileName(path));
+                if (Directory.Exists(destFileName))
+                    destFileName += $"-{Path.GetRandomFileName()}";
                 if (isDirectory)
                     Directory.Move(path, destFileName);
                 else

@@ -10,7 +10,6 @@ namespace Mapify.Editor.StateUpdaters
     {
         protected override void Update(Scenes scenes)
         {
-            Dictionary<Station, List<WarehouseMachine>> warehouses = scenes.gameContentScene.GetAllComponents<WarehouseMachine>().MapToClosestStation();
             Track[] nonRoadTracks = scenes.railwayScene.GetAllComponents<Track>().Where(t => t.trackType != TrackType.Road).ToArray();
 
             foreach (Station station in scenes.gameContentScene.GetAllComponents<Station>())
@@ -45,14 +44,6 @@ namespace Mapify.Editor.StateUpdaters
                 station.inputCargoGroupsCount = station.inputCargoGroups.Count;
                 station.inputCargoGroups.ForEach(set => set.ToMonoBehaviour(station.gameObject));
                 station.outputCargoGroups.ForEach(set => set.ToMonoBehaviour(station.gameObject));
-
-                #endregion
-
-                #region Warehouse Machines
-
-                station.warehouseMachines = warehouses.TryGetValue(station, out List<WarehouseMachine> machines)
-                    ? machines
-                    : new List<WarehouseMachine>(0);
 
                 #endregion
             }

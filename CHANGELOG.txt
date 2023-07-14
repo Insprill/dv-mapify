@@ -19,6 +19,7 @@ Map Creation Package:
 - Improved readability of the validation menu.
 - Refactored how locomotive spawners work. Refer to the documentation for more information.
 - Removed the ManualShunterBooklet and ManualSteamBooklet store item types.
+- Warehouse machines now must be assigned to Station's manually.
 
 
 0.3.0:

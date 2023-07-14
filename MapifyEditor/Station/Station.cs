@@ -19,6 +19,8 @@ namespace Mapify.Editor
         public Transform teleportLocation;
 
         [Header("Job Generation")]
+        [Tooltip("All warehouse machines associated with this station")]
+        public WarehouseMachine[] warehouseMachines;
         [Tooltip("The area where job booklets should spawn. Not required when using a vanilla station")]
         public BoxCollider bookletSpawnArea;
         [SerializeField]
@@ -50,22 +52,19 @@ namespace Mapify.Editor
         public bool generateShuntingUnload = true;
 
         [Header("Cargo")]
-        // Another workaround for Unity's excuse of a game engine
-        [HideInNormalInspector]
-        public int inputCargoGroupsCount;
-
         [SerializeField]
         internal List<CargoSet> inputCargoGroups;
         [SerializeField]
         internal List<CargoSet> outputCargoGroups;
+        // Another workaround for Unity's excuse of a game engine
+        [HideInNormalInspector]
+        public int inputCargoGroupsCount;
         [HideInInspector]
         public List<string> storageTrackNames;
         [HideInInspector]
         public List<string> transferInTrackNames;
         [HideInInspector]
         public List<string> transferOutTrackNames;
-        [HideInInspector]
-        public List<WarehouseMachine> warehouseMachines;
 
         #region Editor Visualization
 

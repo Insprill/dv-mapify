@@ -15,6 +15,7 @@ If you're upgrading through multiple versions, read the list bottom-up, starting
 ### 0.4.0
 - All `Locomotive Spawner` components must be replaced with `Vanilla Locomotive Spawner`s, and all values must be reassigned.
 - The `ManualShunterBooklet` and `ManualSteamBooklet` store item types have been removed.
+- `Warehouse Machine`s must now be manually assigned to their respective `Station`s.
 
 ### 0.3.0
 - The Unity version has been bumped to 2019.4.40f1.

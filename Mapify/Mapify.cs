@@ -37,9 +37,6 @@ namespace Mapify
                 return false;
             }
 
-            // We load after the LauncherControllerAccess has been initialized, so force a refresh to show the map for the last loaded save.
-            Object.FindObjectOfType<LauncherController>()?.RefreshInterface();
-
             return true;
         }
 

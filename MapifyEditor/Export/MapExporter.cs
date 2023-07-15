@@ -220,7 +220,7 @@ namespace Mapify.Editor
                 Id = mapInfo.name,
                 Version = mapInfo.version,
                 DisplayName = mapInfo.name,
-                ManagerVersion = "0.26.0",
+                ManagerVersion = "0.27.0",
                 HomePage = mapInfo.homePage
             };
             File.WriteAllText(filePath, JsonUtility.ToJson(modInfo));

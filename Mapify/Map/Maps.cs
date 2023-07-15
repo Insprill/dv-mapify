@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using DV;
 using Mapify.Editor;
-using UnityEngine;
+using Newtonsoft.Json;
 using UnityModManagerNet;
 
 namespace Mapify.Map
@@ -71,7 +71,7 @@ namespace Mapify.Map
                 if (!File.Exists(mapInfoPath))
                     continue;
 
-                BasicMapInfo mapInfo = JsonUtility.FromJson<BasicMapInfo>(File.ReadAllText(mapInfoPath));
+                BasicMapInfo mapInfo = JsonConvert.DeserializeObject<BasicMapInfo>(File.ReadAllText(mapInfoPath));
                 if (mapInfo.name == Names.DEFAULT_MAP_NAME)
                 {
                     Mapify.LogError($"Skipping map in '{dir}' due to restricted name: '{Names.DEFAULT_MAP_NAME}'");

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <Import Project="../UserProperties.props" Condition="Exists('../UserProperties.props')" />
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>net48</TargetFramework>
         <LangVersion>7.3</LangVersion>
         <RootNamespace>Mapify</RootNamespace>
     </PropertyGroup>
@@ -10,8 +10,8 @@
         <ProjectReference Include="../MapifyEditor/MapifyEditor.csproj" />
     </ItemGroup>
 
+    <!-- Derail Valley -->
     <ItemGroup>
-        <!-- Derail Valley -->
         <Reference Include="Assembly-CSharp" />
         <Reference Include="CommandTerminal" />
         <Reference Include="DV.Common" />
@@ -27,17 +27,25 @@
         <Reference Include="DV.UserManagement" />
         <Reference Include="DV.Utils" />
         <Reference Include="DV.WeatherSystem" />
-        <!-- Third-party -->
+    </ItemGroup>
+
+    <!-- Mod Loader -->
+    <ItemGroup>
+        <PackageReference Include="UnityModManager" Version="0.27.0" />
+    </ItemGroup>
+
+    <!-- Third-party -->
+    <ItemGroup>
         <Reference Include="AwesomeTechnologies.VegetationStudioPro.Runtime" />
         <Reference Include="BezierCurves" />
         <Reference Include="I2.Localization" />
         <Reference Include="net.smkd.vector3d" />
         <Reference Include="Newtonsoft.Json" />
         <Reference Include="sc.posteffects.runtime" />
-        <!-- Mod Loader -->
-        <Reference Include="0Harmony" />
-        <Reference Include="UnityModManager" />
-        <!-- Unity -->
+    </ItemGroup>
+
+    <!-- Unity -->
+    <ItemGroup>
         <Reference Include="Unity.Collections" />
         <Reference Include="Unity.Postprocessing.Runtime" />
         <Reference Include="Unity.TextMeshPro" />

@@ -1,4 +1,4 @@
-0.x.x:
+0.4.0:
 Runtime:
 - Switched back to Unity Mod Manager.
 - Fixed world maps not updating when changing map.

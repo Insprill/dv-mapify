@@ -8,8 +8,8 @@ namespace Mapify.Editor
         public string Id;
         public string Version;
         public string DisplayName;
-        public string[] LoadAfter;
         public string ManagerVersion;
+        public string[] Requirements;
         public string HomePage;
     }
 }

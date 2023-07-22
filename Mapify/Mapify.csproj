@@ -31,7 +31,7 @@
 
     <!-- Mod Loader -->
     <ItemGroup>
-        <PackageReference Include="UnityModManager" Version="0.27.0" />
+        <PackageReference Include="UnityModManager" Version="0.27.2" />
     </ItemGroup>
 
     <!-- Third-party -->

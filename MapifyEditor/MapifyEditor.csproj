@@ -49,6 +49,6 @@
         <Exec Condition="Exists('$(DvInstallDir)') And '$(IsEditor)' != 'true'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)/Mods')&quot;" />
 
         <!-- Update package version number -->
-        <Exec Condition="'$(OS)' != 'Windows_NT' And '$(IsEditor)' == 'true'" Command="pwsh -Command &quot;((Get-Content -Raw -Path '../info.json' | ConvertFrom-Json).Version | Set-Content -NoNewline -Encoding utf8BOM -Path '../PackageBuilder/Assets/Mapify/version.txt')&quot;" />
+        <Exec Condition="'$(IsEditor)' == 'true'" Command="pwsh -Command &quot;((Get-Content -Raw -Path '../info.json' | ConvertFrom-Json).Version | Set-Content -NoNewline -Encoding utf8NoBOM -Path '../PackageBuilder/Assets/Mapify/version.txt')&quot;" />
     </Target>
 </Project>

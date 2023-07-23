@@ -1,3 +1,8 @@
+0.x.x:
+Runtime:
+- Fixed the main menu not loading if no maps are installed.
+
+
 0.4.0:
 Runtime:
 - Switched back to Unity Mod Manager.

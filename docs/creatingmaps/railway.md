@@ -4,6 +4,8 @@ Creating trackage may seem complicated at first, but you'll get used to it quick
 
 All prefabs mentioned are located in the `Mapify/Prefabs/Trackage` folder.
 
+![Track Pieces](../assets/track-pieces.png)
+
 
 ## Basic Track
 

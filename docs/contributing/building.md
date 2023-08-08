@@ -9,7 +9,7 @@ To build Mapify, you'll need to have some dependencies installed.
 - [.NET 7][dotnet-download]
 - [PowerShell][powershell-download]
 
-If you're running windows, you should already have PowerShell installed.
+If you're running windows, ensure you have Powershell **7** installed.
 If you're on Linux, you should be able to download it from your package manager.
 
 

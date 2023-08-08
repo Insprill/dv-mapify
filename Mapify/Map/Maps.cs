@@ -26,7 +26,7 @@ namespace Mapify.Map
             private set => _loadedMap = value;
         }
 
-        public static string[] AllMapNames { get; private set; }
+        public static string[] AllMapNames { get; private set; } = { DEFAULT_MAP_INFO.name };
         /// <summary>
         ///     name -> (info, mod, directory)
         /// </summary>

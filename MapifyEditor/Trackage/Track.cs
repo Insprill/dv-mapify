@@ -12,6 +12,17 @@ namespace Mapify.Editor
         public const float SNAP_RANGE = 1.0f;
         public const float SNAP_UPDATE_RANGE_SQR = 250000;
 
+        // ReSharper disable MemberCanBePrivate.Global
+        public static readonly Color32 COLOR_ROAD = new Color32(255, 255, 255, 255);
+        public static readonly Color32 COLOR_STORAGE = new Color32(172, 134, 101, 255);
+        public static readonly Color32 COLOR_LOADING = new Color32(0, 0, 128, 255);
+        public static readonly Color32 COLOR_IN = new Color32(50, 240, 50, 255);
+        public static readonly Color32 COLOR_OUT = new Color32(106, 90, 205, 255);
+        public static readonly Color32 COLOR_PARKING = new Color32(200, 235, 0, 255);
+        public static readonly Color32 COLOR_PASSENGER_STORAGE = new Color32(0, 100, 100, 255);
+        public static readonly Color32 COLOR_PASSENGER_LOADING = new Color32(0, 255, 255, 255);
+        // ReSharper restore MemberCanBePrivate.Global
+
         [Header("Visuals")]
         [Tooltip("The age of the track. Older tracks are rougher and more rusted, newer tracks are smoother and cleaner")]
         public TrackAge age;
@@ -75,28 +86,28 @@ namespace Mapify.Editor
             switch (trackType)
             {
                 case TrackType.Road:
-                    Curve.drawColor = new Color32(255, 255, 255, 255);
+                    Curve.drawColor = COLOR_ROAD;
                     break;
                 case TrackType.Storage:
-                    Curve.drawColor = new Color32(172, 134, 101, 255);
+                    Curve.drawColor = COLOR_STORAGE;
                     break;
                 case TrackType.Loading:
-                    Curve.drawColor = new Color32(0, 0, 128, 255);
+                    Curve.drawColor = COLOR_LOADING;
                     break;
                 case TrackType.In:
-                    Curve.drawColor = new Color32(50, 240, 50, 255);
+                    Curve.drawColor = COLOR_IN;
                     break;
                 case TrackType.Out:
-                    Curve.drawColor = new Color32(106, 90, 205, 255);
+                    Curve.drawColor = COLOR_OUT;
                     break;
                 case TrackType.Parking:
-                    Curve.drawColor = new Color32(200, 235, 0, 255);
+                    Curve.drawColor = COLOR_PARKING;
                     break;
                 case TrackType.PassengerStorage:
-                    Curve.drawColor = new Color32(0, 100, 100, 255);
+                    Curve.drawColor = COLOR_PASSENGER_STORAGE;
                     break;
                 case TrackType.PassengerLoading:
-                    Curve.drawColor = new Color32(0, 255, 255, 255);
+                    Curve.drawColor = COLOR_PASSENGER_LOADING;
                     break;
             }
         }

@@ -10,7 +10,7 @@ namespace Mapify.Editor
         public string version;
         public string mapifyVersion;
 
-        [Obsolete("Used before 0.4.0")]
+        [Obsolete("Used before 0.4.0", true)]
         public string mapName {
             set => name = value;
         }

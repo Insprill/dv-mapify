@@ -4,8 +4,6 @@
 
 ### Vortex
 
-#### ⚠️ Notice: The Vortex extension is currently unavailable as it gets updated!
-
 The easiest way to install maps is to use [Vortex][vortex] with the [Derail Valley Support Extension][vortex-dv].
 
 To install a map from Nexus Mods using Vortex, click `Mod Manager Download` instead of `Manual Download` on the `Files` tab of the mod.

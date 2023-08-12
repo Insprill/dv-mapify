@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -121,6 +121,21 @@ namespace Mapify.Editor.Utils
             return Mathf.Max(maxX, maxZ);
         }
 
+        public static void ReparentAllChildren(this Transform transform, Transform newParent)
+        {
+            List<Transform> children = new List<Transform>();
+
+            foreach (Transform child in transform)
+            {
+                children.Add(child);
+            }
+
+            foreach (Transform child in children)
+            {
+                child.parent = newParent;
+            }
+        }
+
         #endregion
 
         #region Misc. Unity Types
@@ -142,6 +157,32 @@ namespace Mapify.Editor.Utils
             float maxX = allBounds.Max(b => b.max.x);
             float maxZ = allBounds.Max(b => b.max.z);
             return (minX, minZ, maxX, maxZ);
+        }
+
+        public static Vector2 Flatten(this Vector3 vector)
+        {
+            return new Vector2(vector.x, vector.z);
+        }
+
+        public static Vector3 Flatten3D(this Vector3 vector)
+        {
+            return new Vector3(vector.x, 0, vector.z);
+        }
+
+        public static Vector3 To3D(this Vector2 vector, float y)
+        {
+            return new Vector3(vector.x, y, vector.y);
+        }
+
+        /// <param name="alpha">If the alpha value should be inverted or not.</param>
+        /// <returns></returns>
+        public static Color Negative(this Color color, bool alpha = false)
+        {
+            return new Color(
+                1.0f - color.r,
+                1.0f - color.g,
+                1.0f - color.b,
+                alpha ? 1.0f - color.a : color.a);
         }
 
         #endregion
@@ -187,6 +228,75 @@ namespace Mapify.Editor.Utils
                 .GroupBy(spawner => spawner.gameObject.GetClosestComponent<Station>())
                 .Where(group => group.Key != null)
                 .ToDictionary(group => group.Key, group => group.ToList());
+        }
+
+        // Switches
+        public static BezierPoint GetJointPoint(this Switch s) => s.ThroughTrack.Curve[0];
+        public static BezierPoint GetThroughPoint(this Switch s) => s.ThroughTrack.Curve[1];
+        public static BezierPoint GetDivergingPoint(this Switch s) => s.DivergingTrack.Curve[1];
+        public static BezierPoint GetDivergeJoinPoint(this Switch s) => s.DivergingTrack.Curve[0];
+
+        // Track
+        /// <summary>
+        /// Returns true if this track starts at grade of 0%.
+        /// </summary>
+        public static bool IsStartLevel(this Track track)
+        {
+            return track.Curve[0].position.y == track.Curve[0].globalHandle2.y;
+        }
+
+        /// <summary>
+        /// Returns true if this track ends at grade of 0%.
+        /// </summary>
+        public static bool IsEndLevel(this Track track)
+        {
+            return track.Curve.Last().position.y == track.Curve.Last().globalHandle1.y;
+        }
+
+        /// <summary>
+        /// Returns the grade at the start of this track.
+        /// </summary>
+        public static float GetGradeAtStart(this Track track)
+        {
+            return MathHelper.GetGrade(track.Curve[0].position, track.Curve[0].globalHandle2);
+        }
+
+        /// <summary>
+        /// Returns the grade at the end of this track.
+        /// </summary>
+        public static float GetGradeAtEnd(this Track track)
+        {
+            return MathHelper.GetGrade(track.Curve.Last().globalHandle1, track.Curve.Last().position);
+        }
+
+        /// <summary>
+        /// The height difference between the starting point and ending point.
+        /// </summary>
+        public static float GetHeightChange(this Track track)
+        {
+            return track.Curve.Last().position.y - track.Curve[0].position.y;
+        }
+
+        public static float GetHorizontalLength(this Track track, float resolution = 0.5f)
+        {
+            float length = 0;
+            BezierCurve curve = track.Curve;
+
+            for (int i = 1; i < curve.pointCount; i++)
+            {
+                length += BezierCurve.ApproximateLength(
+                    curve[i - 1].position.Flatten3D(),
+                    curve[i - 1].globalHandle2.Flatten3D(),
+                    curve[i].position.Flatten3D(),
+                    curve[i].globalHandle1.Flatten3D(), resolution);
+            }
+
+            return length;
+        }
+
+        public static float GetAverageGrade(this Track track, float resolution = 0.5f)
+        {
+            return track.GetHeightChange() / track.GetHorizontalLength(resolution);
         }
 
         #endregion

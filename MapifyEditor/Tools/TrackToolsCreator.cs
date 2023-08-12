@@ -1,0 +1,1108 @@
+using Mapify.Editor.Tools.OptionData;
+using Mapify.Editor.Utils;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+using static Mapify.Editor.Tools.ToolEnums;
+
+namespace Mapify.Editor.Tools
+{
+    /// <summary>
+    /// Class with methods to instantiate track pieces of various shapes and sizes.
+    /// </summary>
+    public static partial class TrackToolsCreator
+    {
+        // Bézier generation.
+        // Separate functions so they can be used for previews, avoiding duplicating the code.
+        /// <summary>
+        /// Creates a cubic bezier curve that is straight.
+        /// </summary>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="length">Horizontal length for the track.</param>
+        /// <param name="endGrade">Grade at the end of the track.</param>
+        /// <returns>
+        /// An array with the points for cubic bezier curves in the format [P0, P1, P2, P3].
+        /// </returns>
+        public static Vector3[][] GenerateStraightBezier(Vector3 attachPoint, Vector3 handlePosition, float length, float endGrade)
+        {
+            // Create in 2D.
+            Vector2 p0 = attachPoint.Flatten();
+            Vector2 dir = (p0 - handlePosition.Flatten()).normalized;
+            Vector2 p3 = p0 + dir * length;
+
+            Vector2 p1 = Vector2.Lerp(p0, p3, MathHelper.OneThird);
+            Vector2 p2 = Vector2.Lerp(p3, p0, MathHelper.OneThird);
+
+            // Determine the grade at the start.
+            float startGrade = MathHelper.GetGrade(handlePosition, attachPoint);
+
+            // To create a smooth change in grade.
+            float heightDif = TrackToolsHelper.CalculateHeightDifference(startGrade, endGrade, length);
+            float handleLength = length * MathHelper.OneThird;
+
+            // Return in 3D.
+            return new Vector3[][] { new Vector3[]
+            {
+                p0.To3D(attachPoint.y),
+                p1.To3D(attachPoint.y + startGrade * handleLength),
+                p2.To3D(attachPoint.y + heightDif - endGrade * handleLength),
+                p3.To3D(attachPoint.y + heightDif)
+            } };
+        }
+
+        /// <summary>
+        /// Creates one or more bezier curves that aproximate a circle.
+        /// </summary>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="orientation">Whether the curve turns left or right.</param>
+        /// <param name="radius">Radius in meters.</param>
+        /// <param name="arc">Arc in degrees.</param>
+        /// <param name="maxArc">Maximum arc allowed before the curve needs to be divided into multiple parts.</param>
+        /// <param name="endGrade">The grade at the end of the track.</param>
+        /// <returns>
+        /// An array with the points for cubic bezier curves in the format [P0, P1, P2, P3].
+        /// </returns>
+        public static Vector3[][] GenerateCurveBeziers(Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float radius, float arc, float maxArc, float endGrade)
+        {
+            bool isLeft = orientation == TrackOrientation.Left;
+
+            // Create in 2D.
+            Vector2 p0 = attachPoint.Flatten();
+            Vector2 dir = (p0 - handlePosition.Flatten()).normalized;
+            Vector2 pivot = p0 + (isLeft ? MathHelper.RotateCCW(dir) : MathHelper.RotateCW(dir)) * radius;
+
+            // Split the bezier for smoother arcs.
+            int arcCount = Mathf.CeilToInt(arc / maxArc);
+            float actualArc = arc / arcCount;
+            float arcLength = radius * actualArc * Mathf.Deg2Rad;
+
+            // Length of the handle to approximate the arc as best as possible.
+            float handleLength = MathHelper.ArcToBezierHandleLength(actualArc * Mathf.Deg2Rad) * radius;
+
+            actualArc = isLeft ? actualArc * Mathf.Deg2Rad : actualArc * -Mathf.Deg2Rad;
+
+            // There's one more control than the number of arcs, so reuse the variable.
+            arcCount++;
+            (Vector2 Back, Vector2 Here, Vector2 Next)[] controls = new (Vector2, Vector2, Vector2)[arcCount];
+
+            // Create controls and their respective handles.
+            for (int i = 0; i < arcCount; i++)
+            {
+                controls[i] = (p0 - dir * handleLength, p0, p0 + dir * handleLength);
+                // Rotate control around pivot to become the next control.
+                p0 = MathHelper.RotateAround(p0, actualArc, pivot);
+                dir = MathHelper.Rotate(dir, actualArc);
+            }
+
+            arcCount--;
+
+            // Determine the grade at the start.
+            float startGrade = MathHelper.GetGrade(handlePosition, attachPoint);
+
+
+            Vector3[][] points = new Vector3[arcCount][];
+            float height = attachPoint.y;
+            float nextgrade;
+            float angle = Mathf.Atan(startGrade);
+            float angleStep = (Mathf.Atan(endGrade) - angle) / (arcCount);
+
+            // Move from 2D to 3D.
+            for (int i = 0; i < arcCount; i++)
+            {
+                points[i] = new Vector3[4];
+                points[i][0] = controls[i].Here.To3D(height);
+                points[i][1] = controls[i].Next.To3D(height + startGrade * handleLength);
+
+                // Apply change to next point.
+                angle += angleStep;
+                nextgrade = Mathf.Tan(angle);
+                height += TrackToolsHelper.CalculateHeightDifference(startGrade, nextgrade, arcLength);
+                startGrade = nextgrade;
+
+                points[i][2] = controls[i + 1].Back.To3D(height - nextgrade * handleLength);
+                points[i][3] = controls[i + 1].Here.To3D(height);
+            }
+
+            return points;
+        }
+
+        // Normal pieces
+
+        // Straights.
+        /// <summary>
+        /// Instantiates a straight <see cref="Track"/> and returns it.
+        /// </summary>
+        /// <param name="prefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="length">Horizontal length for the track.</param>
+        /// <param name="endGrade">Grade at the end of the track.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="Track"/>.</returns>
+        public static Track CreateStraight(Track prefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            float length, float endGrade, bool registerUndo)
+        {
+            // Instantiate track.
+            Track t = Object.Instantiate(prefab);
+            t.gameObject.name = $"Straight [{length}m]";
+            t.transform.parent = parent;
+            t.transform.position = attachPoint;
+
+            // Generate bezier points.
+            Vector3[][] points = GenerateStraightBezier(attachPoint, handlePosition, length, endGrade);
+
+            // Assign the points to the curve.
+            t.Curve[0].position = points[0][0];
+            t.Curve[1].position = points[0][3];
+            t.Curve[0].globalHandle2 = points[0][1];
+            t.Curve[1].globalHandle1 = points[0][2];
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Straight Track");
+            }
+#endif
+
+            return t;
+        }
+
+        /// <summary>
+        /// Instantiates a straight <see cref="Track"/> between 2 points and returns it.
+        /// </summary>
+        /// <param name="prefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="p0">The starting point.</param>
+        /// <param name="p1">The ending point.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="Track"/>.</returns>
+        public static Track CreateStraight2Point(Track prefab, Transform parent, Vector3 p0, Vector3 p1, bool registerUndo)
+        {
+            Track t = Object.Instantiate(prefab);
+            t.transform.parent = parent;
+            t.transform.position = p0;
+            t.gameObject.name = $"Straight [{(p1 - p0).magnitude}m]";
+
+            // Similar to the other but no calculations needed, use the points directly.
+            t.Curve[0].position = p0;
+            t.Curve[1].position = p1;
+            t.Curve[0].globalHandle2 = Vector3.Lerp(p0, p1, MathHelper.OneThird);
+            t.Curve[1].globalHandle1 = Vector3.Lerp(p1, p0, MathHelper.OneThird);
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Straight Track");
+            }
+#endif
+
+            return t;
+        }
+
+        // Curves.
+        /// <summary>
+        /// Instantiates a curved <see cref="Track"/> and returns it.
+        /// </summary>
+        /// <param name="prefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="orientation">Whether the curve turns left or right.</param>
+        /// <param name="radius">Radius in meters.</param>
+        /// <param name="arc">Arc in degrees.</param>
+        /// <param name="maxArc">Maximum arc allowed before the curve needs to be divided into multiple parts.</param>
+        /// <param name="endGrade">The grade at the end of the track.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="Track"/>.</returns>
+        public static Track CreateCurve(Track prefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float radius, float arc, float maxArc, float endGrade, bool registerUndo)
+        {
+            // Instantiate track.
+            Track t = Object.Instantiate(prefab);
+            t.gameObject.name = $"Curve [{orientation}]/[R:{radius}m]/[{arc}°]";
+            t.transform.parent = parent;
+            t.transform.position = attachPoint;
+
+            Vector3[][] generated = GenerateCurveBeziers(attachPoint, handlePosition, orientation, radius, arc, maxArc, endGrade);
+
+            for (int i = 1; i < generated.Length; i++)
+            {
+                t.Curve.AddPointAt(Vector3.zero);
+                t.Curve[i].handleStyle = BezierPoint.HandleStyle.Connected;
+            }
+
+            t.Curve[0].handleStyle = BezierPoint.HandleStyle.Broken;
+            t.Curve.Last().handleStyle = BezierPoint.HandleStyle.Broken;
+
+            for (int i = 1; i < t.Curve.pointCount; i++)
+            {
+                t.Curve[i - 1].position = generated[i - 1][0];
+                t.Curve[i].position = generated[i - 1][3];
+                t.Curve[i - 1].globalHandle2 = generated[i - 1][1];
+                t.Curve[i].globalHandle1 = generated[i - 1][2];
+            }
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Curve Track");
+            }
+#endif
+
+            return t;
+        }
+
+        // Switches.
+        /// <summary>
+        /// Instantiates a <see cref="Switch"/>.
+        /// </summary>
+        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new switch.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="orientation">Wether the diverging track should exit to the left or right.</param>
+        /// <param name="connectingPoint">Which of the 3 exits of the switch is connected to the attachment point.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="Track"/>.</returns>
+        /// <remarks>
+        /// Derail Valley switches are static assets, and their tracks cannot be changed.
+        /// <para>The switches are also always made at a grade of <b>0%</b>.</para> 
+        /// </remarks>
+        public static Switch CreateSwitch(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, SwitchPoint connectingPoint, bool registerUndo)
+        {
+            // Create switch object.
+            Switch s = Object.Instantiate(orientation == TrackOrientation.Left ? leftPrefab : rightPrefab);
+            s.gameObject.name = $"Switch [{orientation}]";
+            s.transform.parent = parent;
+            // Helper variables.
+            Vector3 pivot;
+            Quaternion rot;
+            Quaternion rotRoot;
+
+            // Rotate the switch based on the connecting point.
+            if (connectingPoint == SwitchPoint.Joint)
+            {
+                rotRoot = Quaternion.identity;
+                pivot = Vector3.zero;
+            }
+            else
+            {
+                BezierPoint bp;
+
+                if (connectingPoint == SwitchPoint.Through)
+                {
+                    bp = s.GetThroughPoint();
+                }
+                else
+                {
+                    bp = s.GetDivergingPoint();
+                }
+
+                rotRoot = Quaternion.Inverse(Quaternion.LookRotation(bp.globalHandle1 - bp.position));
+                pivot = bp.position;
+            }
+
+            rot = Quaternion.LookRotation(attachPoint - handlePosition);
+
+            s.transform.position = rot * (rotRoot * -pivot) + attachPoint;
+            s.transform.rotation = rot * rotRoot;
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(s.gameObject, "Create Switch");
+            }
+#endif
+
+            return s;
+        }
+
+
+        // Yards.
+        /// <summary>
+        /// Creates a yard with similar shape to the ones present in the base game.
+        /// </summary>
+        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the first switch.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the first switch.</param>
+        /// <param name="orientation">Which side the first diverging track should exit to.</param>
+        /// <param name="trackDistance">The distance between the sidings.</param>
+        /// <param name="mainSideTracks">Number of tracks to the first diverging side (minimum of 1).</param>
+        /// <param name="otherSideTracks">Number of tracks to the opposite side to the diverging track.</param>
+        /// <param name="alternateSides">Whether both ends should have diverging tracks to the same side.</param>
+        /// <param name="minimumLength">The smallest length of one of the straight sections of a siding.</param>
+        /// <param name="stationId">The ID of the station this yard belongs to.</param>
+        /// <param name="yardId">The ID of this yard.</param>
+        /// <param name="startingTrackId">The starting number of the sidings.</param>
+        /// <param name="sidings">An array with all sidings.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
+        /// <remarks>
+        /// For yards with the same number of tracks on both sides, it is recommended to set <paramref name="alternateSides"/> to <c>true</c>.
+        /// This allows for yards with a shorter overall length, and with similar lengths on both sides. If the number of sides is different,
+        /// it is a good idea to set it to <c>false</c> instead, to maximise track length on the side with more tracks. It is also recommended
+        /// to have more tracks on the side defined by <paramref name="orientation"/> for the same reason.
+        /// <para>
+        /// The <paramref name="stationId"/> is not the name of the station. Using the base game as example, Oil Well North is <c>OWN</c>, and
+        /// Sawmill is <c>SW</c>.
+        /// </para>
+        /// <para>
+        /// The <paramref name="yardId"/> is the letter of this yard. It is recommended to start with <c>B</c>, leaving <c>A</c> to be used for
+        /// tracks not belonging to any yard in a station.
+        /// </para>
+        /// <para>
+        /// The <paramref name="startingTrackId"/> is the lowest track number in the yard. Normally this value is <c>1</c>, but in situations where
+        /// 2 yards are combined into one, it might be necessary to start the 2nd yard on a higher number (in the base game, the Harbour's D yard
+        /// is an example of this, where tracks D6O and D7L are separate from the rest).
+        /// </para>
+        /// </remarks>
+        /// <seealso cref="CreateSwitch(Switch, Switch, Transform, Vector3, Vector3, TrackOrientation, SwitchPoint, bool)"/>
+        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool alternateSides, float minimumLength,
+            string stationId, char yardId, byte startingTrackId, out Track[] sidings, bool registerUndo)
+        {
+            if (mainSideTracks < 1)
+            {
+                throw new System.ArgumentOutOfRangeException(nameof(mainSideTracks), "Main side tracks must be at least 1.");
+            }
+
+            Vector3 dir = (attachPoint - handlePosition).normalized;
+            Switch start;
+            Switch end;
+            Switch s;
+            Track t;
+
+            // Points to connect each yard track.
+            List<BezierPoint> side1 = new List<BezierPoint>();
+            List<BezierPoint> side2 = new List<BezierPoint>();
+            List<BezierPoint> side3 = new List<BezierPoint>();
+            List<BezierPoint> side4 = new List<BezierPoint>();
+            Track[] merge1 = new Track[0];
+            Track[] merge2 = new Track[0];
+            Track[] merge3 = new Track[0];
+            Track[] merge4 = new Track[0];
+            List<Track> storageTracks = new List<Track>();
+            BezierPoint mid;
+
+            // Create an empty gameobject to be the parent of the entry side.
+            GameObject startObj = new GameObject();
+            startObj.transform.position = attachPoint;
+
+            // Create the switches for the first side.
+            side1 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, startObj.transform, attachPoint, handlePosition,
+                orientation, mainSideTracks, trackDistance, out s, out merge1);
+            mid = s.GetThroughPoint();
+            start = s;
+
+            // Check if the other side has any tracks to make.
+            if (otherSideTracks > 0)
+            {
+                // Create a straight to separate the switches and then the other side.
+                t = CreateStraight(trackPrefab, startObj.transform, mid.position, mid.globalHandle1,
+                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
+                side2 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, startObj.transform,
+                    t.Curve[1].position, t.Curve[1].globalHandle1, FlipOrientation(orientation), otherSideTracks,
+                    trackDistance, out s, out merge2);
+                mid = s.GetThroughPoint();
+            }
+
+            // Store the start of the middle track before we do the other side.
+            BezierPoint midStart = mid;
+
+            // Create an empty gameobject to be the parent of the entry side.
+            GameObject endObj = new GameObject();
+            endObj.transform.position = attachPoint;
+
+            // Repeat the same thing for the other side. Depending if alternate sides is set,
+            // start from the opposite side instead of the main side.
+            // There's no need to alternate if there's no tracks on the other side.
+            if (alternateSides && otherSideTracks > 0)
+            {
+                side4 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform, attachPoint, attachPoint + dir,
+                    orientation, otherSideTracks, trackDistance, out s, out merge4);
+                mid = s.GetThroughPoint();
+                // Final switch, return it later.
+                end = s;
+
+                // Create a straight to separate the switches and then the other side.
+                t = CreateStraight(trackPrefab, endObj.transform, mid.position, mid.globalHandle1,
+                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
+                side3 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform,
+                    t.Curve[1].position, t.Curve[1].globalHandle1, FlipOrientation(orientation), mainSideTracks,
+                    trackDistance, out s, out merge3);
+                mid = s.GetThroughPoint();
+            }
+            else
+            {
+                side3 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform, attachPoint, attachPoint + dir,
+                    FlipOrientation(orientation), mainSideTracks, trackDistance, out s, out merge3);
+                mid = s.GetThroughPoint();
+                // Final switch, return it later.
+                end = s;
+
+                // Check if the other side has any tracks to make.
+                if (otherSideTracks > 0)
+                {
+                    // Create a straight to separate the switches and then the other side.
+                    t = CreateStraight(trackPrefab, end.transform, mid.position, mid.globalHandle1,
+                        TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
+                    side4 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform,
+                        t.Curve[1].position, t.Curve[1].globalHandle1, orientation, otherSideTracks, trackDistance, out s, out merge4);
+                    mid = s.GetThroughPoint();
+                }
+            }
+
+            // Create an empty GameObject to be the parent of the whole yard.
+            GameObject yardObj = new GameObject($"Yard [Station:{stationId}]/[ID:{yardId}]");
+            yardObj.transform.parent = parent;
+            yardObj.transform.position = attachPoint;
+            yardObj.transform.rotation = Quaternion.LookRotation(attachPoint - handlePosition);
+
+            float dist;
+
+            // Check the distance along the direction of the yard and if there's
+            // not enough distance, move the whole yard half further away.
+            // Main side.
+            for (int i = side1.Count - 1; i >= 0; i--)
+            {
+                dist = Vector3.Dot(side3[i].position - side1[i].position, dir);
+
+                if (dist < minimumLength)
+                {
+                    endObj.transform.position -= dir * (dist - minimumLength);
+                }
+            }
+
+            // Middle track.
+            dist = Vector3.Dot(mid.position - midStart.position, dir);
+
+            if (dist < minimumLength)
+            {
+                endObj.transform.position -= dir * (dist - minimumLength);
+            }
+
+            // Other side.
+            for (int i = 0; i < side2.Count; i++)
+            {
+                dist = Vector3.Dot(side4[i].position - side2[i].position, dir);
+
+                if (dist < minimumLength)
+                {
+                    endObj.transform.position -= dir * (dist - minimumLength);
+                }
+            }
+
+            // Connect the 2 sides.
+            // Main side.
+            for (int i = side1.Count - 1; i >= 0; i--)
+            {
+                if ((side1[i].position - side3[i].position).sqrMagnitude > 0)
+                {
+                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side1[i].position, side3[i].position, false);
+                }
+                else
+                {
+                    t = null;
+                }
+
+                // Merge the first with the curves so it reaches the switch.
+                if (i == side1.Count - 1)
+                {
+                    t = TrackToolsEditor.MergeTracks(new Track[] { merge1[0], merge1[1], t, merge3[1], merge3[0] }, 0.01f, false)[0];
+                    t.transform.parent = yardObj.transform;
+                }
+
+                AssignYardProperties(t, stationId, yardId, startingTrackId);
+                startingTrackId++;
+                storageTracks.Add(t);
+            }
+
+            // Middle track.
+            t = CreateStraight2Point(trackPrefab, yardObj.transform, midStart.position, mid.position, false);
+            AssignYardProperties(t, stationId, yardId, startingTrackId);
+            startingTrackId++;
+            storageTracks.Add(t);
+
+            // Other side.
+            for (int i = 0; i < side2.Count; i++)
+            {
+                if ((side2[i].position - side4[i].position).sqrMagnitude > 0)
+                {
+                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side2[i].position, side4[i].position, false);
+                }
+                else
+                {
+                    t = null;
+                }
+
+                // Merge the last with the curves so it reaches the switch.
+                if (i == side2.Count - 1)
+                {
+                    t = TrackToolsEditor.MergeTracks(new Track[] { merge2[0], merge2[1], t, merge4[1], merge4[0] }, 0.01f, false)[0];
+                    t.transform.parent = yardObj.transform;
+                }
+
+                AssignYardProperties(t, stationId, yardId, startingTrackId);
+                startingTrackId++;
+                storageTracks.Add(t);
+            }
+
+            // Kinda ugly, moving all children from both sides to the main yard object,
+            // but it simplifies yard length.
+            startObj.transform.ReparentAllChildren(yardObj.transform);
+            endObj.transform.ReparentAllChildren(yardObj.transform);
+
+            Object.DestroyImmediate(startObj);
+            Object.DestroyImmediate(endObj);
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(yardObj, "Created Yard");
+            }
+#endif
+
+            sidings = storageTracks.ToArray();
+            return new Switch[] { start, end };
+        }
+
+        /// <summary>
+        /// Creates a yard with similar shape to the ones present in the base game.
+        /// </summary>
+        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the first switch.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the first switch.</param>
+        /// <param name="orientation">Which side the first diverging track should exit to.</param>
+        /// <param name="trackDistance">The distance between the sidings.</param>
+        /// <param name="yardOptions">Settings for the creation of the yard.</param>
+        /// <param name="sidings">An array with all sidings.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
+        /// <seealso cref="CreateYard(Switch, Switch, Track, Transform, Vector3, Vector3, TrackOrientation, float, int, int, bool, float, string, char, byte, bool)"/>
+        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float trackDistance, YardOptions yardOptions, out Track[] sidings, bool registerUndo)
+        {
+            return CreateYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation,
+                trackDistance, yardOptions.TracksMainSide, yardOptions.TracksOtherSide, yardOptions.AlternateSides, yardOptions.MinimumLength,
+                yardOptions.StationId, yardOptions.YardId, yardOptions.StartTrackId, out sidings, registerUndo);
+        }
+
+        // Switches on each side of the yard.
+        private static List<BezierPoint> CreateSwitchSprawl(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
+            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, int sideTracks, float trackDistance, out Switch start,
+            out Track[] endMerge)
+        {
+            // Starting switch.
+            // Switch stands are all on the outside of the yard.
+            start = CreateSwitch(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, SwitchPoint.Joint, false);
+            start.standSide = Switch.StandSide.DIVERGING;
+            start.defaultState = Switch.StandSide.THROUGH;
+            Switch s = start;
+            BezierPoint now = s.GetDivergingPoint();
+
+            // Points where each track will be.
+            List<BezierPoint> points = new List<BezierPoint>();
+            Track t;
+
+            // Flip sides.
+            orientation = FlipOrientation(orientation);
+
+            // Lengths of the connecting tracks so that the yard tracks themselves
+            // are spaced at the set distance.
+            float length = TrackToolsHelper.CalculateLengthFromDistanceYardCentre(leftPrefab, trackDistance);
+            float sideL = TrackToolsHelper.CalculateLengthFromDistanceYardSides(leftPrefab, trackDistance);
+
+            // Create a new switch for each extra track.
+            for (int i = 1; i < sideTracks; i++)
+            {
+                t = CreateStraight(trackPrefab, parent, now.position, now.globalHandle1, length, 0, false);
+                s = CreateSwitch(leftPrefab, rightPrefab, parent, t.Curve[1].position, t.Curve[1].globalHandle1,
+                    orientation, SwitchPoint.Joint, false);
+                now = s.GetThroughPoint();
+                points.Add(s.GetDivergingPoint());
+                s.standSide = Switch.StandSide.THROUGH;
+                s.defaultState = Switch.StandSide.THROUGH;
+                length = sideL;
+            }
+
+            // Final track gets no switch.
+            // Also store the final 2 tracks (straight and curve) to be merged with the siding, to increase its size.
+            endMerge = new Track[2];
+            t = CreateStraight(trackPrefab, parent, now.position, now.globalHandle1, length, 0, false);
+            endMerge[0] = t;
+            t = CreateSwitchCurve(leftPrefab, rightPrefab, parent, t.Curve[1].position, t.Curve[1].globalHandle1,
+                orientation, SwitchPoint.Joint, false);
+            endMerge[1] = t;
+            points.Add(t.Curve[1]);
+
+            return points;
+        }
+
+        // Assign the properties to the yard track.
+        private static void AssignYardProperties(Track t, string stationId, char yardId, byte trackId)
+        {
+            t.name = $"Track [{yardId}{trackId}S]/[{t.Curve.length}m]";
+            t.trackId = trackId;
+            t.yardId = yardId;
+            t.stationId = stationId;
+            t.trackType = TrackType.Storage;
+            // Colour isn't updated until OnValidate() is called so force it to be updated.
+            t.Curve.drawColor = new Color32(172, 134, 101, 255);
+        }
+
+        // Turntables.
+        /// <summary>
+        /// Instantiates a <see cref="Turntable"/> and returns it.
+        /// </summary>
+        /// <param name="turntablePrefab">The prefab of the turntable.</param>
+        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="radius">The radius of the turntable's track.</param>
+        /// <param name="depth">How deep the turntable should be spawned to align the track.</param>
+        /// <param name="rotationOffset">The turntable's rotation in relation to the attachment point.</param>
+        /// <param name="tracksOffset">The offset rotation of the exit tracks.</param>
+        /// <param name="angleBetweenExits">The angle between each exit track.</param>
+        /// <param name="exitTrackCount">The number of exit tracks.</param>
+        /// <param name="exitTrackLength">The length of the exit tracks.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <param name="exitTracks">All the exit tracks created.</param>
+        /// <returns>The instantiated <see cref="Turntable"/>.</returns>
+        public static Turntable CreateTurntable(Turntable turntablePrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            float radius, float depth, float rotationOffset, float tracksOffset, float angleBetweenExits, int exitTrackCount, float exitTrackLength,
+            bool registerUndo, out Track[] exitTracks)
+        {
+            // Helper variables for the turntable.
+            Vector3 dir = (attachPoint - handlePosition).normalized;
+            Vector3 pivot = attachPoint + dir * radius;
+
+            // Create the turntable.
+            Turntable tt = Object.Instantiate(turntablePrefab);
+            tt.name = "Turntable";
+            tt.transform.parent = parent;
+            tt.transform.position = pivot - new Vector3(0, depth, 0);
+            tt.transform.rotation = Quaternion.AngleAxis(rotationOffset, Vector3.up) * Quaternion.LookRotation(dir);
+
+#if UNITY_EDITOR
+            int undoGroup = 0;
+
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(tt.gameObject, "Create Turntable");
+                undoGroup = Undo.GetCurrentGroup();
+            }
+#endif
+
+            // Helper variables for the exit tracks.
+            Quaternion rotRoot = Quaternion.AngleAxis(rotationOffset, Vector3.up);
+            Vector3 rotDir = Quaternion.AngleAxis(tracksOffset, Vector3.up) * (rotRoot * dir);
+            Quaternion rot = Quaternion.AngleAxis(angleBetweenExits, Vector3.up);
+
+            exitTracks = new Track[exitTrackCount];
+
+            for (int i = 0; i < exitTrackCount; i++)
+            {
+                // Create a flat straight track for each exit.
+                exitTracks[i] = CreateStraight(trackPrefab, parent, pivot + rotDir * radius, pivot - rotDir,
+                    exitTrackLength, 0, registerUndo);
+                rotDir = rot * rotDir;
+            }
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.CollapseUndoOperations(undoGroup);
+                Undo.SetCurrentGroupName("Create Turntable");
+            }
+#endif
+
+            return tt;
+        }
+
+        /// <summary>
+        /// Instantiates a <see cref="Turntable"/> and returns it.
+        /// </summary>
+        /// <param name="turntablePrefab">The prefab of the turntable.</param>
+        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="turntableOptions">Settings for the creation of the turntable.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <param name="exitTracks">All the exit tracks created.</param>
+        /// <returns>The instantiated <see cref="Turntable"/>.</returns>
+        public static Turntable CreateTurntable(Turntable turntablePrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TurntableOptions turntableOptions, bool registerUndo, out Track[] exitTracks)
+        {
+            return CreateTurntable(turntablePrefab, trackPrefab, parent, attachPoint, handlePosition, turntableOptions.TurntableRadius,
+                turntableOptions.TurntableDepth, turntableOptions.RotationOffset, turntableOptions.TracksOffset, turntableOptions.AngleBetweenExits,
+                turntableOptions.ExitTrackCount, turntableOptions.ExitTrackLength, registerUndo, out exitTracks);
+        }
+
+        // Special pieces
+
+        /// <summary>
+        /// Instantiates a <see cref="BufferStop"/> and returns it.
+        /// </summary>
+        /// <param name="prefab">Buffer prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the buffer.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="BufferStop"/>.</returns>
+        public static BufferStop CreateBuffer(BufferStop prefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition, bool registerUndo)
+        {
+            BufferStop buffer = Object.Instantiate(prefab);
+            buffer.transform.parent = parent;
+            buffer.transform.position = attachPoint;
+            buffer.transform.rotation = Quaternion.LookRotation(handlePosition - attachPoint);
+            buffer.gameObject.name = "Buffer";
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(buffer.gameObject, "Create Buffer");
+            }
+#endif
+
+            return buffer;
+        }
+
+        /// <summary>
+        /// Instantiates the diverging track of a <see cref="Switch"/> only.
+        /// </summary>
+        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="orientation">Which side the curve turns to.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="Track"/>.</returns>
+        public static Track CreateSwitchCurve(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, SwitchPoint connectingPoint, bool registerUndo)
+        {
+            Track t;
+            if (orientation == TrackOrientation.Left)
+            {
+                t = Object.Instantiate(leftPrefab.DivergingTrack);
+            }
+            else
+            {
+                t = Object.Instantiate(rightPrefab.DivergingTrack);
+            }
+            Switch s = orientation == TrackOrientation.Left ? leftPrefab : rightPrefab;
+
+            Vector3 offset = -t.Curve[0].localPosition;
+
+            t.Curve[0].localPosition += offset;
+            t.Curve[1].localPosition += offset;
+
+            // Helper variables.
+            Vector3 pivot;
+            Quaternion rot;
+            Quaternion rotRoot;
+
+            // Rotate the switch based on the connecting point.
+            if (connectingPoint == SwitchPoint.Joint)
+            {
+                rotRoot = Quaternion.identity;
+                pivot = Vector3.zero;
+            }
+            else
+            {
+                BezierPoint bp;
+
+                if (connectingPoint == SwitchPoint.Through)
+                {
+                    bp = s.GetThroughPoint();
+                }
+                else
+                {
+                    bp = s.GetDivergingPoint();
+                }
+
+                rotRoot = Quaternion.Inverse(Quaternion.LookRotation(bp.globalHandle1 - bp.position));
+                pivot = bp.position;
+            }
+
+            rot = Quaternion.LookRotation(attachPoint - handlePosition);
+
+            t.transform.parent = parent;
+            t.transform.position = rot * (rotRoot * -pivot) + attachPoint;
+            t.transform.rotation = rot * rotRoot;
+            t.name = "Diverging Curve";
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Switch Curve");
+            }
+#endif
+
+            return t;
+        }
+
+        /// <summary>
+        /// Instantiates a <see cref="Track"/> that smoothly connects 2 <see cref="BezierPoint"/>.
+        /// </summary>
+        /// <param name="prefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="p0">The starting point of the track.</param>
+        /// <param name="p1">The ending point of the track.</param>
+        /// <param name="useHandle2Start">Which of <paramref name="p0"/>'s handles to use.</param>
+        /// <param name="useHandle2End">Which of <paramref name="p1"/>'s handles to use.</param>
+        /// <param name="lengthMultiplier">The multiplier for the final handle length.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="Track"/>.</returns>
+        public static Track CreateConnect2Point(Track prefab, Transform parent, BezierPoint p0, BezierPoint p1,
+            bool useHandle2Start, bool useHandle2End, float lengthMultiplier, bool registerUndo)
+        {
+            return CreateConnect2Point(prefab, parent, p0.position, p1.position,
+                useHandle2Start ? p0.globalHandle2 : p0.globalHandle1,
+                useHandle2End ? p1.globalHandle2 : p1.globalHandle1,
+                lengthMultiplier,
+                registerUndo);
+        }
+
+        /// <summary>
+        /// Instantiates a <see cref="Track"/> that smoothly connects 2 points.
+        /// </summary>
+        /// <param name="prefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="p0">The starting point of the track.</param>
+        /// <param name="p1">The ending point of the track.</param>
+        /// <param name="h0">The handle at the starting point.</param>
+        /// <param name="h1">The handle at the ending point.</param>
+        /// <param name="lengthMultiplier">The multiplier for the final handle length.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="Track"/>.</returns>
+        public static Track CreateConnect2Point(Track prefab, Transform parent, Vector3 p0, Vector3 p1,
+            Vector3 h0, Vector3 h1, float lengthMultiplier, bool registerUndo)
+        {
+            // One third of the distance is a good base length for smoothing.
+            float length = (p0 - p1).magnitude * MathHelper.OneThird * lengthMultiplier;
+            // Pick the correct handles.
+            h0 = (h0 - p0).normalized * length;
+            h1 = (h1 - p1).normalized * length;
+
+            Track t = Object.Instantiate(prefab);
+            t.transform.parent = parent;
+            t.transform.position = p0;
+
+            t.Curve[0].position = p0;
+            t.Curve[1].position = p1;
+            t.Curve[0].globalHandle2 = p0 - h0;
+            t.Curve[1].globalHandle1 = p1 - h1;
+
+            t.gameObject.name = $"Connecting Track [{t.Curve.length:F3}m]";
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Connecting Track");
+            }
+#endif
+
+            return t;
+        }
+
+        /// <summary>
+        /// Creates a crossover.
+        /// </summary>
+        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="orientation">The side of the parallel track.</param>
+        /// <param name="trackDistance">The distance between the parallel tracks.</param>
+        /// <param name="trailing">Whether to the crossover is in front or comes from behind.</param>
+        /// <param name="switchDistance">The distance between the switches on the same track.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>An array with the <see cref="Switch"/> at the attachment point (index <c>0</c>) and the other <see cref="Switch"/> (index <c>1</c>).</returns>
+        public static Switch[] CreateCrossover(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
+            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, bool trailing,
+            float switchDistance, bool registerUndo)
+        {
+            GameObject crossObj = new GameObject($"Crossover [{orientation}]");
+            crossObj.transform.parent = parent;
+            crossObj.transform.position = attachPoint;
+
+            SwitchPoint sp;
+
+            if (trailing)
+            {
+                sp = SwitchPoint.Through;
+            }
+            else
+            {
+                sp = SwitchPoint.Joint;
+            }
+
+            Switch s1 = CreateSwitch(leftPrefab, rightPrefab, crossObj.transform,
+                attachPoint, handlePosition, orientation, sp, false);
+            BezierPoint bp1 = s1.GetDivergingPoint();
+
+            Vector3 point = s1.GetThroughPoint().position;
+            Vector3 dir = (point - s1.GetJointPoint().position).normalized;
+
+            Vector3 offset = (orientation == TrackOrientation.Left ?
+                MathHelper.RotateCCW(dir.Flatten()) :
+                MathHelper.RotateCW(dir.Flatten())).To3D(0) * trackDistance;
+
+            point = point + (dir * switchDistance) + offset;
+
+            Switch s2 = CreateSwitch(leftPrefab, rightPrefab, crossObj.transform,
+                point, point - dir, orientation, SwitchPoint.Through, false);
+            BezierPoint bp2 = s2.GetDivergingPoint();
+
+            CreateConnect2Point(trackPrefab, crossObj.transform, bp1, bp2, false, false, 1.0f, false);
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(crossObj, "Create Crossover");
+            }
+#endif
+
+            return new Switch[] { s1, s2 };
+        }
+
+        /// <summary>
+        /// Creates a scissors crossover (2 crossovers in the same place).
+        /// </summary>
+        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="orientation">The side of the parallel track.</param>
+        /// <param name="trackDistance">The distance between the parallel tracks.</param>
+        /// <param name="switchDistance">The distance between the switches on the same track.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>
+        /// An array of <see cref="Switch"/>es in the following order: [0] attach [1] opposite to 0 [2] next to 0 [3] opposite to 2.
+        /// </returns>
+        public static Switch[] CreateScissorsCrossover(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
+            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, float switchDistance, bool registerUndo)
+        {
+            // Create 2 crossovers offset from eachother.
+            var c1 = CreateCrossover(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation,
+                trackDistance, false, switchDistance, false);
+
+            Vector3 dir = (attachPoint - handlePosition).normalized;
+
+            Vector3 offset = (orientation == TrackOrientation.Left ?
+                MathHelper.RotateCCW(dir.Flatten()) :
+                MathHelper.RotateCW(dir.Flatten())).To3D(0) * trackDistance;
+
+            var c2 = CreateCrossover(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint + offset, handlePosition + offset,
+                FlipOrientation(orientation), trackDistance, false, switchDistance, false);
+
+            // Reparent the 2nd crossover's pieces to the first, and rename.
+            var t1 = c1[0].transform.parent;
+            var t2 = c2[0].transform.parent;
+
+            t2.ReparentAllChildren(t1);
+            Object.DestroyImmediate(t2.gameObject);
+            t1.gameObject.name = "Scissors Crossover";
+
+            // Join the 2 crossovers.
+            CreateConnect2Point(trackPrefab, t1, c1[0].GetThroughPoint(), c2[1].GetThroughPoint(), false, false, 1.0f, false);
+            CreateConnect2Point(trackPrefab, t1, c2[0].GetThroughPoint(), c1[1].GetThroughPoint(), false, false, 1.0f, false);
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(t1.gameObject, "Create Scissors Crossover");
+            }
+#endif
+
+            // Return all 4 switches.
+            return new Switch[] { c1[0], c1[1], c2[0], c2[1] };
+        }
+
+        /// <summary>
+        /// Creates a double slip.
+        /// </summary>
+        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the track.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the track.</param>
+        /// <param name="orientation">The side to which the first switch turns to.</param>
+        /// <param name="crossAngle">The angle at which the 2 middle tracks cross eachother.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>
+        /// An array of <see cref="Switch"/>es in the following order: [0] attach [1] diverging attach [2] opposite to 0 [3] opposite to 1.
+        /// </returns>
+        public static Switch[] CreateDoubleSlip(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
+            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float crossAngle, bool registerUndo)
+        {
+            // Create the parent object.
+            GameObject obj = new GameObject("Double Slip");
+            obj.transform.parent = parent;
+            obj.transform.position = attachPoint;
+
+            // Double slips use the switch radius for the curve.
+            float radius = TrackToolsHelper.CalculateSwitchRadius(leftPrefab);
+            // The minimum angle of the slip is double that of a single switch.
+            float minAngle = TrackToolsHelper.CalculateSwitchAngle(leftPrefab) * Mathf.Rad2Deg;
+            float arc = Mathf.Clamp(crossAngle - (minAngle * 2.0f), 0.1f, 90.0f - (minAngle * 2.0f));
+            BezierPoint bp;
+
+            // First side.
+            // Creates a switch, a curve, and then another switch connected through its diverging track.
+            Switch s00 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, attachPoint, handlePosition, orientation, SwitchPoint.Joint, false);
+            bp = s00.GetDivergingPoint();
+            bp = CreateCurve(trackPrefab, obj.transform, bp.position, bp.globalHandle1, orientation, radius, arc, 180.0f, 0, false).Curve.Last();
+            Switch s01 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
+                FlipOrientation(orientation), SwitchPoint.Diverging, false);
+
+            // Calculate the middle crossover's position by interesecting the 2 through tracks.
+            bp = s00.GetJointPoint();
+            Vector3 dir = bp.globalHandle2 - bp.position;
+            bp = s01.GetJointPoint();
+            Vector3 mid = MathHelper.LineLineIntersection(
+                attachPoint.Flatten(), (attachPoint + dir).Flatten(),
+                bp.position.Flatten(), bp.globalHandle2.Flatten()).To3D(attachPoint.y);
+            Vector3 next = MathHelper.MirrorAround(attachPoint, mid);
+
+            // Repeat the process for the other side.
+            Switch s10 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, next, next + dir, orientation, SwitchPoint.Joint, false);
+            bp = s10.GetDivergingPoint();
+            bp = CreateCurve(trackPrefab, obj.transform, bp.position, bp.globalHandle1, orientation, radius, arc, 180.0f, 0, false).Curve.Last();
+            Switch s11 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
+                FlipOrientation(orientation), SwitchPoint.Diverging, false);
+
+            CreateConnect2Point(trackPrefab, obj.transform, s00.GetThroughPoint(), s10.GetThroughPoint(), false, false, 1.0f, false);
+            CreateConnect2Point(trackPrefab, obj.transform, s01.GetThroughPoint(), s11.GetThroughPoint(), false, false, 1.0f, false);
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(obj, "Create Double Slip");
+            }
+#endif
+
+            return new Switch[] { s00, s01, s10, s11 };
+        }
+    }
+}

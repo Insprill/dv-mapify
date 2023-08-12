@@ -9,7 +9,8 @@ namespace Mapify.Editor
         DH4 = 10,
         DM3 = 20,
         S282A = 30,
-        S282B = 31
+        S282B = 31,
+        S060 = 40
     }
 
     public static class VanillaRollingStockTypeExtensions
@@ -23,6 +24,7 @@ namespace Mapify.Editor
                 VanillaRollingStockType.DM3 => "LocoDM3",
                 VanillaRollingStockType.S282A => "LocoS282A",
                 VanillaRollingStockType.S282B => "LocoS282B",
+                VanillaRollingStockType.S060 => "LocoS060",
                 _ => throw new ArgumentOutOfRangeException(nameof(vanillaRollingStockType), vanillaRollingStockType, null)
             };
         }

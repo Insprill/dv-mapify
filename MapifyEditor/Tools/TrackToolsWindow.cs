@@ -84,8 +84,7 @@ namespace Mapify.Editor.Tools
         private int _sampleCount = 8;
 
         // Contents for the tool selection.
-        private readonly GUIContent[] _modeContents = new GUIContent[]
-        {
+        private readonly GUIContent[] _modeContents = {
             new GUIContent("Straight", "Straight tracks with a custom length"),
             new GUIContent("Curve", "Curves that approximate a circular arc"),
             new GUIContent("Switch", "Track switches"),

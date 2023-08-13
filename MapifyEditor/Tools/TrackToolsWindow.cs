@@ -339,7 +339,7 @@ namespace Mapify.Editor.Tools
         private void DrawPointSelection()
         {
             EditorGUILayout.ObjectField(
-                new GUIContent($"Current point"),
+                new GUIContent("Current point"),
                 CurrentPoint, typeof(BezierPoint), true);
 
             EditorGUILayout.LabelField("Handle 1");

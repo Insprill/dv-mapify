@@ -13,7 +13,7 @@ namespace Mapify.Editor.Tools
         /// </summary>
         internal static class Previews
         {
-            // Not too elegant, but it's the easiest way to calculate the lenghts of everything without having
+            // Not too elegant, but it's the easiest way to calculate the lengths of everything without having
             // to repeat the process.
             internal struct YardCache
             {

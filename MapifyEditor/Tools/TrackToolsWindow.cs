@@ -816,7 +816,7 @@ namespace Mapify.Editor.Tools
             GUILayoutOption widthOption = GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.2f);
             GUILayoutOption smallWidth = GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.1f);
             // Tooltip to display, may change to explain why a button is disabled.
-            string tooltip = "";
+            string tooltip;
 
             EditorGUILayout.BeginVertical();
 

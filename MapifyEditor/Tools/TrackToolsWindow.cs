@@ -928,8 +928,7 @@ namespace Mapify.Editor.Tools
             GUI.backgroundColor *= 1.1f;
 
             _showEditing = EditorGUILayout.BeginFoldoutHeaderGroup(_showEditing,
-                new GUIContent("Editing", "Ways to edit tracks after they've been created"),
-                null, null);
+                new GUIContent("Editing", "Ways to edit tracks after they've been created"));
 
             GUI.backgroundColor = Color.white;
 

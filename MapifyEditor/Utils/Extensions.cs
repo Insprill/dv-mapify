@@ -175,7 +175,6 @@ namespace Mapify.Editor.Utils
         }
 
         /// <param name="alpha">If the alpha value should be inverted or not.</param>
-        /// <returns></returns>
         public static Color Negative(this Color color, bool alpha = false)
         {
             return new Color(

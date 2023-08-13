@@ -16,16 +16,6 @@ namespace Mapify.Editor.Utils
         #endregion
 
         // Unity doesn't have a GUI MinMaxSlider for ints, so this is a workaround.
-        public static (int Min, int Max) MinMaxSliderInt(int minValue, int maxValue, int minLimit, int maxLimit, params GUILayoutOption[] options)
-        {
-            float minTemp = minValue;
-            float maxTemp = maxValue;
-
-            EditorGUILayout.MinMaxSlider(ref minTemp, ref maxTemp, minLimit, maxLimit, options);
-
-            return (Mathf.RoundToInt(minTemp), Mathf.RoundToInt(maxTemp));
-        }
-
         public static (int Min, int Max) MinMaxSliderInt(GUIContent label, int minValue, int maxValue, int minLimit, int maxLimit, params GUILayoutOption[] options)
         {
             float minTemp = minValue;
@@ -36,21 +26,6 @@ namespace Mapify.Editor.Utils
             return (Mathf.RoundToInt(minTemp), Mathf.RoundToInt(maxTemp));
         }
 
-        public static (int Min, int Max) MinMaxSliderInt(string label, int minValue, int maxValue, int minLimit, int maxLimit, params GUILayoutOption[] options)
-        {
-            float minTemp = minValue;
-            float maxTemp = maxValue;
-
-            EditorGUILayout.MinMaxSlider(label, ref minTemp, ref maxTemp, minLimit, maxLimit, options);
-
-            return (Mathf.RoundToInt(minTemp), Mathf.RoundToInt(maxTemp));
-        }
-
-        public static void Separator()
-        {
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-        }
-
         public static char CharField(GUIContent label, char c, params GUILayoutOption[] options)
         {
             string text = EditorGUILayout.TextField(label, c.ToString(), options);
@@ -59,10 +34,8 @@ namespace Mapify.Editor.Utils
             {
                 return '\0';
             }
-            else
-            {
-                return text[0];
-            }
+
+            return text[0];
         }
 
         public static void DrawBezier(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, int samples = 8)
@@ -79,21 +52,23 @@ namespace Mapify.Editor.Utils
 
             show = EditorGUILayout.Foldout(show, $"{foldoutName} ({(max != objects.Length ? $"{max}/" : "")}{objects.Length})");
 
-            if (show)
+            if (!show)
             {
-                EditorGUI.indentLevel++;
-
-                for (int i = 0; i < max; i++)
-                {
-                    EditorGUILayout.ObjectField(
-                        new GUIContent($"{identifier} {i}"),
-                        objects[i], typeof(T), true);
-                }
-
-                EditorGUI.indentLevel--;
+                return false;
             }
 
-            return show;
+            EditorGUI.indentLevel++;
+
+            for (int i = 0; i < max; i++)
+            {
+                EditorGUILayout.ObjectField(
+                    new GUIContent($"{identifier} {i}"),
+                    objects[i], typeof(T), true);
+            }
+
+            EditorGUI.indentLevel--;
+
+            return true;
         }
     }
 }

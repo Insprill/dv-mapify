@@ -453,7 +453,7 @@ namespace Mapify.Editor.Tools
                 if (otherSideTracks > 0)
                 {
                     // Create a straight to separate the switches and then the other side.
-                    t = CreateStraight(trackPrefab, end.transform, mid.position, mid.globalHandle1,
+                    t = CreateStraight(trackPrefab, endObj.transform, mid.position, mid.globalHandle1,
                         TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
                     side4 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform,
                         t.Curve[1].position, t.Curve[1].globalHandle1, orientation, otherSideTracks, trackDistance, out s, out merge4);
@@ -462,10 +462,15 @@ namespace Mapify.Editor.Tools
             }
 
             // Create an empty GameObject to be the parent of the whole yard.
-            GameObject yardObj = new GameObject($"Yard [Station:{stationId}]/[ID:{yardId}]");
-            yardObj.transform.parent = parent;
-            yardObj.transform.position = attachPoint;
-            yardObj.transform.rotation = Quaternion.LookRotation(attachPoint - handlePosition);
+            GameObject yardObj = new GameObject($"Yard [Station:{stationId}]/[ID:{yardId}]")
+            {
+                transform =
+                {
+                    parent = parent,
+                    position = attachPoint,
+                    rotation = Quaternion.LookRotation(attachPoint - handlePosition)
+                }
+            };
 
             float dist;
 

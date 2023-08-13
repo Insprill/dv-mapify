@@ -170,6 +170,10 @@ namespace Mapify.Editor.Tools
         public static float GetMaxSpeedForRadius(float radius)
         {
             // Based on certain ingame findings.
+            // Here is some testing done after using the limits given by this function.
+            // https://discord.com/channels/332511223536943105/560262776673796157/1136657491309105312
+            // It's possible more testing is required, and in case the values are found
+            // to be too high, then this older version should be used instead.
             //return 60.0f * Mathf.Sqrt(radius / 230.0f);
             return 60.0f * Mathf.Sqrt(radius / 170.0f);
         }

@@ -72,10 +72,10 @@ namespace Mapify.Editor.Tools
             {
                 Vector3[][] curves = TrackToolsHelper.GetSwitchBeziers(prefab, attachPoint, handlePosition, connectingPoint);
 
-                return new Vector3[][]
+                return new []
                 {
-                MathHelper.SampleBezier(curves[0], samples),
-                MathHelper.SampleBezier(curves[1], samples)
+                    MathHelper.SampleBezier(curves[0], samples),
+                    MathHelper.SampleBezier(curves[1], samples)
                 };
             }
 
@@ -84,22 +84,21 @@ namespace Mapify.Editor.Tools
             {
                 List<Vector3[]> results = new List<Vector3[]>();
                 Vector3[][] temp;
-                Vector3 offset = Vector3.zero;
+                Vector3 offset;
                 Vector3 dir = attachPoint - handlePosition;
                 Vector3 mid0;
                 Vector3 mid1;
 
-                Vector3[] points1 = new Vector3[0];
-                Vector3[] points2 = new Vector3[0];
-                Vector3[] points3 = new Vector3[0];
-                Vector3[] points4 = new Vector3[0];
+                Vector3[] points1 = System.Array.Empty<Vector3>();
+                Vector3[] points2 = System.Array.Empty<Vector3>();
+                Vector3[] points3 = System.Array.Empty<Vector3>();
+                Vector3[] points4 = System.Array.Empty<Vector3>();
 
                 TrackOrientation currentOrientation = orientation;
                 temp = PreviewSwitchSprawl(leftPrefab, rightPrefab, yardOptions, currentOrientation, trackDistance,
                     true, false, out points1, samples);
                 results.AddRange(temp);
                 mid0 = temp[0][1];
-
 
                 if (yardOptions.TracksOtherSide > 0)
                 {
@@ -197,10 +196,8 @@ namespace Mapify.Editor.Tools
                     }
                 }
 
-                float dist;
                 float move = 0;
-
-                dist = mid1.z - mid0.z;
+                float dist = mid1.z - mid0.z;
 
                 if (dist < yardOptions.MinimumLength)
                 {
@@ -329,26 +326,30 @@ namespace Mapify.Editor.Tools
 
                 trackPoints = points.ToArray();
 
-                if (reverse)
-                {
-                    for (int i = 0; i < results.Count; i++)
-                    {
-                        for (int j = 0; j < results[i].Length; j++)
-                        {
-                            results[i][j].z = -results[i][j].z;
-                        }
-                    }
+                Vector3[][] final = results.ToArray();
 
-                    for (int i = 0; i < trackPoints.Length; i++)
+                if (!reverse)
+                {
+                    return final;
+                }
+
+                for (int i = 0; i < final.Length; i++)
+                {
+                    for (int j = 0; j < final[i].Length; j++)
                     {
-                        trackPoints[i].z = -trackPoints[i].z;
+                        final[i][j].z = -final[i][j].z;
                     }
                 }
 
-                return results.ToArray();
+                for (int i = 0; i < trackPoints.Length; i++)
+                {
+                    trackPoints[i].z = -trackPoints[i].z;
+                }
+
+                return final;
             }
 
-            internal static Vector3[] StraightNormal(Vector3 start, Vector3 dir, float length)
+            private static Vector3[] StraightNormal(Vector3 start, Vector3 dir, float length)
             {
                 return new Vector3[] { start, start + dir * length };
             }
@@ -371,9 +372,6 @@ namespace Mapify.Editor.Tools
 
                 for (int i = 0; i < turntableOptions.ExitTrackCount; i++)
                 {
-                    //results[2 + i] = new Vector3[] { pivot + dir * turntableOptions.TurntableRadius,
-                    //pivot + dir * (turntableOptions.TurntableRadius + turntableOptions.ExitTrackLength) };
-
                     results[2 + i] = StraightNormal(pivot + dir * turntableOptions.TurntableRadius, dir, turntableOptions.ExitTrackLength);
                     dir = rot * dir;
                 }

@@ -84,8 +84,7 @@ namespace Mapify.Editor.Tools
         private int _sampleCount = 8;
 
         // Contents for the tool selection.
-        private readonly GUIContent[] _modeContents = new GUIContent[]
-        {
+        private readonly GUIContent[] _modeContents = {
             new GUIContent("Straight", "Straight tracks with a custom length"),
             new GUIContent("Curve", "Curves that approximate a circular arc"),
             new GUIContent("Switch", "Track switches"),
@@ -95,8 +94,7 @@ namespace Mapify.Editor.Tools
         };
 
         // Special track selection.
-        private readonly GUIContent[] _specialContents = new GUIContent[]
-        {
+        private readonly GUIContent[] _specialContents = {
             new GUIContent("Buffer", "A buffer stop at the end of a track"),
             new GUIContent("Switch curve", "The curve used by switches"),
             new GUIContent("Connect 2", "Connect 2 bezier points smoothly"),
@@ -106,8 +104,7 @@ namespace Mapify.Editor.Tools
         };
 
         // Editing mode.
-        private readonly GUIContent[] _editingModeContents = new GUIContent[]
-        {
+        private readonly GUIContent[] _editingModeContents = {
             new GUIContent("Merge", "Merges multiple tracks into a one"),
         };
 
@@ -129,7 +126,6 @@ namespace Mapify.Editor.Tools
         private bool _isLeft => _orientation == TrackOrientation.Left;
         public Track CurrentTrack => _selectedTracks.Length > 0 ? _selectedTracks[0] : null;
         public BezierPoint CurrentPoint => _selectedPoints.Length > 0 ? _selectedPoints[0] : null;
-        public Switch CurrentSwitch => _isLeft ? LeftSwitch : RightSwitch;
 
         #endregion
 
@@ -253,7 +249,6 @@ namespace Mapify.Editor.Tools
                     case SelectionType.BezierPoint:
                         DrawPointSelection();
                         break;
-                    case SelectionType.None:
                     default:
                         EditorGUILayout.Space();
                         EditorGUILayout.HelpBox("No compatible objects selected! These tools work with the following:\n" +
@@ -267,7 +262,6 @@ namespace Mapify.Editor.Tools
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
-            //EditorGUILayout.LabelField("", (GUIStyle)"Tooltip", GUILayout.MaxHeight(1));
         }
 
         private void DrawTrackSelection()
@@ -340,7 +334,7 @@ namespace Mapify.Editor.Tools
         private void DrawPointSelection()
         {
             EditorGUILayout.ObjectField(
-                new GUIContent($"Current point"),
+                new GUIContent("Current point"),
                 CurrentPoint, typeof(BezierPoint), true);
 
             EditorGUILayout.LabelField("Handle 1");
@@ -446,217 +440,229 @@ namespace Mapify.Editor.Tools
 
         private void DrawStraightOptions()
         {
-            if (Require(TrackPrefab, "Track prefab"))
+            if (!Require(TrackPrefab, "Track prefab"))
             {
-                _length = EditorGUILayout.FloatField(
+                return;
+            }
+
+            _length = EditorGUILayout.FloatField(
                     new GUIContent("Length", "Length of the next track section"),
                     _length);
-                _endGrade = EditorGUILayout.FloatField(
-                    new GUIContent("End grade", "How steep should the track's other end be"),
-                    _endGrade * 100.0f) / 100.0f;
+            _endGrade = EditorGUILayout.FloatField(
+                new GUIContent("End grade", "How steep should the track's other end be"),
+                _endGrade * 100.0f) / 100.0f;
 
-                EditorGUILayout.Space();
+            EditorGUILayout.Space();
 
-                // Extra info.
+            // Extra info.
 
-                if (CurrentTrack)
-                {
-                    EditorGUILayout.LabelField(new GUIContent("Height dif back",
-                        "Height difference backwards"),
-                        new GUIContent($"{TrackToolsHelper.CalculateHeightDifference(CurrentTrack.GetGradeAtStart(), _endGrade, _length):F3}m"));
-                    EditorGUILayout.LabelField(new GUIContent("Height dif front",
-                        "Height difference forwards"),
-                        new GUIContent($"{TrackToolsHelper.CalculateHeightDifference(CurrentTrack.GetGradeAtEnd(), _endGrade, _length):F3}m"));
-                }
-
-                EditorGUILayout.LabelField(new GUIContent("Height dif new",
-                    "Height difference for new tracks"),
-                    new GUIContent($"{TrackToolsHelper.CalculateHeightDifference(0, _endGrade, _length):F3}m"));
+            if (CurrentTrack)
+            {
+                EditorGUILayout.LabelField(new GUIContent("Height dif back",
+                    "Height difference backwards"),
+                    new GUIContent($"{TrackToolsHelper.CalculateHeightDifference(CurrentTrack.GetGradeAtStart(), _endGrade, _length):F3}m"));
+                EditorGUILayout.LabelField(new GUIContent("Height dif front",
+                    "Height difference forwards"),
+                    new GUIContent($"{TrackToolsHelper.CalculateHeightDifference(CurrentTrack.GetGradeAtEnd(), _endGrade, _length):F3}m"));
             }
+
+            EditorGUILayout.LabelField(new GUIContent("Height dif new",
+                "Height difference for new tracks"),
+                new GUIContent($"{TrackToolsHelper.CalculateHeightDifference(0, _endGrade, _length):F3}m"));
         }
 
         private void DrawCurveOptions()
         {
-            if (Require(TrackPrefab, "Track prefab"))
+            if (!Require(TrackPrefab, "Track prefab"))
             {
-                DrawOrientationGUI("Which side the curve turns to");
-
-                EditorGUILayout.BeginHorizontal();
-
-                _radius = EditorGUILayout.FloatField(new GUIContent("Radius", "Radius of the curve"),
-                    _radius);
-
-                if (GUILayout.Button(new GUIContent("Use switch radius", "Sets the radius to the one of switch curves"),
-                    GUILayout.MaxWidth(140)))
-                {
-                    if (LeftSwitch)
-                    {
-                        _radius = TrackToolsHelper.CalculateSwitchRadius(LeftSwitch);
-                    }
-                    else if (RightSwitch)
-                    {
-                        _radius = TrackToolsHelper.CalculateSwitchRadius(RightSwitch);
-                    }
-                    else
-                    {
-                        _radius = TrackToolsHelper.DefaultSwitchRadius;
-                    }
-                }
-
-                EditorGUILayout.EndHorizontal();
-
-                _arc = EditorGUILayout.Slider(new GUIContent("Arc", "Angle of the curve"),
-                    _arc, 0.0f, 180.0f);
-                _maxArcPerPoint = EditorGUILayout.Slider(new GUIContent("Max arc per point",
-                    "How big an arc can be before the curve is split."),
-                    _maxArcPerPoint, 0.0f, 90.0f);
-                _endGrade = EditorGUILayout.FloatField(
-                    new GUIContent("End grade", "How steep should the track's other end be"),
-                    _endGrade * 100.0f) / 100.0f;
-
-                EditorGUILayout.Space();
-
-                EditorGUILayout.BeginHorizontal();
-
-                // Check if length was manually set.
-                EditorGUI.BeginChangeCheck();
-                float length = EditorGUILayout.FloatField(new GUIContent("Approx. length",
-                    "Approximated total length of the curve"),
-                    _radius * _arc * Mathf.Deg2Rad);
-                bool changed = EditorGUI.EndChangeCheck();
-
-                _changeArc = EditorGUILayout.ToggleLeft(new GUIContent("Change arc",
-                    "Change the arc of the curve instead of the radius to match the length"),
-                    _changeArc, GUILayout.MaxWidth(100));
-
-                if (changed)
-                {
-                    if (_changeArc)
-                    {
-                        _arc = (length / _radius) * Mathf.Rad2Deg;
-                    }
-                    else
-                    {
-                        _radius = length / (_arc * Mathf.Deg2Rad);
-                    }
-                }
-
-                EditorGUILayout.EndHorizontal();
-
-                EditorGUILayout.LabelField(new GUIContent("Speed limit", "Estimated speed limit (shown on signs / closer estimate)"),
-                    new GUIContent($"{TrackToolsHelper.GetMaxSpeedForRadiusGame(_radius)}/{TrackToolsHelper.GetMaxSpeedForRadius(_radius):F1}km/h"));
+                return;
             }
+
+            DrawOrientationGUI("Which side the curve turns to");
+
+            EditorGUILayout.BeginHorizontal();
+
+            _radius = EditorGUILayout.FloatField(new GUIContent("Radius", "Radius of the curve"),
+                _radius);
+
+            if (GUILayout.Button(new GUIContent("Use switch radius", "Sets the radius to the one of switch curves"),
+                GUILayout.MaxWidth(140)))
+            {
+                if (LeftSwitch)
+                {
+                    _radius = TrackToolsHelper.CalculateSwitchRadius(LeftSwitch);
+                }
+                else if (RightSwitch)
+                {
+                    _radius = TrackToolsHelper.CalculateSwitchRadius(RightSwitch);
+                }
+                else
+                {
+                    _radius = TrackToolsHelper.DefaultSwitchRadius;
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            _arc = EditorGUILayout.Slider(new GUIContent("Arc", "Angle of the curve"),
+                _arc, 0.0f, 180.0f);
+            _maxArcPerPoint = EditorGUILayout.Slider(new GUIContent("Max arc per point",
+                "How big an arc can be before the curve is split."),
+                _maxArcPerPoint, 0.0f, 90.0f);
+            _endGrade = EditorGUILayout.FloatField(
+                new GUIContent("End grade", "How steep should the track's other end be"),
+                _endGrade * 100.0f) / 100.0f;
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+
+            // Check if length was manually set.
+            EditorGUI.BeginChangeCheck();
+            float length = EditorGUILayout.FloatField(new GUIContent("Approx. length",
+                "Approximated total length of the curve"),
+                _radius * _arc * Mathf.Deg2Rad);
+            bool changed = EditorGUI.EndChangeCheck();
+
+            _changeArc = EditorGUILayout.ToggleLeft(new GUIContent("Change arc",
+                "Change the arc of the curve instead of the radius to match the length"),
+                _changeArc, GUILayout.MaxWidth(100));
+
+            if (changed)
+            {
+                if (_changeArc)
+                {
+                    _arc = (length / _radius) * Mathf.Rad2Deg;
+                }
+                else
+                {
+                    _radius = length / (_arc * Mathf.Deg2Rad);
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.LabelField(new GUIContent("Speed limit", "Estimated speed limit (shown on signs / closer estimate)"),
+                new GUIContent($"{TrackToolsHelper.GetMaxSpeedForRadiusGame(_radius)}/{TrackToolsHelper.GetMaxSpeedForRadius(_radius):F1}km/h"));
         }
 
         private void DrawSwitchOptions()
         {
-            if (Require(LeftSwitch, "Left switch prefab") &&
-                Require(RightSwitch, "Right switch prefab"))
+            if (!Require(LeftSwitch, "Left switch prefab") ||
+                !Require(RightSwitch, "Right switch prefab"))
             {
-                DrawOrientationGUI("Which side the diverging track turns to");
-                _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
-                    "Which of the 3 switch points should connect to the current track"),
-                    _connectingPoint);
+                return;
             }
+
+            DrawOrientationGUI("Which side the diverging track turns to");
+            _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
+                "Which of the 3 switch points should connect to the current track"),
+                _connectingPoint);
         }
 
         private void DrawYardOptions()
         {
-            if (Require(TrackPrefab, "Track prefab") &&
-                Require(LeftSwitch, "Left switch prefab") &&
-                Require(RightSwitch, "Right switch prefab"))
+            if (!Require(TrackPrefab, "Track prefab") ||
+                !Require(LeftSwitch, "Left switch prefab") ||
+                !Require(RightSwitch, "Right switch prefab"))
             {
-                DrawOrientationGUI("Which side the first switch should diverge to");
-                _trackDistance = EditorGUILayout.FloatField(new GUIContent("Track distance",
-                    "The distance between parallel tracks"),
-                    _trackDistance);
-                _yardOptions.TracksMainSide = EditorGUILayout.IntField(new GUIContent("Tracks to main side",
-                    "Number of tracks to the side defined by the orientation"),
-                    _yardOptions.TracksMainSide);
-                _yardOptions.TracksOtherSide = EditorGUILayout.IntField(new GUIContent("Tracks to other side",
-                    "Number of tracks to the side opposite to the orientation"),
-                    _yardOptions.TracksOtherSide);
-                _yardOptions.AlternateSides = EditorGUILayout.Toggle(new GUIContent("Alternate sides",
-                    "If true, the switches at either end will turn to different sides of the yard, if false they will " +
-                    "instead face the same side"),
-                    _yardOptions.AlternateSides);
-                _yardOptions.MinimumLength = EditorGUILayout.FloatField(new GUIContent("Minimum siding length",
-                    "The minimum length of the straigth part of a siding of this yard"),
-                    _yardOptions.MinimumLength);
-                _yardOptions.StationId = EditorGUILayout.TextField(new GUIContent("Station ID",
-                    "ID of the station all the yard tracks belong to"),
-                    _yardOptions.StationId);
-                _yardOptions.YardId = EditorHelper.CharField(new GUIContent("Yard ID",
-                    "ID of the yard in the station (single character)"),
-                    _yardOptions.YardId);
-                _yardOptions.StartTrackId = (byte)EditorGUILayout.IntField(new GUIContent("Track ID",
-                    "Starting number of the track"),
-                    _yardOptions.StartTrackId);
-
-                EditorGUILayout.Space();
-
-                // Extra info.
-                int totalTracks = _yardOptions.TracksMainSide + _yardOptions.TracksOtherSide;
-                EditorGUILayout.LabelField("Total tracks", $"{totalTracks + 1}");
-                EditorGUILayout.LabelField("Track numbers", $"{_yardOptions.StartTrackId} to {_yardOptions.StartTrackId + totalTracks}");
-
-                if (_yardOptions.StartTrackId + totalTracks > 99)
-                {
-                    EditorGUILayout.HelpBox("Track number cannot exceed 99.", MessageType.Error);
-                }
-                _showYardCache = EditorGUILayout.Foldout(_showYardCache, new GUIContent("Yard sizes"));
-
-                if (_showYardCache)
-                {
-                    EditorGUI.indentLevel++;
-
-                    if (TrackToolsCreator.Previews.CachedYard.HasValue)
-                    {
-
-                        EditorGUILayout.LabelField(new GUIContent("End to end length", "The total, end to end length of the yard"),
-                            new GUIContent($"{TrackToolsCreator.Previews.CachedYard.Value.TotalLength}m"));
-                        EditorGUILayout.LabelField(new GUIContent("Width", "The width of the yard, including loading gauge."),
-                            new GUIContent($"{totalTracks * _trackDistance + TrackToolsCreator.Previews.CachedYard.Value.LoadingGauge}m"));
-
-                        // .....
-                        //for (int i = 0; i < TrackToolsCreator.Previews.CachedYard.Value.SidingsLength.Length; i++)
-                        //{
-                        //    EditorGUILayout.LabelField(new GUIContent($"[{YardOptions.YardId}{YardOptions.StartTrackId + i}S]"),
-                        //        new GUIContent($"{TrackToolsCreator.Previews.CachedYard.Value.SidingsLength[i]}m"));
-                        //}
-                    }
-
-                    EditorGUI.indentLevel--;
-                }
+                return;
             }
+
+            DrawOrientationGUI("Which side the first switch should diverge to");
+            _trackDistance = EditorGUILayout.FloatField(new GUIContent("Track distance",
+                "The distance between parallel tracks"),
+                _trackDistance);
+            _yardOptions.TracksMainSide = EditorGUILayout.IntField(new GUIContent("Tracks to main side",
+                "Number of tracks to the side defined by the orientation"),
+                _yardOptions.TracksMainSide);
+            _yardOptions.TracksOtherSide = EditorGUILayout.IntField(new GUIContent("Tracks to other side",
+                "Number of tracks to the side opposite to the orientation"),
+                _yardOptions.TracksOtherSide);
+            _yardOptions.AlternateSides = EditorGUILayout.Toggle(new GUIContent("Alternate sides",
+                "If true, the switches at either end will turn to different sides of the yard, if false they will " +
+                "instead face the same side"),
+                _yardOptions.AlternateSides);
+            _yardOptions.MinimumLength = EditorGUILayout.FloatField(new GUIContent("Minimum siding length",
+                "The minimum length of the straigth part of a siding of this yard"),
+                _yardOptions.MinimumLength);
+            _yardOptions.StationId = EditorGUILayout.TextField(new GUIContent("Station ID",
+                "ID of the station all the yard tracks belong to"),
+                _yardOptions.StationId);
+            _yardOptions.YardId = EditorHelper.CharField(new GUIContent("Yard ID",
+                "ID of the yard in the station (single character)"),
+                _yardOptions.YardId);
+            _yardOptions.StartTrackId = (byte)EditorGUILayout.IntField(new GUIContent("Track ID",
+                "Starting number of the track"),
+                _yardOptions.StartTrackId);
+
+            EditorGUILayout.Space();
+
+            // Extra info.
+            int totalTracks = _yardOptions.TracksMainSide + _yardOptions.TracksOtherSide;
+            EditorGUILayout.LabelField("Total tracks", $"{totalTracks + 1}");
+            EditorGUILayout.LabelField("Track numbers", $"{_yardOptions.StartTrackId} to {_yardOptions.StartTrackId + totalTracks}");
+
+            if (_yardOptions.StartTrackId + totalTracks > 99)
+            {
+                EditorGUILayout.HelpBox("Track number cannot exceed 99.", MessageType.Error);
+            }
+            _showYardCache = EditorGUILayout.Foldout(_showYardCache, new GUIContent("Yard sizes"));
+
+            if (!_showYardCache)
+            {
+                return;
+            }
+
+            EditorGUI.indentLevel++;
+
+            if (TrackToolsCreator.Previews.CachedYard.HasValue)
+            {
+
+                EditorGUILayout.LabelField(new GUIContent("End to end length", "The total, end to end length of the yard"),
+                    new GUIContent($"{TrackToolsCreator.Previews.CachedYard.Value.TotalLength}m"));
+                EditorGUILayout.LabelField(new GUIContent("Width", "The width of the yard, including loading gauge."),
+                    new GUIContent($"{totalTracks * _trackDistance + TrackToolsCreator.Previews.CachedYard.Value.LoadingGauge}m"));
+
+                // .....
+                //for (int i = 0; i < TrackToolsCreator.Previews.CachedYard.Value.SidingsLength.Length; i++)
+                //{
+                //    EditorGUILayout.LabelField(new GUIContent($"[{YardOptions.YardId}{YardOptions.StartTrackId + i}S]"),
+                //        new GUIContent($"{TrackToolsCreator.Previews.CachedYard.Value.SidingsLength[i]}m"));
+                //}
+            }
+
+            EditorGUI.indentLevel--;
         }
 
         private void DrawTurntableOptions()
         {
-            if (Require(TurntablePrefab, "Turntable prefab"))
+            if (!Require(TurntablePrefab, "Turntable prefab"))
             {
-                _turntableOptions.TurntableRadius = EditorGUILayout.FloatField(new GUIContent("Turntable radius",
-                    "The radius of the turntable (half the track's length)"),
-                    _turntableOptions.TurntableRadius);
-                _turntableOptions.TurntableDepth = EditorGUILayout.FloatField(new GUIContent("Turn table depth",
-                    "How high up is the track compared to the bottom of the turntable."),
-                    _turntableOptions.TurntableDepth);
-                _turntableOptions.RotationOffset = EditorGUILayout.FloatField(new GUIContent("Rotation offset",
-                    "Offset the turntable rotation"),
-                    _turntableOptions.RotationOffset);
-                _turntableOptions.TracksOffset = EditorGUILayout.FloatField(new GUIContent("Track offset",
-                    "Offset the exit tracks"),
-                    _turntableOptions.TracksOffset);
-                _turntableOptions.AngleBetweenExits = EditorGUILayout.FloatField(new GUIContent("Angle between exits",
-                    "The angle between each exit of the turntable"),
-                    _turntableOptions.AngleBetweenExits);
-                _turntableOptions.ExitTrackCount = EditorGUILayout.IntField(new GUIContent("Exit track count",
-                    "Number of tracks leading away from the turntable"),
-                    _turntableOptions.ExitTrackCount);
-                _turntableOptions.ExitTrackLength = EditorGUILayout.FloatField(new GUIContent("Exit track length",
-                    "Length of the straigh tracks at each exit"),
-                    _turntableOptions.ExitTrackLength);
+                return;
             }
+
+            _turntableOptions.TurntableRadius = EditorGUILayout.FloatField(new GUIContent("Turntable radius",
+                "The radius of the turntable (half the track's length)"),
+                _turntableOptions.TurntableRadius);
+            _turntableOptions.TurntableDepth = EditorGUILayout.FloatField(new GUIContent("Turn table depth",
+                "How high up is the track compared to the bottom of the turntable."),
+                _turntableOptions.TurntableDepth);
+            _turntableOptions.RotationOffset = EditorGUILayout.FloatField(new GUIContent("Rotation offset",
+                "Offset the turntable rotation"),
+                _turntableOptions.RotationOffset);
+            _turntableOptions.TracksOffset = EditorGUILayout.FloatField(new GUIContent("Track offset",
+                "Offset the exit tracks"),
+                _turntableOptions.TracksOffset);
+            _turntableOptions.AngleBetweenExits = EditorGUILayout.FloatField(new GUIContent("Angle between exits",
+                "The angle between each exit of the turntable"),
+                _turntableOptions.AngleBetweenExits);
+            _turntableOptions.ExitTrackCount = EditorGUILayout.IntField(new GUIContent("Exit track count",
+                "Number of tracks leading away from the turntable"),
+                _turntableOptions.ExitTrackCount);
+            _turntableOptions.ExitTrackLength = EditorGUILayout.FloatField(new GUIContent("Exit track length",
+                "Length of the straigh tracks at each exit"),
+                _turntableOptions.ExitTrackLength);
         }
 
         private void DrawSpecialOptions()
@@ -696,76 +702,82 @@ namespace Mapify.Editor.Tools
 
         private void DrawSwitchCurveOptions()
         {
-            if (Require(LeftSwitch, "Left switch prefab") &&
-                Require(RightSwitch, "Right switch prefab"))
+            if (!Require(LeftSwitch, "Left switch prefab") ||
+                !Require(RightSwitch, "Right switch prefab"))
             {
-                DrawOrientationGUI("Choose which side the track diverges to");
-                _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
-                    "Which of the 3 switch points should connect to the current track"),
-                    _connectingPoint);
+                return;
+            }
 
-                if (_connectingPoint == SwitchPoint.Through)
-                {
-                    EditorGUILayout.HelpBox("The selected point has no connection with " +
-                        "the track, you should select one of the others.", MessageType.Warning);
-                }
+            DrawOrientationGUI("Choose which side the track diverges to");
+            _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
+                "Which of the 3 switch points should connect to the current track"),
+                _connectingPoint);
+
+            if (_connectingPoint == SwitchPoint.Through)
+            {
+                EditorGUILayout.HelpBox("The selected point has no connection with " +
+                    "the track, you should select one of the others.", MessageType.Warning);
             }
         }
 
         private void DrawConnect2Options()
         {
-            if (Require(TrackPrefab, "Track prefab"))
+            if (!Require(TrackPrefab, "Track prefab"))
             {
-                switch (_selectionType)
-                {
-                    case SelectionType.Track:
-                        if (_selectedTracks.Length != 2)
-                        {
-                            EditorGUILayout.Space();
-                            EditorGUILayout.HelpBox("2 tracks should be selected!", MessageType.Error);
-                            EditorGUILayout.Space();
-                        }
-
-                        EditorHelper.MultipleSelectionFoldout("Selected tracks", "Track", true, _selectedTracks, 2);
-                        break;
-                    case SelectionType.BezierPoint:
-                        if (_selectedPoints.Length != 2)
-                        {
-                            EditorGUILayout.Space();
-                            EditorGUILayout.HelpBox("2 bezier points should be selected!", MessageType.Error);
-                            EditorGUILayout.Space();
-                        }
-
-                        EditorHelper.MultipleSelectionFoldout("Selected points", "Point", true, _selectedPoints, 2);
-                        break;
-                    case SelectionType.None:
-                    default:
-                        EditorGUILayout.Space();
-                        EditorGUILayout.HelpBox("Select either 2 tracks or 2 points!", MessageType.Error);
-                        EditorGUILayout.Space();
-                        break;
-                }
-
-                _useHandle2Start = EditorGUILayout.Toggle(new GUIContent("Switch start",
-                    "Change the direction at the start"),
-                    _useHandle2Start);
-                _useHandle2End = EditorGUILayout.Toggle(new GUIContent("Switch end",
-                    "Change the direction at the end"),
-                    _useHandle2End);
-
-                _lengthMultiplier = EditorGUILayout.FloatField(
-                    new GUIContent("Length multiplier", "A multiplier that changes handle length, for smoother or tighter curves"),
-                    _lengthMultiplier);
+                return;
             }
+
+            switch (_selectionType)
+            {
+                case SelectionType.Track:
+                    if (_selectedTracks.Length != 2)
+                    {
+                        EditorGUILayout.Space();
+                        EditorGUILayout.HelpBox("2 tracks should be selected!", MessageType.Error);
+                        EditorGUILayout.Space();
+                    }
+
+                    EditorHelper.MultipleSelectionFoldout("Selected tracks", "Track", true, _selectedTracks, 2);
+                    break;
+                case SelectionType.BezierPoint:
+                    if (_selectedPoints.Length != 2)
+                    {
+                        EditorGUILayout.Space();
+                        EditorGUILayout.HelpBox("2 bezier points should be selected!", MessageType.Error);
+                        EditorGUILayout.Space();
+                    }
+
+                    EditorHelper.MultipleSelectionFoldout("Selected points", "Point", true, _selectedPoints, 2);
+                    break;
+                default:
+                    EditorGUILayout.Space();
+                    EditorGUILayout.HelpBox("Select either 2 tracks or 2 points!", MessageType.Error);
+                    EditorGUILayout.Space();
+                    break;
+            }
+
+            _useHandle2Start = EditorGUILayout.Toggle(new GUIContent("Switch start",
+                "Change the direction at the start"),
+                _useHandle2Start);
+            _useHandle2End = EditorGUILayout.Toggle(new GUIContent("Switch end",
+                "Change the direction at the end"),
+                _useHandle2End);
+
+            _lengthMultiplier = EditorGUILayout.FloatField(
+                new GUIContent("Length multiplier", "A multiplier that changes handle length, for smoother or tighter curves"),
+                _lengthMultiplier);
         }
 
         private void DrawCrossoverOptions()
         {
-            if (Require(TrackPrefab, "Track prefab") &&
-                Require(LeftSwitch, "Left switch prefab") &&
-                Require(RightSwitch, "Right switch prefab"))
+            if (!Require(TrackPrefab, "Track prefab") ||
+                !Require(LeftSwitch, "Left switch prefab") ||
+                !Require(RightSwitch, "Right switch prefab"))
             {
-                DrawOrientationGUI("Which side the curve turns to");
+                return;
+            }
+
+            DrawOrientationGUI("Which side the curve turns to");
 
                 _trackDistance = EditorGUILayout.FloatField(new GUIContent("Track distance",
                     "The distance between parallel tracks"),
@@ -775,37 +787,41 @@ namespace Mapify.Editor.Tools
                     _isTrailing);
 
                 DrawSwitchDistanceGUI();
-            }
         }
 
         private void DrawScissorsCrossoverOptions()
         {
-            if (Require(TrackPrefab, "Track prefab") &&
-                Require(LeftSwitch, "Left switch prefab") &&
-                Require(RightSwitch, "Right switch prefab"))
+            if (!Require(TrackPrefab, "Track prefab") ||
+                !Require(LeftSwitch, "Left switch prefab") ||
+                !Require(RightSwitch, "Right switch prefab"))
             {
-                DrawOrientationGUI("Which side the curve turns to");
-
-                _trackDistance = EditorGUILayout.FloatField(new GUIContent("Track distance",
-                    "The distance between parallel tracks"),
-                    _trackDistance);
-
-                DrawSwitchDistanceGUI();
+                return;
             }
+
+            DrawOrientationGUI("Which side the curve turns to");
+
+            _trackDistance = EditorGUILayout.FloatField(new GUIContent("Track distance",
+                "The distance between parallel tracks"),
+                _trackDistance);
+
+            DrawSwitchDistanceGUI();
+
         }
 
         private void DrawDoubleSlipOptions()
         {
-            if (Require(TrackPrefab, "Track prefab") &&
-                Require(LeftSwitch, "Left switch prefab") &&
-                Require(RightSwitch, "Right switch prefab"))
+            if (!Require(TrackPrefab, "Track prefab") ||
+                !Require(LeftSwitch, "Left switch prefab") ||
+                !Require(RightSwitch, "Right switch prefab"))
             {
-                DrawOrientationGUI("Which side the curve turns to");
-
-                float minArc = TrackToolsHelper.CalculateSwitchAngle(LeftSwitch) * Mathf.Rad2Deg * 2.0f;
-                _crossAngle = EditorGUILayout.Slider(new GUIContent("Cross angle", "Angle between tracks"),
-                    _crossAngle, minArc + 0.1f, 90.0f);
+                return;
             }
+
+            DrawOrientationGUI("Which side the curve turns to");
+
+            float minArc = TrackToolsHelper.CalculateSwitchAngle(LeftSwitch) * Mathf.Rad2Deg * 2.0f;
+            _crossAngle = EditorGUILayout.Slider(new GUIContent("Cross angle", "Angle between tracks"),
+                _crossAngle, minArc + 0.1f, 90.0f);
         }
 
         #endregion
@@ -817,7 +833,7 @@ namespace Mapify.Editor.Tools
             GUILayoutOption widthOption = GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.2f);
             GUILayoutOption smallWidth = GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.1f);
             // Tooltip to display, may change to explain why a button is disabled.
-            string tooltip = "";
+            string tooltip;
 
             EditorGUILayout.BeginVertical();
 
@@ -914,7 +930,7 @@ namespace Mapify.Editor.Tools
 
         private void CreationFoldoutContextMenu(Rect rect)
         {
-            var menu = new GenericMenu();
+            GenericMenu menu = new GenericMenu();
             menu.AddItem(new GUIContent("Reset current tab",
                 "Resets the current tab's values to default"),
                 false, () => ResetCreationSettings(false));
@@ -929,8 +945,7 @@ namespace Mapify.Editor.Tools
             GUI.backgroundColor *= 1.1f;
 
             _showEditing = EditorGUILayout.BeginFoldoutHeaderGroup(_showEditing,
-                new GUIContent("Editing", "Ways to edit tracks after they've been created"),
-                null, null);
+                new GUIContent("Editing", "Ways to edit tracks after they've been created"));
 
             GUI.backgroundColor = Color.white;
 
@@ -1035,7 +1050,7 @@ namespace Mapify.Editor.Tools
 
         private void PrefabFoldoutContextMenu(Rect rect)
         {
-            var menu = new GenericMenu();
+            GenericMenu menu = new GenericMenu();
             menu.AddItem(new GUIContent("Get default prefabs",
                 "Tries to get the default Mapify prefabs at their default location"),
                 false, TryGetDefaultAssets);
@@ -1084,7 +1099,7 @@ namespace Mapify.Editor.Tools
 
         private void SettingsFoldoutContextMenu(Rect rect)
         {
-            var menu = new GenericMenu();
+            GenericMenu menu = new GenericMenu();
             menu.AddItem(new GUIContent("Reset",
                 "Resets settings to default"),
                 false, ResetPreviewSettings);
@@ -1183,7 +1198,7 @@ namespace Mapify.Editor.Tools
                         _orientation, _connectingPoint, true));
                     break;
                 case SpecialTrack.Connect2:
-                    CreateConnect2(attachPoint, handlePosition);
+                    CreateConnect2();
                     break;
                 case SpecialTrack.Crossover:
                     SelectTrack(TrackToolsCreator.CreateCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
@@ -1198,11 +1213,11 @@ namespace Mapify.Editor.Tools
                         _orientation, _crossAngle, true)[2].ThroughTrack);
                     break;
                 default:
-                    break;
+                    throw new System.Exception("Invalid mode!");
             }
         }
 
-        private void CreateConnect2(Vector3 attachPoint, Vector3 handlePosition)
+        private void CreateConnect2()
         {
             switch (_selectionType)
             {
@@ -1226,19 +1241,21 @@ namespace Mapify.Editor.Tools
 
         public void DeleteTrack()
         {
-            if (CurrentTrack)
+            if (!CurrentTrack)
             {
-                if (CurrentTrack.IsSwitch || CurrentTrack.IsTurntable)
-                {
-                    Undo.DestroyObjectImmediate(CurrentTrack.transform.parent.gameObject);
-                }
-                else
-                {
-                    Undo.DestroyObjectImmediate(CurrentTrack.gameObject);
-                }
-
-                PrepareSelection();
+                return;
             }
+
+            if (CurrentTrack.IsSwitch || CurrentTrack.IsTurntable)
+            {
+                Undo.DestroyObjectImmediate(CurrentTrack.transform.parent.gameObject);
+            }
+            else
+            {
+                Undo.DestroyObjectImmediate(CurrentTrack.gameObject);
+            }
+
+            PrepareSelection();
         }
 
         #endregion
@@ -1780,97 +1797,112 @@ namespace Mapify.Editor.Tools
             // Only draw handles for track creation if the creation foldout is active.
             if (_showCreation)
             {
-                using (new Handles.DrawingScope(_backwardColour))
-                {
-                    for (int i = 0; i < _backwardPoints.Length; i++)
-                    {
-                        // TODO: use a disc instead of this so it is not selectable.
-                        Handles.FreeRotateHandle(Quaternion.identity, _backwardPoints[i],
-                            HandleUtility.GetHandleSize(_backwardPoints[i]) * (i == 0 ? 0.15f : 0.05f));
-                    }
-
-                    for (int i = 0; i < _backwardLines.Length; i++)
-                    {
-                        Handles.DrawPolyLine(_backwardLines[i]);
-                    }
-                }
-
-                using (new Handles.DrawingScope(_forwardColour))
-                {
-                    for (int i = 0; i < _forwardPoints.Length; i++)
-                    {
-                        Handles.FreeRotateHandle(Quaternion.identity, _forwardPoints[i],
-                            HandleUtility.GetHandleSize(_forwardPoints[i]) * (i == 0 ? 0.15f : 0.05f));
-                    }
-
-                    for (int i = 0; i < _forwardLines.Length; i++)
-                    {
-                        Handles.DrawPolyLine(_forwardLines[i]);
-                    }
-                }
-
-                using (new Handles.DrawingScope(_newColour))
-                {
-                    for (int i = 0; i < _newPoints.Length; i++)
-                    {
-                        Handles.FreeRotateHandle(Quaternion.identity, _newPoints[i],
-                            HandleUtility.GetHandleSize(_newPoints[i]) * (i == 0 ? 0.15f : 0.05f));
-                    }
-
-                    for (int i = 0; i < _newLines.Length; i++)
-                    {
-                        Handles.DrawPolyLine(_newLines[i]);
-
-                        //Vector3 p = _newLines[i][0];
-                        //Handles.FreeRotateHandle(Quaternion.identity, p,
-                        //    HandleUtility.GetHandleSize(p) * 0.10f);
-                        //p = _newLines[i][_newLines[i].Length - 1];
-                        //Handles.FreeRotateHandle(Quaternion.identity, p,
-                        //    HandleUtility.GetHandleSize(p) * 0.05f);
-                    }
-                }
+                DrawCreationPreviews();
             }
 
             if (_showEditing)
             {
-
+                DrawEditingPreviews();
             }
 
             // Extra curve drawing.
             if (CurrentTrack)
             {
-                // If there's a height change, draw the same curve but completely level.
-                if (CurrentTrack.Curve[0].position.y != CurrentTrack.Curve.Last().position.y)
+                DrawExtraPreviews();
+            }
+        }
+
+        private void DrawCreationPreviews()
+        {
+            using (new Handles.DrawingScope(_backwardColour))
+            {
+                for (int i = 0; i < _backwardPoints.Length; i++)
                 {
-                    float y = CurrentTrack.Curve[0].position.y;
-                    Vector3 p0, p1, p2, p3;
+                    // TODO: use a disc instead of this so it is not selectable.
+                    Handles.FreeRotateHandle(Quaternion.identity, _backwardPoints[i],
+                        HandleUtility.GetHandleSize(_backwardPoints[i]) * (i == 0 ? 0.15f : 0.05f));
+                }
 
-                    using (new Handles.DrawingScope(CurrentTrack.Curve.drawColor.Negative()))
+                for (int i = 0; i < _backwardLines.Length; i++)
+                {
+                    Handles.DrawPolyLine(_backwardLines[i]);
+                }
+            }
+
+            using (new Handles.DrawingScope(_forwardColour))
+            {
+                for (int i = 0; i < _forwardPoints.Length; i++)
+                {
+                    Handles.FreeRotateHandle(Quaternion.identity, _forwardPoints[i],
+                        HandleUtility.GetHandleSize(_forwardPoints[i]) * (i == 0 ? 0.15f : 0.05f));
+                }
+
+                for (int i = 0; i < _forwardLines.Length; i++)
+                {
+                    Handles.DrawPolyLine(_forwardLines[i]);
+                }
+            }
+
+            using (new Handles.DrawingScope(_newColour))
+            {
+                for (int i = 0; i < _newPoints.Length; i++)
+                {
+                    Handles.FreeRotateHandle(Quaternion.identity, _newPoints[i],
+                        HandleUtility.GetHandleSize(_newPoints[i]) * (i == 0 ? 0.15f : 0.05f));
+                }
+
+                for (int i = 0; i < _newLines.Length; i++)
+                {
+                    Handles.DrawPolyLine(_newLines[i]);
+
+                    //Vector3 p = _newLines[i][0];
+                    //Handles.FreeRotateHandle(Quaternion.identity, p,
+                    //    HandleUtility.GetHandleSize(p) * 0.10f);
+                    //p = _newLines[i][_newLines[i].Length - 1];
+                    //Handles.FreeRotateHandle(Quaternion.identity, p,
+                    //    HandleUtility.GetHandleSize(p) * 0.05f);
+                }
+            }
+        }
+
+        private void DrawEditingPreviews()
+        {
+
+        }
+
+        private void DrawExtraPreviews()
+        {
+            // If there's a height change, draw the same curve but completely level.
+            if (CurrentTrack.Curve[0].position.y != CurrentTrack.Curve.Last().position.y)
+            {
+                float y = CurrentTrack.Curve[0].position.y;
+                Vector3 p0, p1, p2, p3;
+
+                using (new Handles.DrawingScope(CurrentTrack.Curve.drawColor.Negative()))
+                {
+                    p0 = CurrentTrack.Curve[0].position;
+                    p1 = CurrentTrack.Curve[0].globalHandle2;
+
+                    Handles.Label(p0 + Vector3.up * HandleUtility.GetHandleSize(p0),
+                        $"{MathHelper.GetGrade(p0, p1) * 100.0f:F2}%");
+
+                    for (int i = 1; i < CurrentTrack.Curve.pointCount; i++)
                     {
-                        p0 = CurrentTrack.Curve[0].position;
-                        p1 = CurrentTrack.Curve[0].globalHandle2;
+                        p0 = CurrentTrack.Curve[i - 1].position;
+                        p1 = CurrentTrack.Curve[i - 1].globalHandle2;
+                        p2 = CurrentTrack.Curve[i].globalHandle1;
+                        p3 = CurrentTrack.Curve[i].position;
 
-                        Handles.Label(p0 + Vector3.up * HandleUtility.GetHandleSize(p0),
-                            $"{MathHelper.GetGrade(p0, p1) * 100.0f:F2}%");
+                        Handles.Label(p3 + Vector3.up * HandleUtility.GetHandleSize(p3),
+                            $"{MathHelper.GetGrade(p2, p3) * 100.0f:F2}%");
 
-                        for (int i = 1; i < CurrentTrack.Curve.pointCount; i++)
-                        {
-                            p0 = CurrentTrack.Curve[i - 1].position;
-                            p1 = CurrentTrack.Curve[i - 1].globalHandle2;
-                            p2 = CurrentTrack.Curve[i].globalHandle1;
-                            p3 = CurrentTrack.Curve[i].position;
+                        p0.y = y;
+                        p1.y = y;
+                        p2.y = y;
+                        p3.y = y;
 
-                            Handles.Label(p3 + Vector3.up * HandleUtility.GetHandleSize(p3),
-                                $"{MathHelper.GetGrade(p2, p3) * 100.0f:F2}%");
-
-                            p0.y = y;
-                            p1.y = y;
-                            p2.y = y;
-                            p3.y = y;
-
-                            EditorHelper.DrawBezier(p0, p1, p2, p3, _sampleCount);
-                            Handles.DrawLine(p3, CurrentTrack.Curve[i].position);
-                        }
+                        EditorHelper.DrawBezier(p0, p1, p2, p3, _sampleCount);
+                        Handles.DrawLine(p3, CurrentTrack.Curve[i].position);
                     }
                 }
             }
@@ -1895,11 +1927,9 @@ namespace Mapify.Editor.Tools
             {
                 return true;
             }
-            else
-            {
-                EditorGUILayout.HelpBox($"{name} must be assigned to use this function.", MessageType.Error);
-                return false;
-            }
+
+            EditorGUILayout.HelpBox($"{name} must be assigned to use this function.", MessageType.Error);
+            return false;
         }
 
         #endregion

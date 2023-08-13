@@ -93,12 +93,10 @@ namespace Mapify.Editor.Utils
                 // by returning a pair of FLT_MAX
                 return new Vector2(float.PositiveInfinity, float.PositiveInfinity);
             }
-            else
-            {
-                float x = (b2 * c1 - b1 * c2) / determinant;
-                float y = (a1 * c2 - a2 * c1) / determinant;
-                return new Vector2(x, y);
-            }
+
+            float x = (b2 * c1 - b1 * c2) / determinant;
+            float y = (a1 * c2 - a2 * c1) / determinant;
+            return new Vector2(x, y);
         }
 
         public static Vector3[] SampleCircle(Vector3 center, float radius, int samples = 32)
@@ -148,22 +146,6 @@ namespace Mapify.Editor.Utils
         public static Vector3[] SampleBezier(Vector3[] curve, int samples = 8)
         {
             return SampleBezier(curve[0], curve[1], curve[2], curve[3], samples);
-        }
-
-        public static Vector3[][] SampleBeziers(BezierCurve curve, int samples = 8)
-        {
-            Vector3[][] results = new Vector3[curve.pointCount - 1][];
-
-            for (int i = 1; i < curve.pointCount; i++)
-            {
-                results[i - 1] = SampleBezier(
-                    curve[i - 1].position,
-                    curve[i - 1].globalHandle2,
-                    curve[i].globalHandle1,
-                    curve[i].position, samples);
-            }
-
-            return results;
         }
 
         public static Vector3[][] SampleBeziers(Vector3[][] curves, int samples = 8)

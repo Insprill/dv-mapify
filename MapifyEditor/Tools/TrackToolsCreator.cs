@@ -462,10 +462,15 @@ namespace Mapify.Editor.Tools
             }
 
             // Create an empty GameObject to be the parent of the whole yard.
-            GameObject yardObj = new GameObject($"Yard [Station:{stationId}]/[ID:{yardId}]");
-            yardObj.transform.parent = parent;
-            yardObj.transform.position = attachPoint;
-            yardObj.transform.rotation = Quaternion.LookRotation(attachPoint - handlePosition);
+            GameObject yardObj = new GameObject($"Yard [Station:{stationId}]/[ID:{yardId}]")
+            {
+                transform =
+                {
+                    parent = parent,
+                    position = attachPoint,
+                    rotation = Quaternion.LookRotation(attachPoint - handlePosition)
+                }
+            };
 
             float dist;
 

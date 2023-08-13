@@ -72,7 +72,7 @@ namespace Mapify.Editor.Tools
             {
                 Vector3[][] curves = TrackToolsHelper.GetSwitchBeziers(prefab, attachPoint, handlePosition, connectingPoint);
 
-                return new Vector3[][]
+                return new[]
                 {
                 MathHelper.SampleBezier(curves[0], samples),
                 MathHelper.SampleBezier(curves[1], samples)

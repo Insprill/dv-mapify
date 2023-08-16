@@ -241,7 +241,7 @@ namespace Mapify.Editor.Utils
         /// </summary>
         public static bool IsStartLevel(this Track track)
         {
-            return track.Curve[0].position.y == track.Curve[0].globalHandle2.y;
+            return Mathf.Approximately(track.Curve[0].position.y, track.Curve[0].globalHandle2.y);
         }
 
         /// <summary>
@@ -249,7 +249,7 @@ namespace Mapify.Editor.Utils
         /// </summary>
         public static bool IsEndLevel(this Track track)
         {
-            return track.Curve.Last().position.y == track.Curve.Last().globalHandle1.y;
+            return Mathf.Approximately(track.Curve.Last().position.y, track.Curve.Last().globalHandle1.y);
         }
 
         /// <summary>

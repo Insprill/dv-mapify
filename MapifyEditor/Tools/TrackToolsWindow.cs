@@ -834,6 +834,7 @@ namespace Mapify.Editor.Tools
             GUILayoutOption smallWidth = GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.1f);
             // Tooltip to display, may change to explain why a button is disabled.
             string tooltip;
+            bool isSwitch = CurrentTrack ? CurrentTrack.IsSwitch : false;
 
             EditorGUILayout.BeginVertical();
 
@@ -841,27 +842,8 @@ namespace Mapify.Editor.Tools
             GUILayout.FlexibleSpace();
 
             // Back button.
-            if (!CurrentTrack)
-            {
-                // Disable buttons in case creation isn't possible.
-                GUI.enabled = false;
-                tooltip = "No track";
-            }
-            else if (!IsAllowedCreation(CurrentTrack.GetGradeAtStart()))
-            {
-                GUI.enabled = false;
-                tooltip = "Grade too steep for creation";
-            }
-            else if (_currentMode == CreationMode.Special && _currentSpecial == SpecialTrack.Connect2)
-            {
-                GUI.enabled = false;
-                tooltip = "Use the [New Track] button for this feature";
-            }
-            else
-            {
-                GUI.enabled = true;
-                tooltip = "Creates a track behind the current one";
-            }
+            // Disable buttons in case creation isn't possible.
+            GUI.enabled = IsAllowedCreation(true, out tooltip);
 
             if (GUILayout.Button(new GUIContent("<<<", tooltip), smallWidth))
             {
@@ -880,26 +862,7 @@ namespace Mapify.Editor.Tools
             GUI.backgroundColor = Color.white;
 
             // Forward button.
-            if (!CurrentTrack)
-            {
-                GUI.enabled = false;
-                tooltip = "No track";
-            }
-            else if (!IsAllowedCreation(CurrentTrack.GetGradeAtEnd()))
-            {
-                GUI.enabled = false;
-                tooltip = "Grade too steep for creation";
-            }
-            else if (_currentMode == CreationMode.Special && _currentSpecial == SpecialTrack.Connect2)
-            {
-                GUI.enabled = false;
-                tooltip = "Use the [New Track] button for this feature";
-            }
-            else
-            {
-                GUI.enabled = true;
-                tooltip = "Creates a track in front of the current one";
-            }
+            GUI.enabled = IsAllowedCreation(false, out tooltip);
 
             if (GUILayout.Button(new GUIContent(">>>", tooltip), smallWidth))
             {
@@ -1262,10 +1225,9 @@ namespace Mapify.Editor.Tools
 
         #region OTHER
 
+#if UNITY_EDITOR
         public void TryGetDefaultAssets()
         {
-            // Exporting doesn't like this code.
-#if UNITY_EDITOR
             string[] guids;
 
             if (TrackPrefab == null)
@@ -1323,8 +1285,8 @@ namespace Mapify.Editor.Tools
                     }
                 }
             }
-#endif
         }
+#endif
 
         public void ResetCreationSettings(bool all)
         {
@@ -1375,7 +1337,37 @@ namespace Mapify.Editor.Tools
             RemakeAndRepaint();
         }
 
-        public bool IsAllowedCreation(float grade)
+        private bool IsAllowedCreation(bool isBehind, out string tooltip)
+        {
+            if (!CurrentTrack)
+            {
+                tooltip = "No selection";
+                return false;
+            }
+
+            if (CheckGrade(isBehind ? CurrentTrack.GetGradeAtStart() : CurrentTrack.GetGradeAtEnd()))
+            {
+                tooltip = "Grade too steep for creation";
+                return false;
+            }
+
+            if (CurrentTrack.IsSwitch && (_currentMode == CreationMode.Switch || _currentMode == CreationMode.Yard))
+            {
+                tooltip = "Cannot attach a switch to another switch directly";
+                return false;
+            }
+
+            if (_currentMode == CreationMode.Special && _currentSpecial == SpecialTrack.Connect2)
+            {
+                tooltip = "Use the [New Track] button for this feature";
+                return false;
+            }
+
+            tooltip = isBehind ? "Creates a track behind the current one" : "Creates a track in front of the current one";
+            return true;
+        }
+
+        private bool CheckGrade(float grade)
         {
             switch (_currentMode)
             {
@@ -1452,8 +1444,8 @@ namespace Mapify.Editor.Tools
                 forward = _currentParent ? _currentParent.forward : Vector3.forward;
             }
 
-            bool createFront = CurrentTrack && IsAllowedCreation(CurrentTrack.GetGradeAtEnd());
-            bool createBack = CurrentTrack && IsAllowedCreation(CurrentTrack.GetGradeAtStart());
+            bool createFront = CurrentTrack && CheckGrade(CurrentTrack.GetGradeAtEnd());
+            bool createBack = CurrentTrack && CheckGrade(CurrentTrack.GetGradeAtStart());
             bool createNew = true;
 
             switch (_currentMode)

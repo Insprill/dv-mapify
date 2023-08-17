@@ -664,7 +664,7 @@ namespace Mapify.Editor.Tools
             t.stationId = stationId;
             t.trackType = TrackType.Storage;
             // Colour isn't updated until OnValidate() is called so force it to be updated.
-            t.Curve.drawColor = new Color32(172, 134, 101, 255);
+            t.Curve.drawColor = Track.COLOR_STORAGE;
         }
 
         // Turntables.

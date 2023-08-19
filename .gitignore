@@ -302,7 +302,7 @@ PackageBuilder/Assets/*
 !PackageBuilder/Assets/Mapify/
 !PackageBuilder/Assets/Mapify.meta
 PackageBuilder/Assets/Mapify/Scripts/*
-PackageBuilder/Assets/Mapify/Scripts.meta
+!PackageBuilder/Assets/Mapify/Scripts/*meta
 # Project Settings
 !PackageBuilder/ProjectSettings/
 PackageBuilder/ProjectSettings/*

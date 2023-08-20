@@ -78,6 +78,8 @@ namespace Mapify.Editor.Tools
 
         // Settings.
         private bool _showSettings = false;
+        private bool _performanceMode = false;
+        private int _updateCounter = 0;
         private Color _forwardColour = Color.cyan;
         private Color _backwardColour = Color.red;
         private Color _newColour = Color.green;
@@ -154,6 +156,16 @@ namespace Mapify.Editor.Tools
 
             // If the GUI has changed, redraw.
             if (GUI.changed)
+            {
+                RemakeAndRepaint();
+            }
+        }
+
+        private void OnInspectorUpdate()
+        {
+            _updateCounter = (_updateCounter + 1) % 10;
+
+            if (!_performanceMode || _updateCounter % 10 == 0)
             {
                 RemakeAndRepaint();
             }
@@ -1037,6 +1049,10 @@ namespace Mapify.Editor.Tools
             {
                 EditorGUI.indentLevel++;
 
+                _performanceMode = EditorGUILayout.Toggle(
+                    new GUIContent("Performance mode", "Reduces redraw frequency"),
+                    _performanceMode);
+
                 _forwardColour = EditorGUILayout.ColorField(
                     new GUIContent("Forward preview", "Colour for the forward track previews"),
                     _forwardColour);
@@ -1329,6 +1345,8 @@ namespace Mapify.Editor.Tools
 
         public void ResetPreviewSettings()
         {
+            _performanceMode = false;
+            _updateCounter = 0;
             _forwardColour = Color.cyan;
             _backwardColour = Color.red;
             _newColour = Color.green;

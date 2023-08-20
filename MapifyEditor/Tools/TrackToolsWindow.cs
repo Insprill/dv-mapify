@@ -567,9 +567,7 @@ namespace Mapify.Editor.Tools
             }
 
             DrawOrientationGUI("Which side the diverging track turns to");
-            _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
-                "Which of the 3 switch points should connect to the current track"),
-                _connectingPoint);
+            DrawSwitchPointGUI();
         }
 
         private void DrawYardOptions()
@@ -721,9 +719,7 @@ namespace Mapify.Editor.Tools
             }
 
             DrawOrientationGUI("Choose which side the track diverges to");
-            _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
-                "Which of the 3 switch points should connect to the current track"),
-                _connectingPoint);
+            DrawSwitchPointGUI();
 
             if (_connectingPoint == SwitchPoint.Through)
             {
@@ -791,14 +787,14 @@ namespace Mapify.Editor.Tools
 
             DrawOrientationGUI("Which side the curve turns to");
 
-                _trackDistance = EditorGUILayout.FloatField(new GUIContent("Track distance",
-                    "The distance between parallel tracks"),
-                    _trackDistance);
-                _isTrailing = EditorGUILayout.Toggle(new GUIContent("Is trailing",
-                    "If the crossover is trailing into this direction"),
-                    _isTrailing);
+            _trackDistance = EditorGUILayout.FloatField(new GUIContent("Track distance",
+                "The distance between parallel tracks"),
+                _trackDistance);
+            _isTrailing = EditorGUILayout.Toggle(new GUIContent("Is trailing",
+                "If the crossover is trailing into this direction"),
+                _isTrailing);
 
-                DrawSwitchDistanceGUI();
+            DrawSwitchDistanceGUI();
         }
 
         private void DrawScissorsCrossoverOptions()
@@ -1095,6 +1091,21 @@ namespace Mapify.Editor.Tools
             if (GUILayout.Button(new GUIContent("Swap orientation", "Swaps orientation between left and right"), GUILayout.MaxWidth(140)))
             {
                 _orientation = FlipOrientation(_orientation);
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawSwitchPointGUI()
+        {
+            EditorGUILayout.BeginHorizontal();
+            _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
+                "Which of the 3 switch points should connect to the current track"),
+                _connectingPoint);
+
+            if (GUILayout.Button(new GUIContent("Next point", "Swaps between the 3 switch points."), GUILayout.MaxWidth(140)))
+            {
+                _connectingPoint = NextPoint(_connectingPoint);
             }
 
             EditorGUILayout.EndHorizontal();

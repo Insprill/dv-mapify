@@ -1374,7 +1374,7 @@ namespace Mapify.Editor.Tools
                 return false;
             }
 
-            if (CheckGrade(isBehind ? CurrentTrack.GetGradeAtStart() : CurrentTrack.GetGradeAtEnd()))
+            if (!CheckGrade(isBehind ? CurrentTrack.GetGradeAtStart() : CurrentTrack.GetGradeAtEnd()))
             {
                 tooltip = "Grade too steep for creation";
                 return false;

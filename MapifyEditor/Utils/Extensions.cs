@@ -229,13 +229,13 @@ namespace Mapify.Editor.Utils
                 .ToDictionary(group => group.Key, group => group.ToList());
         }
 
-        // Switches
+        // Switches.
         public static BezierPoint GetJointPoint(this Switch s) => s.ThroughTrack.Curve[0];
         public static BezierPoint GetThroughPoint(this Switch s) => s.ThroughTrack.Curve[1];
         public static BezierPoint GetDivergingPoint(this Switch s) => s.DivergingTrack.Curve[1];
         public static BezierPoint GetDivergeJoinPoint(this Switch s) => s.DivergingTrack.Curve[0];
 
-        // Track
+        // Track.
         /// <summary>
         /// Returns true if this track starts at grade of 0%.
         /// </summary>
@@ -296,6 +296,23 @@ namespace Mapify.Editor.Utils
         public static float GetAverageGrade(this Track track, float resolution = 0.5f)
         {
             return track.GetHeightChange() / track.GetHorizontalLength(resolution);
+        }
+
+        // BezierPoint.
+        /// <summary>
+        /// Returns the grade for the next handle.
+        /// </summary>
+        public static float GetGradeForwards(this BezierPoint bp)
+        {
+            return MathHelper.GetGrade(bp.position, bp.globalHandle2);
+        }
+
+        /// <summary>
+        /// Returns the grade for the rear handle.
+        /// </summary>
+        public static float GetGradeBackwards(this BezierPoint bp)
+        {
+            return MathHelper.GetGrade(bp.globalHandle1, bp.position);
         }
 
         #endregion

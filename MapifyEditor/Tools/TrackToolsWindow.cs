@@ -855,7 +855,17 @@ namespace Mapify.Editor.Tools
 
             if (GUILayout.Button(new GUIContent("<<<", tooltip), smallWidth))
             {
-                CreateTrack(CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2);
+                switch (_selectionType)
+                {
+                    case SelectionType.Track:
+                        CreateTrack(CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2);
+                        break;
+                    case SelectionType.BezierPoint:
+                        CreateTrack(CurrentPoint.position, CurrentPoint.globalHandle2);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             // Middle button.
@@ -874,7 +884,17 @@ namespace Mapify.Editor.Tools
 
             if (GUILayout.Button(new GUIContent(">>>", tooltip), smallWidth))
             {
-                CreateTrack(CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1);
+                switch (_selectionType)
+                {
+                    case SelectionType.Track:
+                        CreateTrack(CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1);
+                        break;
+                    case SelectionType.BezierPoint:
+                        CreateTrack(CurrentPoint.position, CurrentPoint.globalHandle1);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             GUI.enabled = true;
@@ -1368,32 +1388,60 @@ namespace Mapify.Editor.Tools
 
         private bool IsAllowedCreation(bool isBehind, out string tooltip)
         {
-            if (!CurrentTrack)
+            switch (_selectionType)
             {
-                tooltip = "No selection";
-                return false;
-            }
+                case SelectionType.Track:
+                    if (!CurrentTrack)
+                    {
+                        tooltip = "No selection";
+                        return false;
+                    }
 
-            if (!CheckGrade(isBehind ? CurrentTrack.GetGradeAtStart() : CurrentTrack.GetGradeAtEnd()))
-            {
-                tooltip = "Grade too steep for creation";
-                return false;
-            }
+                    if (!CheckGrade(isBehind ? CurrentTrack.GetGradeAtStart() : CurrentTrack.GetGradeAtEnd()))
+                    {
+                        tooltip = "Grade too steep for creation";
+                        return false;
+                    }
 
-            if (CurrentTrack.IsSwitch && (_currentMode == CreationMode.Switch || _currentMode == CreationMode.Yard))
-            {
-                tooltip = "Cannot attach a switch to another switch directly";
-                return false;
-            }
+                    if (CurrentTrack.IsSwitch && (_currentMode == CreationMode.Switch || _currentMode == CreationMode.Yard))
+                    {
+                        tooltip = "Cannot attach a switch to another switch directly";
+                        return false;
+                    }
 
-            if (_currentMode == CreationMode.Special && _currentSpecial == SpecialTrack.Connect2)
-            {
-                tooltip = "Use the [New Track] button for this feature";
-                return false;
-            }
+                    if (_currentMode == CreationMode.Special && _currentSpecial == SpecialTrack.Connect2)
+                    {
+                        tooltip = "Use the [New Track] button for this feature";
+                        return false;
+                    }
 
-            tooltip = isBehind ? "Creates a track behind the current one" : "Creates a track in front of the current one";
-            return true;
+                    tooltip = isBehind ? "Creates a track behind the current one" : "Creates a track in front of the current one";
+                    return true;
+                case SelectionType.BezierPoint:
+                    if (!CurrentPoint)
+                    {
+                        tooltip = "No selection";
+                        return false;
+                    }
+
+                    if (!CheckGrade(isBehind ? CurrentPoint.GetGradeBackwards() : CurrentPoint.GetGradeForwards()))
+                    {
+                        tooltip = "Grade too steep for creation";
+                        return false;
+                    }
+
+                    if (_currentMode == CreationMode.Special && _currentSpecial == SpecialTrack.Connect2)
+                    {
+                        tooltip = "Use the [New Track] button for this feature";
+                        return false;
+                    }
+
+                    tooltip = isBehind ? "Creates a track behind the current point" : "Creates a track in front of the current point";
+                    return true;
+                default:
+                    tooltip = "Selection is not valid for creation";
+                    return false;
+            }
         }
 
         private bool CheckGrade(float grade)
@@ -1459,23 +1507,39 @@ namespace Mapify.Editor.Tools
             ClearPreviews();
             DoNullCheck();
 
-            Vector3 pos;
-            Vector3 forward;
+            Vector3 pos = _currentParent ? _currentParent.position : Vector3.zero;
+            Vector3 forward = _currentParent ? _currentParent.forward : Vector3.forward;
 
-            //if (_selectionType == SelectionType.BezierPoint)
-            //{
-            //    pos = CurrentPoint.position;
-            //    forward = CurrentPoint.position - CurrentPoint.globalHandle1;
-            //}
-            //else
-            {
-                pos = _currentParent ? _currentParent.position : Vector3.zero;
-                forward = _currentParent ? _currentParent.forward : Vector3.forward;
-            }
+            AttachPoint next;
+            AttachPoint prev;
 
-            bool createFront = CurrentTrack && CheckGrade(CurrentTrack.GetGradeAtEnd());
-            bool createBack = CurrentTrack && CheckGrade(CurrentTrack.GetGradeAtStart());
+            bool createFront = false;
+            bool createBack = false;
             bool createNew = true;
+
+            switch (_selectionType)
+            {
+                case SelectionType.Track:
+                    next = new AttachPoint(CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1);
+                    prev = new AttachPoint(CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2);
+
+                    createFront = CurrentTrack && CheckGrade(CurrentTrack.GetGradeAtEnd());
+                    createBack = CurrentTrack && CheckGrade(CurrentTrack.GetGradeAtStart());
+                    break;
+                case SelectionType.BezierPoint:
+                    next = new AttachPoint(CurrentPoint.position, CurrentPoint.globalHandle1);
+                    prev = new AttachPoint(CurrentPoint.position, CurrentPoint.globalHandle2);
+
+                    createFront = CurrentPoint && !Mathf.Approximately(CurrentPoint.handle1.sqrMagnitude, 0) &&
+                        CheckGrade(CurrentPoint.GetGradeForwards());
+                    createBack = CurrentPoint && !Mathf.Approximately(CurrentPoint.handle2.sqrMagnitude, 0) &&
+                        CheckGrade(CurrentPoint.GetGradeBackwards());
+                    break;
+                default:
+                    next = new AttachPoint(Vector3.zero, Vector3.zero);
+                    prev = new AttachPoint(Vector3.zero, Vector3.zero);
+                    break;
+            }
 
             switch (_currentMode)
             {
@@ -1483,15 +1547,13 @@ namespace Mapify.Editor.Tools
                     if (createFront)
                     {
                         _forwardLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewStraight(
-                            CurrentTrack.Curve.Last().position,
-                            CurrentTrack.Curve.Last().globalHandle1,
+                            next.Position, next.Handle,
                             _length, _endGrade, out _forwardPoints, _sampleCount) };
                     }
                     if (createBack)
                     {
                         _backwardLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewStraight(
-                            CurrentTrack.Curve[0].position,
-                            CurrentTrack.Curve[0].globalHandle2,
+                            prev.Position, prev.Handle,
                             _length, _endGrade, out _backwardPoints, _sampleCount) };
                     }
                     if (createNew)
@@ -1504,13 +1566,13 @@ namespace Mapify.Editor.Tools
                     if (createFront)
                     {
                         _forwardLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewCurve(
-                            CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1,
+                            next.Position, next.Handle,
                             _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out _forwardPoints, _sampleCount) };
                     }
                     if (createBack)
                     {
                         _backwardLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewCurve(
-                            CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2,
+                            prev.Position, prev.Handle,
                             _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out _backwardPoints, _sampleCount) };
                     }
                     if (createNew)
@@ -1524,20 +1586,18 @@ namespace Mapify.Editor.Tools
                     {
                         if (createFront)
                         {
-                            _forwardPoints = new Vector3[] { CurrentTrack.Curve.Last().position };
+                            _forwardPoints = new Vector3[] { next.Position };
 
                             _forwardLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
-                                CurrentTrack.Curve.Last().position,
-                                CurrentTrack.Curve.Last().globalHandle1,
+                                next.Position, next.Handle,
                                 _connectingPoint, _sampleCount);
                         }
                         if (createBack)
                         {
-                            _backwardPoints = new Vector3[] { CurrentTrack.Curve[0].position };
+                            _backwardPoints = new Vector3[] { prev.Position };
 
                             _backwardLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
-                                CurrentTrack.Curve[0].position,
-                                CurrentTrack.Curve[0].globalHandle2,
+                                prev.Position, prev.Handle,
                                 _connectingPoint, _sampleCount);
                         }
                         if (createNew)
@@ -1556,13 +1616,13 @@ namespace Mapify.Editor.Tools
                         if (createFront)
                         {
                             _forwardLines = TrackToolsCreator.Previews.PreviewYard(LeftSwitch, RightSwitch,
-                                CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1,
+                                next.Position, next.Handle,
                                 _orientation, _trackDistance, _yardOptions, _sampleCount);
                         }
                         if (createBack)
                         {
                             _backwardLines = TrackToolsCreator.Previews.PreviewYard(LeftSwitch, RightSwitch,
-                                CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2,
+                                prev.Position, prev.Handle,
                                 _orientation, _trackDistance, _yardOptions, _sampleCount);
                         }
                         if (createNew)
@@ -1576,13 +1636,13 @@ namespace Mapify.Editor.Tools
                 case CreationMode.Turntable:
                     if (createFront)
                     {
-                        _forwardLines = TrackToolsCreator.Previews.PreviewTurntable(CurrentTrack.Curve.Last().position,
-                            CurrentTrack.Curve.Last().globalHandle1, _turntableOptions, _sampleCount);
+                        _forwardLines = TrackToolsCreator.Previews.PreviewTurntable(
+                            next.Position, next.Handle, _turntableOptions, _sampleCount);
                     }
                     if (createBack)
                     {
-                        _backwardLines = TrackToolsCreator.Previews.PreviewTurntable(CurrentTrack.Curve[0].position,
-                            CurrentTrack.Curve[0].globalHandle2, _turntableOptions, _sampleCount);
+                        _backwardLines = TrackToolsCreator.Previews.PreviewTurntable(
+                            prev.Position, prev.Handle, _turntableOptions, _sampleCount);
                     }
                     if (createNew)
                     {
@@ -1591,25 +1651,26 @@ namespace Mapify.Editor.Tools
                     }
                     break;
                 case CreationMode.Special:
-                    SpecialPreviews(createFront, createBack, createNew, pos, forward);
+                    SpecialPreviews(createFront, createBack, createNew, pos, forward, next, prev);
                     break;
                 default:
                     break;
             }
         }
 
-        private void SpecialPreviews(bool createFront, bool createBack, bool createNew, Vector3 pos, Vector3 forward)
+        private void SpecialPreviews(bool createFront, bool createBack, bool createNew, Vector3 pos, Vector3 forward,
+            AttachPoint next, AttachPoint prev)
         {
             switch (_currentSpecial)
             {
                 case SpecialTrack.Buffer:
                     if (createFront)
                     {
-                        _forwardPoints = new Vector3[] { CurrentTrack.Curve.Last().position };
+                        _forwardPoints = new Vector3[] { next.Position };
                     }
                     if (createBack)
                     {
-                        _backwardPoints = new Vector3[] { CurrentTrack.Curve[0].position };
+                        _backwardPoints = new Vector3[] { prev.Position };
                     }
                     if (createNew)
                     {
@@ -1621,22 +1682,20 @@ namespace Mapify.Editor.Tools
                     {
                         if (createFront)
                         {
-                            _forwardPoints = new Vector3[] { CurrentTrack.Curve.Last().position };
+                            _forwardPoints = new Vector3[] { next.Position };
 
                             _forwardLines = new Vector3[1][];
                             System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
-                                CurrentTrack.Curve.Last().position,
-                                CurrentTrack.Curve.Last().globalHandle1,
+                                next.Position, next.Handle,
                                 _connectingPoint, _sampleCount), 1, _forwardLines, 0, 1);
                         }
                         if (createBack)
                         {
-                            _backwardPoints = new Vector3[] { CurrentTrack.Curve[0].position };
+                            _backwardPoints = new Vector3[] { prev.Position };
 
                             _backwardLines = new Vector3[1][];
                             System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
-                                CurrentTrack.Curve[0].position,
-                                CurrentTrack.Curve[0].globalHandle2,
+                                prev.Position, prev.Handle,
                                 _connectingPoint, _sampleCount), 1, _backwardLines, 0, 1);
                         }
                         if (createNew)
@@ -1709,18 +1768,18 @@ namespace Mapify.Editor.Tools
                     {
                         if (createFront)
                         {
-                            _forwardPoints = new Vector3[] { CurrentTrack.Curve.Last().position };
+                            _forwardPoints = new Vector3[] { next.Position };
 
-                            _forwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitch(), CurrentTrack.Curve.Last().position,
-                                CurrentTrack.Curve.Last().globalHandle1, _orientation, _trackDistance, _isTrailing,
+                            _forwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitch(),
+                                next.Position, next.Handle, _orientation, _trackDistance, _isTrailing,
                                 _switchDistance, _sampleCount);
                         }
                         if (createBack)
                         {
-                            _backwardPoints = new Vector3[] { CurrentTrack.Curve[0].position };
+                            _backwardPoints = new Vector3[] { prev.Position };
 
-                            _backwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitch(), CurrentTrack.Curve[0].position,
-                                CurrentTrack.Curve[0].globalHandle2, _orientation, _trackDistance, _isTrailing,
+                            _backwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitch(),
+                                prev.Position, prev.Handle, _orientation, _trackDistance, _isTrailing,
                                 _switchDistance, _sampleCount);
                         }
                         if (createNew)
@@ -1738,18 +1797,18 @@ namespace Mapify.Editor.Tools
                     {
                         if (createFront)
                         {
-                            _forwardPoints = new Vector3[] { CurrentTrack.Curve.Last().position };
+                            _forwardPoints = new Vector3[] { next.Position };
 
                             _forwardLines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
-                                CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1,
+                                next.Position, next.Handle,
                                 _orientation, _trackDistance, _switchDistance, _sampleCount);
                         }
                         if (createBack)
                         {
-                            _backwardPoints = new Vector3[] { CurrentTrack.Curve[0].position };
+                            _backwardPoints = new Vector3[] { prev.Position };
 
                             _backwardLines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
-                                CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2,
+                                prev.Position, prev.Handle,
                                 _orientation, _trackDistance, _switchDistance, _sampleCount);
                         }
                         if (createNew)
@@ -1767,18 +1826,18 @@ namespace Mapify.Editor.Tools
                     {
                         if (createFront)
                         {
-                            _forwardPoints = new Vector3[] { CurrentTrack.Curve.Last().position };
+                            _forwardPoints = new Vector3[] { next.Position };
 
                             _forwardLines = TrackToolsCreator.Previews.PreviewDoubleSlip(LeftSwitch, RightSwitch,
-                                CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1,
+                                next.Position, next.Handle,
                                 _orientation, _crossAngle, _sampleCount);
                         }
                         if (createBack)
                         {
-                            _backwardPoints = new Vector3[] { CurrentTrack.Curve[0].position };
+                            _backwardPoints = new Vector3[] { prev.Position };
 
                             _backwardLines = TrackToolsCreator.Previews.PreviewDoubleSlip(LeftSwitch, RightSwitch,
-                                CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2,
+                                prev.Position, prev.Handle,
                                 _orientation, _crossAngle, _sampleCount);
                         }
                         if (createNew)
@@ -1951,6 +2010,24 @@ namespace Mapify.Editor.Tools
 
             EditorGUILayout.HelpBox($"{name} must be assigned to use this function.", MessageType.Error);
             return false;
+        }
+
+        #endregion
+
+        #region STRUCTS
+
+        private struct AttachPoint
+        {
+            public Vector3 Position;
+            public Vector3 Handle;
+
+            public Vector3 NegativeHandle => Position - (Handle - Position);
+
+            public AttachPoint(Vector3 position, Vector3 handle)
+            {
+                Position = position;
+                Handle = handle;
+            }
         }
 
         #endregion

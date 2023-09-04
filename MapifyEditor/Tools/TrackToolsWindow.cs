@@ -165,7 +165,8 @@ namespace Mapify.Editor.Tools
         {
             _updateCounter = (_updateCounter + 1) % 10;
 
-            if (!_performanceMode || _updateCounter % 10 == 0)
+            if ((!_performanceMode || _updateCounter % 10 == 0) &&
+                _selectionType != SelectionType.None)
             {
                 RemakeAndRepaint();
             }

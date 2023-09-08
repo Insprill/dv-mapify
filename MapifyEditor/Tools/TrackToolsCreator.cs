@@ -338,11 +338,13 @@ namespace Mapify.Editor.Tools
         /// <param name="trackDistance">The distance between the sidings.</param>
         /// <param name="mainSideTracks">Number of tracks to the first diverging side (minimum of 1).</param>
         /// <param name="otherSideTracks">Number of tracks to the opposite side to the diverging track.</param>
+        /// <param name="half">Whether the yard should only have an exit on one side.</param>
         /// <param name="alternateSides">Whether both ends should have diverging tracks to the same side.</param>
         /// <param name="minimumLength">The smallest length of one of the straight sections of a siding.</param>
         /// <param name="stationId">The ID of the station this yard belongs to.</param>
         /// <param name="yardId">The ID of this yard.</param>
         /// <param name="startingTrackId">The starting number of the sidings.</param>
+        /// <param name="reverseNumbers">Whether the track numbers should increase FROM the starting ID or decrease TO the starting ID.</param>
         /// <param name="sidings">An array with all sidings.</param>
         /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
@@ -363,12 +365,56 @@ namespace Mapify.Editor.Tools
         /// The <paramref name="startingTrackId"/> is the lowest track number in the yard. Normally this value is <c>1</c>, but in situations where
         /// 2 yards are combined into one, it might be necessary to start the 2nd yard on a higher number (in the base game, the Harbour's D yard
         /// is an example of this, where tracks D6O and D7L are separate from the rest).
+        /// The <paramref name="reverseNumbers"/> option uses <paramref name="startingTrackId"/> as the lowest number. A start value of 3, and 5
+        /// total tracks, will use the numbers 3, 4, 5, 6, and 7 always, but the order will be reversed.
         /// </para>
         /// </remarks>
         /// <seealso cref="CreateSwitch(Switch, Switch, Transform, Vector3, Vector3, TrackOrientation, SwitchPoint, bool)"/>
         public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool half, bool alternateSides, float minimumLength,
+            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings, bool registerUndo)
+        {
+            if (half)
+            {
+                return CreateHalfYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
+                    mainSideTracks, otherSideTracks, alternateSides, minimumLength, stationId, yardId, startingTrackId, reverseNumbers,
+                    out sidings, registerUndo);
+            }
+            else
+            {
+                return CreateFullYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
+                    mainSideTracks, otherSideTracks, alternateSides, minimumLength, stationId, yardId, startingTrackId, reverseNumbers,
+                    out sidings, registerUndo);
+            }
+        }
+
+        /// <summary>
+        /// Creates a yard with similar shape to the ones present in the base game.
+        /// </summary>
+        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="attachPoint">Attachment point for the first switch.</param>
+        /// <param name="handlePosition">Handle of the attachment point for the first switch.</param>
+        /// <param name="orientation">Which side the first diverging track should exit to.</param>
+        /// <param name="trackDistance">The distance between the sidings.</param>
+        /// <param name="yardOptions">Settings for the creation of the yard.</param>
+        /// <param name="sidings">An array with all sidings.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
+        /// <seealso cref="CreateYard(Switch, Switch, Track, Transform, Vector3, Vector3, TrackOrientation, float, int, int, bool, float, string, char, byte, bool)"/>
+        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float trackDistance, YardOptions yardOptions, out Track[] sidings, bool registerUndo)
+        {
+            return CreateYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
+                yardOptions.TracksMainSide, yardOptions.TracksOtherSide, yardOptions.Half, yardOptions.AlternateSides, yardOptions.MinimumLength,
+                yardOptions.StationId, yardOptions.YardId, yardOptions.StartTrackId, yardOptions.ReverseNumbers, out sidings, registerUndo);
+        }
+
+        private static Switch[] CreateFullYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool alternateSides, float minimumLength,
-            string stationId, char yardId, byte startingTrackId, out Track[] sidings, bool registerUndo)
+            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings, bool registerUndo)
         {
             if (mainSideTracks < 1)
             {
@@ -507,6 +553,17 @@ namespace Mapify.Editor.Tools
             }
 
             // Connect the 2 sides.
+            System.Func<byte, byte> change;
+            if (reverseNumbers)
+            {
+                change = (i => (byte)(i - 1));
+                startingTrackId = (byte)(startingTrackId + mainSideTracks + otherSideTracks);
+            }
+            else
+            {
+                change = (i => (byte)(i + 1));
+            }
+
             // Main side.
             for (int i = side1.Count - 1; i >= 0; i--)
             {
@@ -527,14 +584,14 @@ namespace Mapify.Editor.Tools
                 }
 
                 AssignYardProperties(t, stationId, yardId, startingTrackId);
-                startingTrackId++;
+                startingTrackId = change(startingTrackId);
                 storageTracks.Add(t);
             }
 
             // Middle track.
             t = CreateStraight2Point(trackPrefab, yardObj.transform, midStart.position, mid.position, false);
             AssignYardProperties(t, stationId, yardId, startingTrackId);
-            startingTrackId++;
+            startingTrackId = change(startingTrackId);
             storageTracks.Add(t);
 
             // Other side.
@@ -557,7 +614,7 @@ namespace Mapify.Editor.Tools
                 }
 
                 AssignYardProperties(t, stationId, yardId, startingTrackId);
-                startingTrackId++;
+                startingTrackId = change(startingTrackId);
                 storageTracks.Add(t);
             }
 
@@ -580,28 +637,220 @@ namespace Mapify.Editor.Tools
             return new Switch[] { start, end };
         }
 
-        /// <summary>
-        /// Creates a yard with similar shape to the ones present in the base game.
-        /// </summary>
-        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
-        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
-        /// <param name="trackPrefab">The base track prefab.</param>
-        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
-        /// <param name="attachPoint">Attachment point for the first switch.</param>
-        /// <param name="handlePosition">Handle of the attachment point for the first switch.</param>
-        /// <param name="orientation">Which side the first diverging track should exit to.</param>
-        /// <param name="trackDistance">The distance between the sidings.</param>
-        /// <param name="yardOptions">Settings for the creation of the yard.</param>
-        /// <param name="sidings">An array with all sidings.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
-        /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
-        /// <seealso cref="CreateYard(Switch, Switch, Track, Transform, Vector3, Vector3, TrackOrientation, float, int, int, bool, float, string, char, byte, bool)"/>
-        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            TrackOrientation orientation, float trackDistance, YardOptions yardOptions, out Track[] sidings, bool registerUndo)
+        private static Switch[] CreateHalfYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool alternateSides, float minimumLength,
+            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings, bool registerUndo)
         {
-            return CreateYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation,
-                trackDistance, yardOptions.TracksMainSide, yardOptions.TracksOtherSide, yardOptions.AlternateSides, yardOptions.MinimumLength,
-                yardOptions.StationId, yardOptions.YardId, yardOptions.StartTrackId, out sidings, registerUndo);
+            if (mainSideTracks < 1)
+            {
+                throw new System.ArgumentOutOfRangeException(nameof(mainSideTracks), "Main side tracks must be at least 1.");
+            }
+
+            Vector3 dir = (attachPoint - handlePosition).normalized;
+            Vector3 rotDir = MathHelper.RotateCW(dir.Flatten()).To3D(0);
+
+            // Side direction of the yard.
+            if (orientation == TrackOrientation.Left)
+            {
+                rotDir = -rotDir;
+            }
+
+            Switch start;
+            Switch end;
+            Switch s;
+            Track t;
+
+            // Points to connect each yard track.
+            List<BezierPoint> side1 = new List<BezierPoint>();
+            List<BezierPoint> side2 = new List<BezierPoint>();
+            Vector3[] side3;
+            Vector3[] side4;
+            Track[] merge1 = new Track[0];
+            Track[] merge2 = new Track[0];
+            List<Track> storageTracks = new List<Track>();
+            BezierPoint mid;
+
+            // Create an empty gameobject to be the parent of the entry side.
+            GameObject startObj = new GameObject();
+            startObj.transform.position = attachPoint;
+
+            // Create the switches for the first side.
+            side1 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, startObj.transform, attachPoint, handlePosition,
+                orientation, mainSideTracks, trackDistance, out s, out merge1);
+            mid = s.GetThroughPoint();
+            start = s;
+
+            // Check if the other side has any tracks to make.
+            if (otherSideTracks > 0)
+            {
+                // Create a straight to separate the switches and then the other side.
+                t = CreateStraight(trackPrefab, startObj.transform, mid.position, mid.globalHandle1,
+                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
+                side2 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, startObj.transform,
+                    t.Curve[1].position, t.Curve[1].globalHandle1, FlipOrientation(orientation), otherSideTracks,
+                    trackDistance, out s, out merge2);
+                mid = s.GetThroughPoint();
+            }
+
+            // Create an empty GameObject to be the parent of the whole yard.
+            GameObject yardObj = new GameObject($"Yard [Station:{stationId}]/[ID:{yardId}]")
+            {
+                transform =
+                {
+                    parent = parent,
+                    position = attachPoint,
+                    rotation = Quaternion.LookRotation(attachPoint - handlePosition)
+                }
+            };
+
+            // Create the attach points for the other side.
+            side3 = new Vector3[side1.Count];
+
+            for (int i = 0; i < side3.Length; i++)
+            {
+                side3[i] = attachPoint + rotDir * trackDistance * (i + 1);
+            }
+
+            Vector3 midEnd = attachPoint;
+
+            side4 = new Vector3[side2.Count];
+
+            for (int i = 0; i < side4.Length; i++)
+            {
+                side4[i] = attachPoint - rotDir * trackDistance * (i + 1);
+            }
+
+            // Function to move everything to keep them aligned.
+            void MoveDistance(Vector3 distance)
+            {
+                for (int i = 0; i < side3.Length; i++)
+                {
+                    side3[i] -= distance;
+                }
+
+                midEnd -= distance;
+
+                for (int i = 0; i < side4.Length; i++)
+                {
+                    side4[i] -= distance;
+                }
+            }
+
+            float dist;
+
+            // Check the distance along the direction of the yard and if there's
+            // not enough distance, move the whole yard half further away.
+            // Main side.
+            for (int i = side1.Count - 1; i >= 0; i--)
+            {
+                dist = Vector3.Dot(side3[i] - side1[i].position, dir);
+
+                if (dist < minimumLength)
+                {
+                    MoveDistance(dir * (dist - minimumLength));
+                }
+            }
+
+            // Middle track.
+            dist = Vector3.Dot(midEnd - mid.position, dir);
+
+            if (dist < minimumLength)
+            {
+                MoveDistance(dir * (dist - minimumLength));
+            }
+
+            // Other side.
+            for (int i = 0; i < side2.Count; i++)
+            {
+                dist = Vector3.Dot(side4[i] - side2[i].position, dir);
+
+                if (dist < minimumLength)
+                {
+                    MoveDistance(dir * (dist - minimumLength));
+                }
+            }
+
+            // Connect the 2 sides.
+            System.Func<byte, byte> change;
+            if (reverseNumbers)
+            {
+                change = (i => (byte)(i - 1));
+                startingTrackId = (byte)(startingTrackId + mainSideTracks + otherSideTracks);
+            }
+            else
+            {
+                change = (i => (byte)(i + 1));
+            }
+
+            // Main side.
+            for (int i = side1.Count - 1; i >= 0; i--)
+            {
+                if ((side1[i].position - side3[i]).sqrMagnitude > 0)
+                {
+                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side1[i].position, side3[i], false);
+                }
+                else
+                {
+                    t = null;
+                }
+
+                // Merge the first with the curves so it reaches the switch.
+                if (i == side1.Count - 1)
+                {
+                    t = TrackToolsEditor.MergeTracks(new Track[] { merge1[0], merge1[1], t }, 0.01f, false)[0];
+                    t.transform.parent = yardObj.transform;
+                }
+
+                AssignYardProperties(t, stationId, yardId, startingTrackId);
+                startingTrackId = change(startingTrackId);
+                storageTracks.Add(t);
+            }
+
+            // Middle track.
+            t = CreateStraight2Point(trackPrefab, yardObj.transform, midEnd, mid.position, false);
+            AssignYardProperties(t, stationId, yardId, startingTrackId);
+            startingTrackId = change(startingTrackId);
+            storageTracks.Add(t);
+
+            // Other side.
+            for (int i = 0; i < side2.Count; i++)
+            {
+                if ((side2[i].position - side4[i]).sqrMagnitude > 0)
+                {
+                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side2[i].position, side4[i], false);
+                }
+                else
+                {
+                    t = null;
+                }
+
+                // Merge the last with the curves so it reaches the switch.
+                if (i == side2.Count - 1)
+                {
+                    t = TrackToolsEditor.MergeTracks(new Track[] { merge2[0], merge2[1], t }, 0.01f, false)[0];
+                    t.transform.parent = yardObj.transform;
+                }
+
+                AssignYardProperties(t, stationId, yardId, startingTrackId);
+                startingTrackId = change(startingTrackId);
+                storageTracks.Add(t);
+            }
+
+            // Kinda ugly, moving all children from both sides to the main yard object,
+            // but it simplifies yard length.
+            startObj.transform.ReparentAllChildren(yardObj.transform);
+
+            Object.DestroyImmediate(startObj);
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(yardObj, "Created Yard");
+            }
+#endif
+
+            sidings = storageTracks.ToArray();
+            return new Switch[] { start };
         }
 
         // Switches on each side of the yard.

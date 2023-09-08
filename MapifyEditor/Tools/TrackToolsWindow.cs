@@ -277,6 +277,8 @@ namespace Mapify.Editor.Tools
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
+        #region SELECTIONS
+
         private void DrawTrackSelection()
         {
             EditorGUILayout.ObjectField(
@@ -384,6 +386,8 @@ namespace Mapify.Editor.Tools
 
             _showPoints = EditorHelper.MultipleSelectionFoldout("Selected points", "BezierPoint", _showPoints, _selectedPoints);
         }
+
+        #endregion
 
         private void DrawCreationFoldout()
         {
@@ -590,10 +594,15 @@ namespace Mapify.Editor.Tools
             _yardOptions.TracksOtherSide = EditorGUILayout.IntField(new GUIContent("Tracks to other side",
                 "Number of tracks to the side opposite to the orientation"),
                 _yardOptions.TracksOtherSide);
+            _yardOptions.Half = EditorGUILayout.Toggle(new GUIContent("Half yard",
+                "If true, the yard will only have 1 exit"),
+                _yardOptions.Half);
+            GUI.enabled = !_yardOptions.Half;
             _yardOptions.AlternateSides = EditorGUILayout.Toggle(new GUIContent("Alternate sides",
                 "If true, the switches at either end will turn to different sides of the yard, if false they will " +
                 "instead face the same side"),
                 _yardOptions.AlternateSides);
+            GUI.enabled = true;
             _yardOptions.MinimumLength = EditorGUILayout.FloatField(new GUIContent("Minimum siding length",
                 "The minimum length of the straigth part of a siding of this yard"),
                 _yardOptions.MinimumLength);
@@ -606,6 +615,9 @@ namespace Mapify.Editor.Tools
             _yardOptions.StartTrackId = (byte)EditorGUILayout.IntField(new GUIContent("Track ID",
                 "Starting number of the track"),
                 _yardOptions.StartTrackId);
+            _yardOptions.ReverseNumbers = EditorGUILayout.Toggle(new GUIContent("Reverse track numbers",
+                "If true, the track numbers will instead decrease"),
+                _yardOptions.ReverseNumbers);
 
             EditorGUILayout.Space();
 
@@ -1183,7 +1195,7 @@ namespace Mapify.Editor.Tools
                     break;
                 case CreationMode.Yard:
                     SelectTrack(TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
-                        _orientation, _trackDistance, _yardOptions, out _, true)[1].ThroughTrack);
+                        _orientation, _trackDistance, _yardOptions, out _, true)[0].ThroughTrack);
                     break;
                 case CreationMode.Turntable:
                     SelectTrack(TrackToolsCreator.CreateTurntable(TurntablePrefab, TrackPrefab, _currentParent, attachPoint, handlePosition,

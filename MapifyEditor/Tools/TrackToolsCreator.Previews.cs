@@ -82,6 +82,19 @@ namespace Mapify.Editor.Tools
             public static Vector3[][] PreviewYard(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
                 TrackOrientation orientation, float trackDistance, YardOptions yardOptions, int samples = 8)
             {
+                if (yardOptions.Half)
+                {
+                    return PreviewHalfYard(leftPrefab, rightPrefab, attachPoint, handlePosition, orientation, trackDistance, yardOptions, samples);
+                }
+                else
+                {
+                    return PreviewFullYard(leftPrefab, rightPrefab, attachPoint, handlePosition, orientation, trackDistance, yardOptions, samples);
+                }
+            }
+
+            private static Vector3[][] PreviewFullYard(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
+                TrackOrientation orientation, float trackDistance, YardOptions yardOptions, int samples)
+            {
                 List<Vector3[]> results = new List<Vector3[]>();
                 Vector3[][] temp;
                 Vector3 offset;
@@ -194,6 +207,161 @@ namespace Mapify.Editor.Tools
                         results.AddRange(temp);
                         mid1 = temp[0][1];
                     }
+                }
+
+                float move = 0;
+                float dist = mid1.z - mid0.z;
+
+                if (dist < yardOptions.MinimumLength)
+                {
+                    move = Mathf.Max(move, -dist + yardOptions.MinimumLength);
+                }
+
+                for (int i = 0; i < points1.Length; i++)
+                {
+                    dist = points3[i].z - points1[i].z;
+
+                    if (dist < yardOptions.MinimumLength)
+                    {
+                        move = Mathf.Max(move, -dist + yardOptions.MinimumLength);
+                    }
+                }
+
+                for (int i = 0; i < points2.Length; i++)
+                {
+                    dist = points4[i].z - points2[i].z;
+
+                    if (dist < yardOptions.MinimumLength)
+                    {
+                        move = Mathf.Max(move, -dist + yardOptions.MinimumLength);
+                    }
+                }
+
+                offset = new Vector3(0, 0, move);
+
+                for (int i = half; i < results.Count; i++)
+                {
+                    for (int j = 0; j < results[i].Length; j++)
+                    {
+                        results[i][j] += offset;
+                    }
+                }
+
+                // TODO: fix lengths.
+                // Calculate lengths.
+                Vector3[] magnitudeHelper;
+                List<float> sidingLengths = new List<float>();
+                // Account for merged tracks.
+                float extraLength = -TrackToolsHelper.CalculateLengthFromDistanceYardSides(leftPrefab, trackDistance);
+                extraLength += leftPrefab.DivergingTrack.Curve.length;
+                extraLength *= 2.0f;
+
+                for (int i = 0; i < points1.Length; i++)
+                {
+                    magnitudeHelper = new Vector3[] { points1[i], points3[i] + offset };
+                    results.Add(magnitudeHelper);
+                    sidingLengths.Add((magnitudeHelper[1] - magnitudeHelper[0]).magnitude);
+                }
+
+                sidingLengths[sidingLengths.Count - 1] += extraLength;
+
+                magnitudeHelper = new Vector3[] { mid0, mid1 + offset };
+                results.Add(magnitudeHelper);
+                sidingLengths.Add((magnitudeHelper[1] - magnitudeHelper[0]).magnitude - 48.0f);
+
+                for (int i = 0; i < points2.Length; i++)
+                {
+                    magnitudeHelper = new Vector3[] { points2[i], points4[i] + offset };
+                    results.Add(magnitudeHelper);
+                    sidingLengths.Add((magnitudeHelper[1] - magnitudeHelper[0]).magnitude);
+                }
+
+                Quaternion rot = Quaternion.LookRotation(dir);
+
+                for (int i = 0; i < results.Count; i++)
+                {
+                    for (int j = 0; j < results[i].Length; j++)
+                    {
+                        results[i][j] = (rot * results[i][j]) + attachPoint;
+                    }
+                }
+
+                sidingLengths[sidingLengths.Count - 1] += extraLength;
+
+                MapInfo mapInfo = null;
+#if UNITY_EDITOR
+                mapInfo = EditorAssets.FindAsset<MapInfo>();
+#endif
+                CachedYard = new YardCache((results[half][0] - results[0][0]).magnitude, sidingLengths.ToArray(),
+                    mapInfo ? mapInfo.loadingGaugeWidth : 3.0f);
+
+                return results.ToArray();
+            }
+
+            private static Vector3[][] PreviewHalfYard(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
+                TrackOrientation orientation, float trackDistance, YardOptions yardOptions, int samples)
+            {
+                List<Vector3[]> results = new List<Vector3[]>();
+                Vector3[][] temp;
+                Vector3 offset;
+                Vector3 dir = attachPoint - handlePosition;
+                Vector3 mid0;
+                Vector3 mid1;
+
+                Vector3[] points1 = System.Array.Empty<Vector3>();
+                Vector3[] points2 = System.Array.Empty<Vector3>();
+                Vector3[] points3 = System.Array.Empty<Vector3>();
+                Vector3[] points4 = System.Array.Empty<Vector3>();
+
+                TrackOrientation currentOrientation = orientation;
+                temp = PreviewSwitchSprawl(leftPrefab, rightPrefab, yardOptions, currentOrientation, trackDistance,
+                    true, false, out points1, samples);
+                results.AddRange(temp);
+                mid0 = temp[0][1];
+
+                if (yardOptions.TracksOtherSide > 0)
+                {
+                    currentOrientation = FlipOrientation(orientation);
+                    offset = new Vector3(0, 0, (currentOrientation == TrackOrientation.Left ? leftPrefab : rightPrefab).ThroughTrack.Curve[1].position.z +
+                        TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance));
+
+                    results.Add(new Vector3[] { temp[0][1], temp[0][1] + offset });
+
+                    temp = PreviewSwitchSprawl(leftPrefab, rightPrefab, yardOptions, currentOrientation, trackDistance, false, false, out points2, samples);
+
+                    for (int i = 0; i < temp.Length; i++)
+                    {
+                        for (int j = 0; j < temp[i].Length; j++)
+                        {
+                            temp[i][j] += offset;
+                        }
+                    }
+
+                    for (int i = 0; i < points2.Length; i++)
+                    {
+                        points2[i] += offset;
+                    }
+
+                    results.AddRange(temp);
+                    mid0 = temp[0][1];
+                }
+
+                int half = results.Count;
+
+                points3 = new Vector3[points1.Length];
+
+                for (int i = 0; i < points1.Length; i++)
+                {
+                    points3[i] = new Vector3(points1[i].x, points1[i].y, 0);
+                }
+
+                mid1 = Vector3.zero;
+
+                points4 = new Vector3[points2.Length];
+
+                for (int i = 0; i < points2.Length; i++)
+                {
+                    points4[i] = new Vector3(points2[i].x, points2[i].y, 0);
                 }
 
                 float move = 0;

@@ -16,6 +16,9 @@ namespace Mapify.Editor.Tools
             window.Show();
             window.titleContent = new GUIContent("Track Tools");
             window.autoRepaintOnSceneChange = true;
+            window._isOpen = true;
+            window._updateCounter = 0;
+            window.RegisterEvents();
         }
 
         #region FIELDS
@@ -112,6 +115,7 @@ namespace Mapify.Editor.Tools
 
         // Window.
         private float _scrollMain = 0;
+        private bool _isOpen = false;
 
         // Drawing.
         private Vector3[] _forwardPoints = new Vector3[0];
@@ -163,34 +167,33 @@ namespace Mapify.Editor.Tools
 
         private void OnInspectorUpdate()
         {
+            if (!_isOpen)
+            {
+                return;
+            }
+
             _updateCounter = (_updateCounter + 1) % 10;
 
-            if ((!_performanceMode || _updateCounter % 10 == 0) &&
-                _selectionType != SelectionType.None)
+            if (!_performanceMode || _updateCounter % 10 == 0)
             {
-                RemakeAndRepaint();
+                // Only check if the window is closed if the last state is open.
+                if (_isOpen && !HasOpenInstances<TrackToolsWindow>())
+                {
+                    _isOpen = false;
+                    UnregisterEvents();
+                    return;
+                }
+
+                if (_selectionType != SelectionType.None)
+                {
+                    RemakeAndRepaint();
+                }
             }
-        }
-
-        private void OnFocus()
-        {
-            SceneView.duringSceneGui += DrawHandles;
-            Selection.selectionChanged += PrepareSelection;
-            RemakeAndRepaint();
-        }
-
-        private void OnLostFocus()
-        {
-            // Was supposed to stop drawing after losing focus but in this case it also
-            // stops when changing selections. Actual visible functions only exist in
-            // later versions of unity.
-            //SceneView.duringSceneGui -= DrawHandles;
         }
 
         private void OnDestroy()
         {
-            SceneView.duringSceneGui -= DrawHandles;
-            Selection.selectionChanged -= PrepareSelection;
+            UnregisterEvents();
         }
 
         private void OnSelectionChange()
@@ -206,6 +209,24 @@ namespace Mapify.Editor.Tools
             {
                 PrepareSelection();
             }
+        }
+
+        private void RegisterEvents(bool redraw = true)
+        {
+            SceneView.duringSceneGui += DrawHandles;
+            Selection.selectionChanged += PrepareSelection;
+
+            if (redraw)
+            {
+                RemakeAndRepaint();
+            }
+        }
+
+        private void UnregisterEvents()
+        {
+            SceneView.duringSceneGui -= DrawHandles;
+            Selection.selectionChanged -= PrepareSelection;
+            RemakeAndRepaint();
         }
 
         // Called when editor selection changes.

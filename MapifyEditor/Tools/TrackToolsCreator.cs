@@ -656,7 +656,6 @@ namespace Mapify.Editor.Tools
             }
 
             Switch start;
-            Switch end;
             Switch s;
             Track t;
 

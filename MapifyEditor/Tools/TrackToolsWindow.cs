@@ -19,6 +19,7 @@ namespace Mapify.Editor.Tools
             window._isOpen = true;
             window._updateCounter = 0;
             window.RegisterEvents();
+            window.DoNullCheck();
         }
 
         #region FIELDS
@@ -54,11 +55,6 @@ namespace Mapify.Editor.Tools
 
         private void OnGUI()
         {
-            if (!_isOpen)
-            {
-                return;
-            }
-
             DoNullCheck();
 
             _scrollMain = EditorGUILayout.BeginScrollView(new Vector2(0, _scrollMain)).y;
@@ -124,6 +120,7 @@ namespace Mapify.Editor.Tools
 
             if (_isOpen)
             {
+                PrepareSelection();
                 RegisterEvents();
             }
             else
@@ -549,6 +546,11 @@ namespace Mapify.Editor.Tools
         {
             ClearPreviews();
             DoNullCheck();
+
+            if (!_isOpen)
+            {
+                return;
+            }
 
             Vector3 pos = _currentParent ? _currentParent.position : Vector3.zero;
             Vector3 forward = _currentParent ? _currentParent.forward : Vector3.forward;

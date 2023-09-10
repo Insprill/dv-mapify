@@ -54,6 +54,11 @@ namespace Mapify.Editor.Tools
 
         private void OnGUI()
         {
+            if (!_isOpen)
+            {
+                return;
+            }
+
             DoNullCheck();
 
             _scrollMain = EditorGUILayout.BeginScrollView(new Vector2(0, _scrollMain)).y;
@@ -103,6 +108,7 @@ namespace Mapify.Editor.Tools
 
         private void OnDestroy()
         {
+            _isOpen = false;
             UnregisterEvents();
         }
 

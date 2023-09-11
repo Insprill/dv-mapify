@@ -18,7 +18,7 @@ namespace Mapify.Editor.Tools
             window.autoRepaintOnSceneChange = true;
             window._isOpen = true;
             window._updateCounter = 0;
-            window.RegisterEvents();
+            window.RegisterEvents(true);
             window.DoNullCheck();
         }
 
@@ -27,6 +27,7 @@ namespace Mapify.Editor.Tools
         // Window.
         private float _scrollMain = 0;
         private bool _isOpen = false;
+        private GameObject _lastSelection = null;
 
         // Drawing.
         private Vector3[] _forwardPoints = new Vector3[0];
@@ -43,6 +44,8 @@ namespace Mapify.Editor.Tools
         private bool _isLeft => _orientation == TrackOrientation.Left;
         public Track CurrentTrack => _selectedTracks.Length > 0 ? _selectedTracks[0] : null;
         public BezierPoint CurrentPoint => _selectedPoints.Length > 0 ? _selectedPoints[0] : null;
+        public Switch CurrentSwitch { get; private set; }
+        public Turntable CurrentTurntable { get; private set; }
 
         #endregion
 
@@ -95,9 +98,12 @@ namespace Mapify.Editor.Tools
                     return;
                 }
 
-                if (_selectionType != SelectionType.None)
+                // If selection changed, draw. Also draw if the selection is of a supported type.
+                if ((_lastSelection && _lastSelection != Selection.activeGameObject) ||
+                    _selectionType != SelectionType.None)
                 {
                     RemakeAndRepaint();
+                    _lastSelection = Selection.activeGameObject;
                 }
             }
         }
@@ -121,7 +127,7 @@ namespace Mapify.Editor.Tools
             if (_isOpen)
             {
                 PrepareSelection();
-                RegisterEvents();
+                RegisterEvents(true);
             }
             else
             {
@@ -139,7 +145,7 @@ namespace Mapify.Editor.Tools
             }
         }
 
-        private void RegisterEvents(bool redraw = true)
+        private void RegisterEvents(bool redraw)
         {
             SceneView.duringSceneGui += DrawHandles;
             Selection.selectionChanged += PrepareSelection;
@@ -161,6 +167,8 @@ namespace Mapify.Editor.Tools
         private void PrepareSelection()
         {
             GameObject go = Selection.activeGameObject;
+            CurrentSwitch = null;
+            CurrentTurntable = null;
 
             // Change tools behaviour based on the first selected object.
             if (!go)
@@ -174,6 +182,16 @@ namespace Mapify.Editor.Tools
             else if (go.GetComponent<BezierPoint>())
             {
                 _selectionType = SelectionType.BezierPoint;
+            }
+            else if (go.TryGetComponent(out Switch s))
+            {
+                _selectionType = SelectionType.Switch;
+                CurrentSwitch = s;
+            }
+            else if (go.TryGetComponent(out Turntable tt))
+            {
+                _selectionType = SelectionType.Turntable;
+                CurrentTurntable = tt;
             }
             else
             {
@@ -633,7 +651,7 @@ namespace Mapify.Editor.Tools
                         {
                             _forwardPoints = new Vector3[] { next.Position };
 
-                            _forwardLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
+                            _forwardLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
                                 next.Position, next.Handle,
                                 _connectingPoint, _sampleCount);
                         }
@@ -641,7 +659,7 @@ namespace Mapify.Editor.Tools
                         {
                             _backwardPoints = new Vector3[] { prev.Position };
 
-                            _backwardLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
+                            _backwardLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
                                 prev.Position, prev.Handle,
                                 _connectingPoint, _sampleCount);
                         }
@@ -650,7 +668,7 @@ namespace Mapify.Editor.Tools
                             _newPoints = new Vector3[] { pos };
 
                             forward.y = 0;
-                            _newLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
+                            _newLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
                                 pos, pos - forward, _connectingPoint, _sampleCount);
                         }
                     }
@@ -730,7 +748,7 @@ namespace Mapify.Editor.Tools
                             _forwardPoints = new Vector3[] { next.Position };
 
                             _forwardLines = new Vector3[1][];
-                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
+                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
                                 next.Position, next.Handle,
                                 _connectingPoint, _sampleCount), 1, _forwardLines, 0, 1);
                         }
@@ -739,7 +757,7 @@ namespace Mapify.Editor.Tools
                             _backwardPoints = new Vector3[] { prev.Position };
 
                             _backwardLines = new Vector3[1][];
-                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
+                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
                                 prev.Position, prev.Handle,
                                 _connectingPoint, _sampleCount), 1, _backwardLines, 0, 1);
                         }
@@ -749,7 +767,7 @@ namespace Mapify.Editor.Tools
 
                             _newLines = new Vector3[1][];
                             forward.y = 0;
-                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitch(),
+                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
                                 pos, pos - forward, SwitchPoint.Joint, _sampleCount), 1, _newLines, 0, 1);
                         }
                     }
@@ -814,7 +832,7 @@ namespace Mapify.Editor.Tools
                         {
                             _forwardPoints = new Vector3[] { next.Position };
 
-                            _forwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitch(),
+                            _forwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
                                 next.Position, next.Handle, _orientation, _trackDistance, _isTrailing,
                                 _switchDistance, _sampleCount);
                         }
@@ -822,7 +840,7 @@ namespace Mapify.Editor.Tools
                         {
                             _backwardPoints = new Vector3[] { prev.Position };
 
-                            _backwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitch(),
+                            _backwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
                                 prev.Position, prev.Handle, _orientation, _trackDistance, _isTrailing,
                                 _switchDistance, _sampleCount);
                         }
@@ -831,7 +849,7 @@ namespace Mapify.Editor.Tools
                             _newPoints = new Vector3[] { pos };
 
                             forward.y = 0;
-                            _newLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitch(), pos, pos - forward,
+                            _newLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(), pos, pos - forward,
                                 _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
                         }
                     }
@@ -899,7 +917,7 @@ namespace Mapify.Editor.Tools
             }
         }
 
-        private Switch GetCurrentSwitch()
+        private Switch GetCurrentSwitchPrefab()
         {
             return _isLeft ? LeftSwitch : RightSwitch;
         }

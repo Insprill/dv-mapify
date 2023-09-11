@@ -23,7 +23,9 @@ namespace Mapify.Editor.Tools
         {
             None,
             Track,
-            BezierPoint
+            BezierPoint,
+            Switch,
+            Turntable
         }
 
         public enum CreationMode

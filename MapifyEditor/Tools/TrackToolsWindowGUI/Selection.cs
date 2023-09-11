@@ -38,10 +38,16 @@ namespace Mapify.Editor.Tools
                     case SelectionType.BezierPoint:
                         DrawPointSelection();
                         break;
+                    case SelectionType.Switch:
+                        DrawSwitchSelection();
+                        break;
+                    case SelectionType.Turntable:
+                        DrawTurntableSelection();
+                        break;
                     default:
                         EditorGUILayout.Space();
                         EditorGUILayout.HelpBox("No compatible objects selected! These tools work with the following:\n" +
-                            "\u2022 Tracks\n\u2022 BezierPoints", MessageType.Warning);
+                            "\u2022 Tracks\n\u2022 BezierPoints\n\u2022 Switches\n\u2022 Turntables", MessageType.Warning);
                         EditorGUILayout.Space();
                         break;
                 }
@@ -159,6 +165,20 @@ namespace Mapify.Editor.Tools
             EditorGUI.indentLevel--;
 
             _showPoints = EditorHelper.MultipleSelectionFoldout("Selected points", "BezierPoint", _showPoints, _selectedPoints);
+        }
+
+        private void DrawSwitchSelection()
+        {
+            EditorGUILayout.ObjectField(
+                new GUIContent("Current switch"),
+                CurrentSwitch, typeof(Switch), true);
+        }
+
+        private void DrawTurntableSelection()
+        {
+            EditorGUILayout.ObjectField(
+                new GUIContent("Current turntable"),
+                CurrentTurntable, typeof(Turntable), true);
         }
     }
 }

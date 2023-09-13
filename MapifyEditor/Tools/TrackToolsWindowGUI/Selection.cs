@@ -172,6 +172,41 @@ namespace Mapify.Editor.Tools
             EditorGUILayout.ObjectField(
                 new GUIContent("Current switch"),
                 CurrentSwitch, typeof(Switch), true);
+
+            EditorGUILayout.LabelField(new GUIContent("North angle", "Angle in relation to the North"),
+                new GUIContent($"{MathHelper.AngleToNorth(CurrentSwitch.transform.forward):F2}°"));
+            EditorGUILayout.LabelField(new GUIContent("Diverges to", "Direction of the diverging track in relation to the through track"),
+                new GUIContent($"{(CurrentSwitch.IsLeft ? "Left" : "Right")}"));
+
+            EditorGUILayout.BeginHorizontal();
+            CurrentSwitch.defaultState = (Switch.StandSide)EditorGUILayout.EnumPopup(new GUIContent("Currently set to",
+                "The switch state when exporting"),
+                CurrentSwitch.defaultState);
+
+            if (GUILayout.Button(new GUIContent("Swap state", "Swaps state between through and diverging"), GUILayout.MaxWidth(140)))
+            {
+                CurrentSwitch.defaultState = FlipStand(CurrentSwitch.defaultState);
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(new GUIContent("Select through track", "Selects the through track"), GUILayout.MaxWidth(140)))
+            {
+                SelectTrack(CurrentSwitch.ThroughTrack);
+            }
+
+            if (GUILayout.Button(new GUIContent("Select diverging track", "Selects the diverging track"), GUILayout.MaxWidth(140)))
+            {
+                SelectTrack(CurrentSwitch.DivergingTrack);
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawTurntableSelection()
@@ -179,6 +214,19 @@ namespace Mapify.Editor.Tools
             EditorGUILayout.ObjectField(
                 new GUIContent("Current turntable"),
                 CurrentTurntable, typeof(Turntable), true);
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(new GUIContent("Select track", "Selects the turntable's track"), GUILayout.MaxWidth(140)))
+            {
+                SelectTrack(CurrentTurntable.Track);
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
         }
     }
 }

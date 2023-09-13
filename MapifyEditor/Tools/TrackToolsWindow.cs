@@ -29,19 +29,12 @@ namespace Mapify.Editor.Tools
         private bool _isOpen = false;
         private GameObject _lastSelection = null;
 
-        // Drawing.
-        private Vector3[] _forwardPoints = new Vector3[0];
-        private Vector3[] _newPoints = new Vector3[0];
-        private Vector3[] _backwardPoints = new Vector3[0];
-        private Vector3[][] _forwardLines = new Vector3[0][];
-        private Vector3[][] _newLines = new Vector3[0][];
-        private Vector3[][] _backwardLines = new Vector3[0][];
-
         #endregion
 
         #region PROPERTIES
 
         private bool _isLeft => _orientation == TrackOrientation.Left;
+
         public Track CurrentTrack => _selectedTracks.Length > 0 ? _selectedTracks[0] : null;
         public BezierPoint CurrentPoint => _selectedPoints.Length > 0 ? _selectedPoints[0] : null;
         public Switch CurrentSwitch { get; private set; }
@@ -222,36 +215,41 @@ namespace Mapify.Editor.Tools
             }
         }
 
-        public void CreateTrack(Vector3 attachPoint, Vector3 handlePosition)
+        public void CreateTrack(Vector3 position, Vector3 handle)
         {
             switch (_currentPiece)
             {
                 case TrackPiece.Straight:
-                    SelectTrack(TrackToolsCreator.CreateStraight(TrackPrefab, _currentParent, attachPoint, handlePosition,
+                    SelectTrack(TrackToolsCreator.CreateStraight(TrackPrefab, _currentParent, position, handle,
                         _length, _endGrade, true));
                     break;
                 case TrackPiece.Curve:
-                    SelectTrack(TrackToolsCreator.CreateCurve(TrackPrefab, _currentParent, attachPoint, handlePosition, _orientation,
+                    SelectTrack(TrackToolsCreator.CreateCurve(TrackPrefab, _currentParent, position, handle, _orientation,
                         _radius, _arc, _maxArcPerPoint, _endGrade, true));
                     break;
                 case TrackPiece.Switch:
-                    SelectTrack(TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
+                    SelectTrack(TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
                         _orientation, _connectingPoint, true).ThroughTrack);
                     break;
                 case TrackPiece.Yard:
-                    SelectTrack(TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                    SelectTrack(TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, position, handle,
                         _orientation, _trackDistance, _yardOptions, out _, true)[0].ThroughTrack);
                     break;
                 case TrackPiece.Turntable:
-                    SelectTrack(TrackToolsCreator.CreateTurntable(TurntablePrefab, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                    SelectTrack(TrackToolsCreator.CreateTurntable(TurntablePrefab, TrackPrefab, _currentParent, position, handle,
                         _turntableOptions, true, out _).Track);
                     break;
                 case TrackPiece.Special:
-                    CreateSpecial(attachPoint, handlePosition);
+                    CreateSpecial(position, handle);
                     break;
                 default:
                     throw new System.Exception("Invalid mode!");
             }
+        }
+
+        private void CreateTrack(AttachPoint attachPoint)
+        {
+            CreateTrack(attachPoint.Position, attachPoint.Handle);
         }
 
         public void CreateSpecial(Vector3 attachPoint, Vector3 handlePosition)
@@ -309,18 +307,41 @@ namespace Mapify.Editor.Tools
 
         public void DeleteTrack()
         {
-            if (!CurrentTrack)
+            switch (_selectionType)
             {
-                return;
-            }
+                case SelectionType.Track:
+                    if (!CurrentTrack)
+                    {
+                        return;
+                    }
 
-            if (CurrentTrack.IsSwitch || CurrentTrack.IsTurntable)
-            {
-                Undo.DestroyObjectImmediate(CurrentTrack.transform.parent.gameObject);
-            }
-            else
-            {
-                Undo.DestroyObjectImmediate(CurrentTrack.gameObject);
+                    if (CurrentTrack.IsSwitch || CurrentTrack.IsTurntable)
+                    {
+                        Undo.DestroyObjectImmediate(CurrentTrack.transform.parent.gameObject);
+                    }
+                    else
+                    {
+                        Undo.DestroyObjectImmediate(CurrentTrack.gameObject);
+                    }
+                    break;
+                case SelectionType.Switch:
+                    if (!CurrentSwitch)
+                    {
+                        return;
+                    }
+
+                    Undo.DestroyObjectImmediate(CurrentSwitch.gameObject);
+                    break;
+                case SelectionType.Turntable:
+                    if (!CurrentTurntable)
+                    {
+                        return;
+                    }
+
+                    Undo.DestroyObjectImmediate(CurrentTurntable.gameObject);
+                    break;
+                default:
+                    break;
             }
 
             PrepareSelection();
@@ -330,7 +351,12 @@ namespace Mapify.Editor.Tools
 
         #region OTHER
 
-#if UNITY_EDITOR
+        /// <summary>
+        /// Tries to assign the default Mapify assets to the prefab section.
+        /// </summary>
+        /// <remarks>
+        /// This will only look in the default directory (Mapify folder in the Assets root).
+        /// </remarks>
         public void TryGetDefaultAssets()
         {
             string[] guids;
@@ -391,7 +417,6 @@ namespace Mapify.Editor.Tools
                 }
             }
         }
-#endif
 
         public void ResetCreationSettings(bool all)
         {
@@ -502,6 +527,31 @@ namespace Mapify.Editor.Tools
             }
         }
 
+        private bool IsAllowedCreation(Track t, bool isBack)
+        {
+            if (!t)
+            {
+                return false;
+            }
+
+            if (!CheckGrade(isBack ? t.GetGradeAtStart() : t.GetGradeAtEnd()))
+            {
+                return false;
+            }
+
+            if (t.IsSwitch && (_currentPiece == TrackPiece.Switch || _currentPiece == TrackPiece.Yard))
+            {
+                return false;
+            }
+
+            if (_currentPiece == TrackPiece.Special && _currentSpecial == SpecialTrackPiece.Connect2)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private bool CheckGrade(float grade)
         {
             switch (_currentPiece)
@@ -527,10 +577,10 @@ namespace Mapify.Editor.Tools
 
         private void SelectTrack(Track t)
         {
-            SelectObject(t.gameObject);
+            SelectGameObject(t.gameObject);
         }
 
-        private void SelectObject(GameObject go)
+        private void SelectGameObject(GameObject go)
         {
             Selection.activeGameObject = go;
             RemakeAndRepaint();
@@ -560,363 +610,6 @@ namespace Mapify.Editor.Tools
             SceneView.RepaintAll();
         }
 
-        private void CreatePreviews()
-        {
-            ClearPreviews();
-            DoNullCheck();
-
-            if (!_isOpen)
-            {
-                return;
-            }
-
-            Vector3 pos = _currentParent ? _currentParent.position : Vector3.zero;
-            Vector3 forward = _currentParent ? _currentParent.forward : Vector3.forward;
-
-            AttachPoint next;
-            AttachPoint prev;
-
-            bool createFront = false;
-            bool createBack = false;
-            bool createNew = _drawNewPreview;
-
-            switch (_selectionType)
-            {
-                case SelectionType.Track:
-                    next = new AttachPoint(CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1);
-                    prev = new AttachPoint(CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2);
-
-                    createFront = CurrentTrack && CheckGrade(CurrentTrack.GetGradeAtEnd());
-                    createBack = CurrentTrack && CheckGrade(CurrentTrack.GetGradeAtStart());
-                    break;
-                case SelectionType.BezierPoint:
-                    next = new AttachPoint(CurrentPoint.position, CurrentPoint.globalHandle1);
-                    prev = new AttachPoint(CurrentPoint.position, CurrentPoint.globalHandle2);
-
-                    createFront = CurrentPoint && !Mathf.Approximately(CurrentPoint.handle1.sqrMagnitude, 0) &&
-                        CheckGrade(CurrentPoint.GetGradeForwards());
-                    createBack = CurrentPoint && !Mathf.Approximately(CurrentPoint.handle2.sqrMagnitude, 0) &&
-                        CheckGrade(CurrentPoint.GetGradeBackwards());
-                    break;
-                default:
-                    next = new AttachPoint(Vector3.zero, Vector3.zero);
-                    prev = new AttachPoint(Vector3.zero, Vector3.zero);
-                    break;
-            }
-
-            switch (_currentPiece)
-            {
-                case TrackPiece.Straight:
-                    if (createFront)
-                    {
-                        _forwardLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewStraight(
-                            next.Position, next.Handle,
-                            _length, _endGrade, out _forwardPoints, _sampleCount) };
-                    }
-                    if (createBack)
-                    {
-                        _backwardLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewStraight(
-                            prev.Position, prev.Handle,
-                            _length, _endGrade, out _backwardPoints, _sampleCount) };
-                    }
-                    if (createNew)
-                    {
-                        _newLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewStraight(pos, pos - forward,
-                            _length, _endGrade, out _newPoints, _sampleCount) };
-                    }
-                    break;
-                case TrackPiece.Curve:
-                    if (createFront)
-                    {
-                        _forwardLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewCurve(
-                            next.Position, next.Handle,
-                            _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out _forwardPoints, _sampleCount) };
-                    }
-                    if (createBack)
-                    {
-                        _backwardLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewCurve(
-                            prev.Position, prev.Handle,
-                            _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out _backwardPoints, _sampleCount) };
-                    }
-                    if (createNew)
-                    {
-                        _newLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewCurve(pos, pos - forward,
-                            _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out _newPoints, _sampleCount) };
-                    }
-                    break;
-                case TrackPiece.Switch:
-                    if (LeftSwitch && RightSwitch)
-                    {
-                        if (createFront)
-                        {
-                            _forwardPoints = new Vector3[] { next.Position };
-
-                            _forwardLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                next.Position, next.Handle,
-                                _connectingPoint, _sampleCount);
-                        }
-                        if (createBack)
-                        {
-                            _backwardPoints = new Vector3[] { prev.Position };
-
-                            _backwardLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                prev.Position, prev.Handle,
-                                _connectingPoint, _sampleCount);
-                        }
-                        if (createNew)
-                        {
-                            _newPoints = new Vector3[] { pos };
-
-                            forward.y = 0;
-                            _newLines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                pos, pos - forward, _connectingPoint, _sampleCount);
-                        }
-                    }
-                    break;
-                case TrackPiece.Yard:
-                    if (LeftSwitch && RightSwitch)
-                    {
-                        if (createFront)
-                        {
-                            _forwardLines = TrackToolsCreator.Previews.PreviewYard(LeftSwitch, RightSwitch,
-                                next.Position, next.Handle,
-                                _orientation, _trackDistance, _yardOptions, _sampleCount);
-                        }
-                        if (createBack)
-                        {
-                            _backwardLines = TrackToolsCreator.Previews.PreviewYard(LeftSwitch, RightSwitch,
-                                prev.Position, prev.Handle,
-                                _orientation, _trackDistance, _yardOptions, _sampleCount);
-                        }
-                        if (createNew)
-                        {
-                            forward.y = 0;
-                            _newLines = TrackToolsCreator.Previews.PreviewYard(LeftSwitch, RightSwitch,
-                                pos, pos - forward, _orientation, _trackDistance, _yardOptions, _sampleCount);
-                        }
-                    }
-                    break;
-                case TrackPiece.Turntable:
-                    if (createFront)
-                    {
-                        _forwardLines = TrackToolsCreator.Previews.PreviewTurntable(
-                            next.Position, next.Handle, _turntableOptions, _sampleCount);
-                    }
-                    if (createBack)
-                    {
-                        _backwardLines = TrackToolsCreator.Previews.PreviewTurntable(
-                            prev.Position, prev.Handle, _turntableOptions, _sampleCount);
-                    }
-                    if (createNew)
-                    {
-                        forward.y = 0;
-                        _newLines = TrackToolsCreator.Previews.PreviewTurntable(pos, pos - forward, _turntableOptions, _sampleCount);
-                    }
-                    break;
-                case TrackPiece.Special:
-                    SpecialPreviews(createFront, createBack, createNew, pos, forward, next, prev);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void SpecialPreviews(bool createFront, bool createBack, bool createNew, Vector3 pos, Vector3 forward,
-            AttachPoint next, AttachPoint prev)
-        {
-            switch (_currentSpecial)
-            {
-                case SpecialTrackPiece.Buffer:
-                    if (createFront)
-                    {
-                        _forwardPoints = new Vector3[] { next.Position };
-                    }
-                    if (createBack)
-                    {
-                        _backwardPoints = new Vector3[] { prev.Position };
-                    }
-                    if (createNew)
-                    {
-                        _newPoints = new Vector3[] { pos };
-                    }
-                    break;
-                case SpecialTrackPiece.SwitchCurve:
-                    if (LeftSwitch && RightSwitch)
-                    {
-                        if (createFront)
-                        {
-                            _forwardPoints = new Vector3[] { next.Position };
-
-                            _forwardLines = new Vector3[1][];
-                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                next.Position, next.Handle,
-                                _connectingPoint, _sampleCount), 1, _forwardLines, 0, 1);
-                        }
-                        if (createBack)
-                        {
-                            _backwardPoints = new Vector3[] { prev.Position };
-
-                            _backwardLines = new Vector3[1][];
-                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                prev.Position, prev.Handle,
-                                _connectingPoint, _sampleCount), 1, _backwardLines, 0, 1);
-                        }
-                        if (createNew)
-                        {
-                            _newPoints = new Vector3[] { pos };
-
-                            _newLines = new Vector3[1][];
-                            forward.y = 0;
-                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                pos, pos - forward, SwitchPoint.Joint, _sampleCount), 1, _newLines, 0, 1);
-                        }
-                    }
-                    break;
-                case SpecialTrackPiece.Connect2:
-                    {
-                        BezierPoint p0 = null;
-                        BezierPoint p1 = null;
-
-                        switch (_selectionType)
-                        {
-                            case SelectionType.Track:
-                                p0 = _useHandle2Start ? _selectedTracks[0].Curve[0] : _selectedTracks[0].Curve.Last();
-                                if (_selectedTracks.Length > 1)
-                                {
-                                    p1 = _useHandle2End ? _selectedTracks[1].Curve[0] : _selectedTracks[1].Curve.Last();
-                                }
-                                break;
-                            case SelectionType.BezierPoint:
-                                p0 = _selectedPoints[0];
-                                if (_selectedPoints.Length > 1)
-                                {
-                                    p1 = _selectedPoints[1];
-                                }
-                                break;
-                            case SelectionType.None:
-                            default:
-                                break;
-                        }
-
-                        if (p0)
-                        {
-                            _forwardPoints = new Vector3[] { p0.position,
-                                MathHelper.MirrorAround(_useHandle2Start ? p0.globalHandle2 :p0.globalHandle1,
-                                p0.position) };
-
-                            _forwardLines = new Vector3[][] { _forwardPoints };
-                        }
-
-                        if (p0 && p1)
-                        {
-                            _backwardPoints = new Vector3[] { p1.position,
-                                MathHelper.MirrorAround(_useHandle2End ? p1.globalHandle2 : p1.globalHandle1,
-                                p1.position) };
-
-                            _backwardLines = new Vector3[][] { _backwardPoints };
-
-                            _newLines = new Vector3[][] { TrackToolsCreator.Previews.PreviewConnect2(
-                                p0.position,
-                                _useHandle2Start ? p0.globalHandle2 : p0.globalHandle1,
-                                p1.position,
-                                _useHandle2End ? p1.globalHandle2 : p1.globalHandle1,
-                                _lengthMultiplier,
-                                _sampleCount) };
-                        }
-                    }
-                    break;
-                case SpecialTrackPiece.Crossover:
-                    if (LeftSwitch && RightSwitch)
-                    {
-                        if (createFront)
-                        {
-                            _forwardPoints = new Vector3[] { next.Position };
-
-                            _forwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
-                                next.Position, next.Handle, _orientation, _trackDistance, _isTrailing,
-                                _switchDistance, _sampleCount);
-                        }
-                        if (createBack)
-                        {
-                            _backwardPoints = new Vector3[] { prev.Position };
-
-                            _backwardLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
-                                prev.Position, prev.Handle, _orientation, _trackDistance, _isTrailing,
-                                _switchDistance, _sampleCount);
-                        }
-                        if (createNew)
-                        {
-                            _newPoints = new Vector3[] { pos };
-
-                            forward.y = 0;
-                            _newLines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(), pos, pos - forward,
-                                _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
-                        }
-                    }
-                    break;
-                case SpecialTrackPiece.ScissorsCrossover:
-                    if (LeftSwitch && RightSwitch)
-                    {
-                        if (createFront)
-                        {
-                            _forwardPoints = new Vector3[] { next.Position };
-
-                            _forwardLines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
-                                next.Position, next.Handle,
-                                _orientation, _trackDistance, _switchDistance, _sampleCount);
-                        }
-                        if (createBack)
-                        {
-                            _backwardPoints = new Vector3[] { prev.Position };
-
-                            _backwardLines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
-                                prev.Position, prev.Handle,
-                                _orientation, _trackDistance, _switchDistance, _sampleCount);
-                        }
-                        if (createNew)
-                        {
-                            _newPoints = new Vector3[] { pos };
-
-                            forward.y = 0;
-                            _newLines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch, pos, pos - forward,
-                                _orientation, _trackDistance, _switchDistance, _sampleCount);
-                        }
-                    }
-                    break;
-                case SpecialTrackPiece.DoubleSlip:
-                    if (LeftSwitch && RightSwitch)
-                    {
-                        if (createFront)
-                        {
-                            _forwardPoints = new Vector3[] { next.Position };
-
-                            _forwardLines = TrackToolsCreator.Previews.PreviewDoubleSlip(LeftSwitch, RightSwitch,
-                                next.Position, next.Handle,
-                                _orientation, _crossAngle, _sampleCount);
-                        }
-                        if (createBack)
-                        {
-                            _backwardPoints = new Vector3[] { prev.Position };
-
-                            _backwardLines = TrackToolsCreator.Previews.PreviewDoubleSlip(LeftSwitch, RightSwitch,
-                                prev.Position, prev.Handle,
-                                _orientation, _crossAngle, _sampleCount);
-                        }
-                        if (createNew)
-                        {
-                            _newPoints = new Vector3[] { pos };
-
-                            forward.y = 0;
-                            _newLines = TrackToolsCreator.Previews.PreviewDoubleSlip(LeftSwitch, RightSwitch, pos, pos - forward,
-                                _orientation, _crossAngle, _sampleCount);
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
         private Switch GetCurrentSwitchPrefab()
         {
             return _isLeft ? LeftSwitch : RightSwitch;
@@ -934,134 +627,6 @@ namespace Mapify.Editor.Tools
             }
         }
 
-        private void DrawHandles(SceneView scene)
-        {
-            // Only draw handles for track creation if the creation foldout is active.
-            if (_showCreation)
-            {
-                DrawCreationPreviews();
-            }
-
-            if (_showEditing)
-            {
-                DrawEditingPreviews();
-            }
-
-            // Extra curve drawing.
-            if (CurrentTrack)
-            {
-                DrawExtraPreviews();
-            }
-        }
-
-        private void DrawCreationPreviews()
-        {
-            using (new Handles.DrawingScope(_backwardColour))
-            {
-                for (int i = 0; i < _backwardPoints.Length; i++)
-                {
-                    // TODO: use a disc instead of this so it is not selectable.
-                    Handles.FreeRotateHandle(Quaternion.identity, _backwardPoints[i],
-                        HandleUtility.GetHandleSize(_backwardPoints[i]) * (i == 0 ? 0.15f : 0.05f));
-                }
-
-                for (int i = 0; i < _backwardLines.Length; i++)
-                {
-                    Handles.DrawPolyLine(_backwardLines[i]);
-                }
-            }
-
-            using (new Handles.DrawingScope(_forwardColour))
-            {
-                for (int i = 0; i < _forwardPoints.Length; i++)
-                {
-                    Handles.FreeRotateHandle(Quaternion.identity, _forwardPoints[i],
-                        HandleUtility.GetHandleSize(_forwardPoints[i]) * (i == 0 ? 0.15f : 0.05f));
-                }
-
-                for (int i = 0; i < _forwardLines.Length; i++)
-                {
-                    Handles.DrawPolyLine(_forwardLines[i]);
-                }
-            }
-
-            using (new Handles.DrawingScope(_newColour))
-            {
-                for (int i = 0; i < _newPoints.Length; i++)
-                {
-                    Handles.FreeRotateHandle(Quaternion.identity, _newPoints[i],
-                        HandleUtility.GetHandleSize(_newPoints[i]) * (i == 0 ? 0.15f : 0.05f));
-                }
-
-                for (int i = 0; i < _newLines.Length; i++)
-                {
-                    Handles.DrawPolyLine(_newLines[i]);
-
-                    //Vector3 p = _newLines[i][0];
-                    //Handles.FreeRotateHandle(Quaternion.identity, p,
-                    //    HandleUtility.GetHandleSize(p) * 0.10f);
-                    //p = _newLines[i][_newLines[i].Length - 1];
-                    //Handles.FreeRotateHandle(Quaternion.identity, p,
-                    //    HandleUtility.GetHandleSize(p) * 0.05f);
-                }
-            }
-        }
-
-        private void DrawEditingPreviews()
-        {
-
-        }
-
-        private void DrawExtraPreviews()
-        {
-            // If there's a height change, draw the same curve but completely level.
-            if (CurrentTrack.Curve[0].position.y != CurrentTrack.Curve.Last().position.y)
-            {
-                float y = CurrentTrack.Curve[0].position.y;
-                Vector3 p0, p1, p2, p3;
-
-                using (new Handles.DrawingScope(CurrentTrack.Curve.drawColor.Negative()))
-                {
-                    p0 = CurrentTrack.Curve[0].position;
-                    p1 = CurrentTrack.Curve[0].globalHandle2;
-
-                    Handles.Label(p0 + Vector3.up * HandleUtility.GetHandleSize(p0),
-                        $"{MathHelper.GetGrade(p0, p1) * 100.0f:F2}%");
-
-                    for (int i = 1; i < CurrentTrack.Curve.pointCount; i++)
-                    {
-                        p0 = CurrentTrack.Curve[i - 1].position;
-                        p1 = CurrentTrack.Curve[i - 1].globalHandle2;
-                        p2 = CurrentTrack.Curve[i].globalHandle1;
-                        p3 = CurrentTrack.Curve[i].position;
-
-                        Handles.Label(p3 + Vector3.up * HandleUtility.GetHandleSize(p3),
-                            $"{MathHelper.GetGrade(p2, p3) * 100.0f:F2}%");
-
-                        p0.y = y;
-                        p1.y = y;
-                        p2.y = y;
-                        p3.y = y;
-
-                        EditorHelper.DrawBezier(p0, p1, p2, p3, _sampleCount);
-                        Handles.DrawLine(p3, CurrentTrack.Curve[i].position);
-                    }
-                }
-            }
-        }
-
-        private void ClearPreviews()
-        {
-            _forwardPoints = new Vector3[0];
-            _newPoints = new Vector3[0];
-            _backwardPoints = new Vector3[0];
-            _forwardLines = new Vector3[0][];
-            _newLines = new Vector3[0][];
-            _backwardLines = new Vector3[0][];
-
-            TrackToolsCreator.Previews.CachedYard = null;
-        }
-
         // Check if an object is not null, draw an error box if it is.
         private static bool Require(Object obj, string name)
         {
@@ -1076,7 +641,7 @@ namespace Mapify.Editor.Tools
 
         #endregion
 
-        #region STRUCTS
+        #region DATA STRUCTURES
 
         private struct AttachPoint
         {
@@ -1089,6 +654,50 @@ namespace Mapify.Editor.Tools
             {
                 Position = position;
                 Handle = handle;
+            }
+        }
+
+        private class PreviewPointCache
+        {
+            public AttachPoint Attach;
+            public Vector3[][] Lines;
+            public Vector3[] Points;
+            public bool DrawButton;
+            public string Tooltip;
+
+            public static string NewString => "★";
+            public static string NextString => "→";
+            public static string BackString => "←";
+            public static string DivString => "↗";
+
+            public PreviewPointCache(AttachPoint attach)
+            {
+                Attach = attach;
+                Lines = System.Array.Empty<Vector3[]>();
+                Points = System.Array.Empty<Vector3>();
+                DrawButton = true;
+                Tooltip = "";
+            }
+
+            public void Draw()
+            {
+                if (DrawButton)
+                {
+                    // TODO: use a disc instead of this so it is not selectable.
+                    Handles.FreeRotateHandle(Quaternion.identity, Attach.Position,
+                            HandleUtility.GetHandleSize(Attach.Position) * 0.15f);
+                }
+
+                for (int i = 0; i < Lines.Length; i++)
+                {
+                    Handles.DrawPolyLine(Lines[i]);
+                }
+
+                for (int i = 0; i < Points.Length; i++)
+                {
+                    Handles.FreeRotateHandle(Quaternion.identity, Points[i],
+                        HandleUtility.GetHandleSize(Points[i]) * 0.05f);
+                }
             }
         }
 

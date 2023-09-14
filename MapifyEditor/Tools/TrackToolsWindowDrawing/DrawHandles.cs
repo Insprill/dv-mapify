@@ -133,7 +133,7 @@ namespace Mapify.Editor.Tools
         private void DrawTrackExtraPreviews()
         {
             // If there's a height change, draw the same curve but completely level.
-            if (CurrentTrack.Curve[0].position.y != CurrentTrack.Curve.Last().position.y)
+            if (!CurrentTrack.Curve.IsCompletelyLevel())
             {
                 float y = CurrentTrack.Curve[0].position.y;
                 Vector3 p0, p1, p2, p3;
@@ -165,6 +165,24 @@ namespace Mapify.Editor.Tools
                         Handles.DrawLine(p3, CurrentTrack.Curve[i].position);
                     }
                 }
+            }
+
+            using (new Handles.DrawingScope(CurrentTrack.Curve.drawColor.Negative()))
+            {
+                var ztest = Handles.zTest;
+                Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
+
+                for (int i = 1; i < CurrentTrack.Curve.pointCount; i++)
+                {
+                    EditorHelper.DrawBezier(
+                        CurrentTrack.Curve[i - 1].position,
+                        CurrentTrack.Curve[i - 1].globalHandle2,
+                        CurrentTrack.Curve[i].globalHandle1,
+                        CurrentTrack.Curve[i].position,
+                        _sampleCount);
+                }
+
+                Handles.zTest = ztest;
             }
         }
 

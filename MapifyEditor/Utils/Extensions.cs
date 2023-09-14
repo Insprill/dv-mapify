@@ -298,6 +298,28 @@ namespace Mapify.Editor.Utils
             return track.GetHeightChange() / track.GetHorizontalLength(resolution);
         }
 
+        // BezierCurve
+        /// <summary>
+        /// Returns true if a this curve does not change height at any point.
+        /// </summary>
+        public static bool IsCompletelyLevel(this BezierCurve curve)
+        {
+            float y = curve[0].position.y;
+            int count = curve.pointCount;
+
+            for (int i = 1; i < count; i++)
+            {
+                if (!Mathf.Approximately(curve[i].position.y, y) ||
+                    !Mathf.Approximately(curve[i].globalHandle1.y, y) ||
+                    !Mathf.Approximately(curve[i - 1].globalHandle2.y, y))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         // BezierPoint.
         /// <summary>
         /// Returns the grade for the next handle.

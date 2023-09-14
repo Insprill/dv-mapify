@@ -19,11 +19,13 @@ namespace Mapify.Editor.Tools
         private bool _showSettings = false;
         private bool _drawNewPreview = true;
         private bool _performanceMode = false;
-        private int _updateCounter = 0;
+        private bool _zTestTrack = true;
         private Color _forwardColour = Color.cyan;
         private Color _backwardColour = Color.red;
         private Color _newColour = Color.green;
         private int _sampleCount = 8;
+
+        private int _updateCounter = 0;
 
         // Foldout with the 5 prefabs used for track creation.
         private void DrawPrefabFoldout()
@@ -97,6 +99,10 @@ namespace Mapify.Editor.Tools
                 _performanceMode = EditorGUILayout.Toggle(
                     new GUIContent("Performance mode", "Reduces redraw frequency"),
                     _performanceMode);
+
+                _zTestTrack = EditorGUILayout.Toggle(
+                    new GUIContent("Perform Z test", "Draw parts of the selected track that are behind objects as a different colour"),
+                    _zTestTrack);
 
                 _forwardColour = EditorGUILayout.ColorField(
                     new GUIContent("Forward preview", "Colour for the forward track previews"),

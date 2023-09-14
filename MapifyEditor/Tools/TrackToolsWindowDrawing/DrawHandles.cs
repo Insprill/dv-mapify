@@ -167,22 +167,25 @@ namespace Mapify.Editor.Tools
                 }
             }
 
-            using (new Handles.DrawingScope(CurrentTrack.Curve.drawColor.Negative()))
+            if (_zTestTrack)
             {
-                var ztest = Handles.zTest;
-                Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
-
-                for (int i = 1; i < CurrentTrack.Curve.pointCount; i++)
+                using (new Handles.DrawingScope(CurrentTrack.Curve.drawColor.Negative()))
                 {
-                    EditorHelper.DrawBezier(
-                        CurrentTrack.Curve[i - 1].position,
-                        CurrentTrack.Curve[i - 1].globalHandle2,
-                        CurrentTrack.Curve[i].globalHandle1,
-                        CurrentTrack.Curve[i].position,
-                        _sampleCount);
-                }
+                    var ztest = Handles.zTest;
+                    Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
 
-                Handles.zTest = ztest;
+                    for (int i = 1; i < CurrentTrack.Curve.pointCount; i++)
+                    {
+                        EditorHelper.DrawBezier(
+                            CurrentTrack.Curve[i - 1].position,
+                            CurrentTrack.Curve[i - 1].globalHandle2,
+                            CurrentTrack.Curve[i].globalHandle1,
+                            CurrentTrack.Curve[i].position,
+                            _sampleCount);
+                    }
+
+                    Handles.zTest = ztest;
+                }
             }
         }
 

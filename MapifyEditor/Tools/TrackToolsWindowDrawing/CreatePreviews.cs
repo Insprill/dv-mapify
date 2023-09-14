@@ -25,40 +25,23 @@ namespace Mapify.Editor.Tools
 
             if (_drawNewPreview)
             {
-                _newCache.Add(new PreviewPointCache(new AttachPoint(
+                AttachPoint ap = new AttachPoint(
                     _currentParent ? _currentParent.position : Vector3.zero,
-                    _currentParent ? _currentParent.forward : Vector3.forward)));
+                    _currentParent ? _currentParent.forward : Vector3.forward);
 
-                if (_currentPiece == TrackPiece.Switch ||
-                    _currentPiece == TrackPiece.Yard ||
-                    _currentPiece == TrackPiece.Turntable ||
-                    _currentPiece == TrackPiece.Special && (
-                        _currentSpecial == SpecialTrackPiece.Crossover ||
-                        _currentSpecial == SpecialTrackPiece.ScissorsCrossover ||
-                        _currentSpecial == SpecialTrackPiece.DoubleSlip))
+                ap.Handle = ap.Position - ap.Handle;
+
+                if (CheckGrade(ap.GetGrade()))
                 {
-                    _newCache[0].Attach.Handle.y = 0;
+                    _newCache.Add(new PreviewPointCache(ap));
+                    _newCache[0].Tooltip = PreviewPointCache.NewString;
                 }
-
-                _newCache[0].Attach.Handle = _newCache[0].Attach.Position - _newCache[0].Attach.Handle;
-                _newCache[0].Tooltip = PreviewPointCache.NewString;
             }
 
             switch (_selectionType)
             {
                 case SelectionType.Track:
-                    if (IsAllowedCreation(CurrentTrack, false))
-                    {
-                        _nextCache.Add(new PreviewPointCache(
-                            new AttachPoint(CurrentTrack.Curve.Last().position, CurrentTrack.Curve.Last().globalHandle1)));
-                        _nextCache[0].Tooltip = PreviewPointCache.NextString;
-                    }
-                    if (IsAllowedCreation(CurrentTrack, true))
-                    {
-                        _backCache.Add(new PreviewPointCache(
-                            new AttachPoint(CurrentTrack.Curve[0].position, CurrentTrack.Curve[0].globalHandle2)));
-                        _backCache[0].Tooltip = PreviewPointCache.BackString;
-                    }
+                    CacheTrack(CurrentTrack);
                     break;
                 case SelectionType.BezierPoint:
                     if (!Mathf.Approximately(CurrentPoint.handle1.sqrMagnitude, 0) &&
@@ -77,38 +60,16 @@ namespace Mapify.Editor.Tools
                     }
                     break;
                 case SelectionType.Switch:
-                    if (IsAllowedCreation(CurrentSwitch.ThroughTrack, false))
-                    {
-                        _nextCache.Add(new PreviewPointCache(
-                            new AttachPoint(CurrentSwitch.ThroughTrack.Curve.Last().position, CurrentSwitch.ThroughTrack.Curve.Last().globalHandle1)));
-                        _nextCache[0].Tooltip = PreviewPointCache.NextString;
-                    }
+                    CacheTrack(CurrentSwitch.ThroughTrack);
                     if (IsAllowedCreation(CurrentSwitch.DivergingTrack, false))
                     {
                         _nextCache.Add(new PreviewPointCache(
                             new AttachPoint(CurrentSwitch.DivergingTrack.Curve.Last().position, CurrentSwitch.DivergingTrack.Curve.Last().globalHandle1)));
                         _nextCache[_nextCache.Count - 1].Tooltip = PreviewPointCache.DivString;
                     }
-                    if (IsAllowedCreation(CurrentSwitch.ThroughTrack, true))
-                    {
-                        _backCache.Add(new PreviewPointCache(
-                            new AttachPoint(CurrentSwitch.ThroughTrack.Curve[0].position, CurrentSwitch.ThroughTrack.Curve[0].globalHandle2)));
-                        _backCache[0].Tooltip = PreviewPointCache.BackString;
-                    }
                     break;
                 case SelectionType.Turntable:
-                    if (IsAllowedCreation(CurrentTurntable.Track, false))
-                    {
-                        _nextCache.Add(new PreviewPointCache(
-                            new AttachPoint(CurrentTurntable.Track.Curve.Last().position, CurrentTurntable.Track.Curve.Last().globalHandle1)));
-                        _nextCache[0].Tooltip = PreviewPointCache.NextString;
-                    }
-                    if (IsAllowedCreation(CurrentTurntable.Track, true))
-                    {
-                        _backCache.Add(new PreviewPointCache(
-                            new AttachPoint(CurrentTurntable.Track.Curve[0].position, CurrentTurntable.Track.Curve[0].globalHandle2)));
-                        _backCache[0].Tooltip = PreviewPointCache.BackString;
-                    }
+                    CacheTrack(CurrentTurntable.Track);
                     break;
                 default:
                     break;
@@ -330,19 +291,19 @@ namespace Mapify.Editor.Tools
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
                                 cache.Attach.Position, cache.Attach.Handle,
-                                 _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
+                                _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
                         }
                         foreach (var cache in _nextCache)
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
                                 cache.Attach.Position, cache.Attach.Handle,
-                                 _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
+                                _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
                         }
                         foreach (var cache in _backCache)
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
                                 cache.Attach.Position, cache.Attach.Handle,
-                                 _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
+                                _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
                         }
                     }
                     break;
@@ -359,13 +320,13 @@ namespace Mapify.Editor.Tools
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
                                 cache.Attach.Position, cache.Attach.Handle,
-                                 _orientation, _trackDistance, _switchDistance, _sampleCount);
+                                _orientation, _trackDistance, _switchDistance, _sampleCount);
                         }
                         foreach (var cache in _backCache)
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
                                 cache.Attach.Position, cache.Attach.Handle,
-                                 _orientation, _trackDistance, _switchDistance, _sampleCount);
+                                _orientation, _trackDistance, _switchDistance, _sampleCount);
                         }
                     }
                     break;
@@ -404,6 +365,22 @@ namespace Mapify.Editor.Tools
             _backCache.Clear();
 
             TrackToolsCreator.Previews.CachedYard = null;
+        }
+
+        private void CacheTrack(Track t)
+        {
+            if (IsAllowedCreation(t, false))
+            {
+                _nextCache.Add(new PreviewPointCache(
+                    new AttachPoint(t.Curve.Last().position, t.Curve.Last().globalHandle1)));
+                _nextCache[0].Tooltip = PreviewPointCache.NextString;
+            }
+            if (IsAllowedCreation(t, true))
+            {
+                _backCache.Add(new PreviewPointCache(
+                    new AttachPoint(t.Curve[0].position, t.Curve[0].globalHandle2)));
+                _backCache[0].Tooltip = PreviewPointCache.BackString;
+            }
         }
     }
 }

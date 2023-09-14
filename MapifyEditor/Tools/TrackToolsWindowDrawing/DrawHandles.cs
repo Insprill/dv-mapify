@@ -1,5 +1,4 @@
 using Mapify.Editor.Utils;
-using System.Drawing;
 using UnityEditor;
 using UnityEngine;
 using static Mapify.Editor.Tools.ToolEnums;
@@ -13,6 +12,28 @@ namespace Mapify.Editor.Tools
 
         private void DrawHandles(SceneView scene)
         {
+            // Don't draw if the window is closed.
+            if (!_isOpen)
+            {
+                return;
+            }
+
+            // Reduce creation frequency.
+            _updateCounter = (_updateCounter + 1) % 10;
+
+            if (!_performanceMode || _updateCounter % 10 == 0)
+            {
+                // Only check if the window is closed if the last state is open.
+                if (_isOpen && !HasOpenInstances<TrackToolsWindow>())
+                {
+                    _isOpen = false;
+                    UnregisterEvents();
+                    return;
+                }
+
+                CreatePreviews();
+            }
+
             // Only draw handles for track creation if the creation foldout is active.
             if (_showCreation)
             {

@@ -18,7 +18,7 @@ namespace Mapify.Editor.Tools
             window.autoRepaintOnSceneChange = true;
             window._isOpen = true;
             window._updateCounter = 0;
-            window.RegisterEvents(true);
+            window.RegisterEvents();
             window.DoNullCheck();
         }
 
@@ -72,44 +72,10 @@ namespace Mapify.Editor.Tools
             }
         }
 
-        private void OnInspectorUpdate()
-        {
-            if (!_isOpen)
-            {
-                return;
-            }
-
-            _updateCounter = (_updateCounter + 1) % 10;
-
-            if (!_performanceMode || _updateCounter % 10 == 0)
-            {
-                // Only check if the window is closed if the last state is open.
-                if (_isOpen && !HasOpenInstances<TrackToolsWindow>())
-                {
-                    _isOpen = false;
-                    UnregisterEvents();
-                    return;
-                }
-
-                // If selection changed, draw. Also draw if the selection is of a supported type.
-                if ((_lastSelection && _lastSelection != Selection.activeGameObject) ||
-                    _selectionType != SelectionType.None)
-                {
-                    RemakeAndRepaint();
-                    _lastSelection = Selection.activeGameObject;
-                }
-            }
-        }
-
         private void OnDestroy()
         {
             _isOpen = false;
             UnregisterEvents();
-        }
-
-        private void OnSelectionChange()
-        {
-            RemakeAndRepaint();
         }
 
         private void OnEnable()
@@ -120,7 +86,7 @@ namespace Mapify.Editor.Tools
             if (_isOpen)
             {
                 PrepareSelection();
-                RegisterEvents(true);
+                RegisterEvents();
             }
             else
             {
@@ -138,15 +104,11 @@ namespace Mapify.Editor.Tools
             }
         }
 
-        private void RegisterEvents(bool redraw)
+        private void RegisterEvents()
         {
             SceneView.duringSceneGui += DrawHandles;
             Selection.selectionChanged += PrepareSelection;
-
-            if (redraw)
-            {
-                RemakeAndRepaint();
-            }
+            RemakeAndRepaint();
         }
 
         private void UnregisterEvents()
@@ -228,16 +190,16 @@ namespace Mapify.Editor.Tools
                         _radius, _arc, _maxArcPerPoint, _endGrade, true));
                     break;
                 case TrackPiece.Switch:
-                    SelectTrack(TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
-                        _orientation, _connectingPoint, true).ThroughTrack);
+                    SelectGameObject(TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
+                        _orientation, _connectingPoint, true).gameObject);
                     break;
                 case TrackPiece.Yard:
-                    SelectTrack(TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, position, handle,
-                        _orientation, _trackDistance, _yardOptions, out _, true)[0].ThroughTrack);
+                    SelectGameObject(TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, position, handle,
+                        _orientation, _trackDistance, _yardOptions, out _, true)[0].gameObject);
                     break;
                 case TrackPiece.Turntable:
-                    SelectTrack(TrackToolsCreator.CreateTurntable(TurntablePrefab, TrackPrefab, _currentParent, position, handle,
-                        _turntableOptions, true, out _).Track);
+                    SelectGameObject(TrackToolsCreator.CreateTurntable(TurntablePrefab, TrackPrefab, _currentParent, position, handle,
+                        _turntableOptions, true, out _).gameObject);
                     break;
                 case TrackPiece.Special:
                     CreateSpecial(position, handle);
@@ -267,16 +229,16 @@ namespace Mapify.Editor.Tools
                     CreateConnect2();
                     break;
                 case SpecialTrackPiece.Crossover:
-                    SelectTrack(TrackToolsCreator.CreateCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
-                        _orientation, _trackDistance, _isTrailing, _switchDistance, true)[0].ThroughTrack);
+                    SelectGameObject(TrackToolsCreator.CreateCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                        _orientation, _trackDistance, _isTrailing, _switchDistance, true)[0].gameObject);
                     break;
                 case SpecialTrackPiece.ScissorsCrossover:
-                    SelectTrack(TrackToolsCreator.CreateScissorsCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
-                        _orientation, _trackDistance, _switchDistance, true)[3].ThroughTrack);
+                    SelectGameObject(TrackToolsCreator.CreateScissorsCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                        _orientation, _trackDistance, _switchDistance, true)[3].gameObject);
                     break;
                 case SpecialTrackPiece.DoubleSlip:
-                    SelectTrack(TrackToolsCreator.CreateDoubleSlip(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
-                        _orientation, _crossAngle, true)[2].ThroughTrack);
+                    SelectGameObject(TrackToolsCreator.CreateDoubleSlip(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                        _orientation, _crossAngle, true)[2].gameObject);
                     break;
                 default:
                     throw new System.Exception("Invalid mode!");
@@ -299,7 +261,6 @@ namespace Mapify.Editor.Tools
                     SelectTrack(TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, _selectedPoints[0], _selectedPoints[1],
                                 _useHandle2Start, _useHandle2End, _lengthMultiplier, true));
                     break;
-                case SelectionType.None:
                 default:
                     break;
             }
@@ -583,7 +544,6 @@ namespace Mapify.Editor.Tools
         private void SelectGameObject(GameObject go)
         {
             Selection.activeGameObject = go;
-            RemakeAndRepaint();
         }
 
         private void ClampValues()
@@ -606,7 +566,6 @@ namespace Mapify.Editor.Tools
 
             // Force a GUI redraw too so a selection change is reflected right away.
             Repaint();
-            CreatePreviews();
             SceneView.RepaintAll();
         }
 
@@ -655,6 +614,8 @@ namespace Mapify.Editor.Tools
                 Position = position;
                 Handle = handle;
             }
+
+            public float GetGrade() => MathHelper.GetGrade(Position, Handle);
         }
 
         private class PreviewPointCache

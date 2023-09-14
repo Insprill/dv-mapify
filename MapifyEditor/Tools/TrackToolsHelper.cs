@@ -178,6 +178,11 @@ namespace Mapify.Editor.Tools
             return 60.0f * Mathf.Sqrt(radius / 170.0f);
         }
 
+        public static string GetPrettyYardTrackName(Track t)
+        {
+            return $"[{t.yardId}{t.trackId}{t.trackType.LetterId()}]";
+        }
+
         // Copies a track's fields to another.
         internal static void CopyTrackFields(Track original, Track other)
         {

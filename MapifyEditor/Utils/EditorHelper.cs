@@ -70,6 +70,11 @@ namespace Mapify.Editor.Utils
 
             return true;
         }
+
+        public static void Separator()
+        {
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+        }
     }
 }
 #endif

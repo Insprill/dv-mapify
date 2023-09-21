@@ -22,12 +22,18 @@ namespace Mapify.Editor.Tools
             window.DoNullCheck();
         }
 
+        #region CONSTS
+
+        private const int _updateFrequency = 10;
+
+        #endregion
+
         #region FIELDS
 
         // Window.
         private float _scrollMain = 0;
         private bool _isOpen = false;
-        private GameObject _lastSelection = null;
+        private int _updateCounter = 0;
 
         #endregion
 
@@ -596,6 +602,11 @@ namespace Mapify.Editor.Tools
 
             EditorGUILayout.HelpBox($"{name} must be assigned to use this function.", MessageType.Error);
             return false;
+        }
+
+        private void NotImplementedGUI()
+        {
+            EditorGUILayout.HelpBox("Not implemented yet!", MessageType.Warning);
         }
 
         #endregion

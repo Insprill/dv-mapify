@@ -19,9 +19,9 @@ namespace Mapify.Editor.Tools
             }
 
             // Reduce creation frequency.
-            _updateCounter = (_updateCounter + 1) % 10;
+            _updateCounter = (_updateCounter + 1) % _updateFrequency;
 
-            if (!_performanceMode || _updateCounter % 10 == 0)
+            if (!_performanceMode || _updateCounter % _updateFrequency == 0)
             {
                 // Only check if the window is closed if the last state is open.
                 if (_isOpen && !HasOpenInstances<TrackToolsWindow>())
@@ -33,6 +33,8 @@ namespace Mapify.Editor.Tools
 
                 CreatePreviews();
             }
+
+            HandleMouseEvents();
 
             // Only draw handles for track creation if the creation foldout is active.
             if (_showCreation)

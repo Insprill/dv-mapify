@@ -46,7 +46,7 @@ namespace Mapify.Editor.Tools
         private float _crossAngle = 20.0f;
 
         // Contents for the tool selection.
-        private readonly GUIContent[] _modeContents =
+        private readonly GUIContent[] _creationModeContents =
         {
             new GUIContent("Freeform", "Freeform track creation, useful for normal track laying"),
             new GUIContent("Pieces", "Procedurally generated pieces, useful for more perfect operations")
@@ -92,34 +92,22 @@ namespace Mapify.Editor.Tools
                     _currentParent, typeof(Transform), true);
                 EditorGUILayout.Space();
 
-                // Select the current editing mode.
                 GUI.backgroundColor *= 0.8f;
-                _currentPiece = (TrackPiece)GUILayout.SelectionGrid((int)_currentPiece, _pieceContents, 6, EditorStyles.miniButtonMid);
+                _creationMode = (CreationMode)GUILayout.SelectionGrid((int)_creationMode, _creationModeContents, 2, GUI.skin.button);
                 GUI.backgroundColor = Color.white;
+                EditorHelper.Separator();
                 EditorGUILayout.Space();
 
-                switch (_currentPiece)
+                switch (_creationMode)
                 {
-                    case TrackPiece.Straight:
-                        DrawStraightOptions();
+                    case CreationMode.Freeform:
+                        DrawCreationFreeformOptions();
                         break;
-                    case TrackPiece.Curve:
-                        DrawCurveOptions();
-                        break;
-                    case TrackPiece.Switch:
-                        DrawSwitchOptions();
-                        break;
-                    case TrackPiece.Yard:
-                        DrawYardOptions();
-                        break;
-                    case TrackPiece.Turntable:
-                        DrawTurntableOptions();
-                        break;
-                    case TrackPiece.Special:
-                        DrawSpecialOptions();
+                    case CreationMode.Piece:
+                        DrawCreationPieceOptions();
                         break;
                     default:
-                        EditorGUILayout.HelpBox("Not implemented yet!", MessageType.Warning);
+                        NotImplementedGUI();
                         break;
                 }
 
@@ -136,7 +124,46 @@ namespace Mapify.Editor.Tools
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
-        #region CREATION OPTIONS
+        private void DrawCreationFreeformOptions()
+        {
+
+        }
+
+        private void DrawCreationPieceOptions()
+        {
+            // Select the current editing mode.
+            GUI.backgroundColor *= 0.8f;
+            _currentPiece = (TrackPiece)GUILayout.SelectionGrid((int)_currentPiece, _pieceContents, 6, EditorStyles.miniButtonMid);
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.Space();
+
+            switch (_currentPiece)
+            {
+                case TrackPiece.Straight:
+                    DrawStraightOptions();
+                    break;
+                case TrackPiece.Curve:
+                    DrawCurveOptions();
+                    break;
+                case TrackPiece.Switch:
+                    DrawSwitchOptions();
+                    break;
+                case TrackPiece.Yard:
+                    DrawYardOptions();
+                    break;
+                case TrackPiece.Turntable:
+                    DrawTurntableOptions();
+                    break;
+                case TrackPiece.Special:
+                    DrawSpecialOptions();
+                    break;
+                default:
+                    NotImplementedGUI();
+                    break;
+            }
+        }
+
+        #region PIECE CREATION OPTIONS
 
         private void DrawStraightOptions()
         {
@@ -399,7 +426,7 @@ namespace Mapify.Editor.Tools
                     DrawDoubleSlipOptions();
                     break;
                 default:
-                    EditorGUILayout.HelpBox("Not implemented yet!", MessageType.Warning);
+                    NotImplementedGUI();
                     break;
             }
         }

@@ -25,8 +25,6 @@ namespace Mapify.Editor.Tools
         private Color _newColour = Color.green;
         private int _sampleCount = 8;
 
-        private int _updateCounter = 0;
-
         // Foldout with the 5 prefabs used for track creation.
         private void DrawPrefabFoldout()
         {

@@ -40,6 +40,8 @@ namespace Mapify.Editor.Tools
         #region PROPERTIES
 
         private bool _isLeft => _orientation == TrackOrientation.Left;
+        private bool _isInFreeformMode => _showCreation && _creationMode == CreationMode.Freeform;
+        private bool _isInPieceMode => _showCreation && _creationMode == CreationMode.Piece;
 
         public Track CurrentTrack => _selectedTracks.Length > 0 ? _selectedTracks[0] : null;
         public BezierPoint CurrentPoint => _selectedPoints.Length > 0 ? _selectedPoints[0] : null;
@@ -185,15 +187,21 @@ namespace Mapify.Editor.Tools
 
         public void CreateTrack(Vector3 position, Vector3 handle)
         {
+            Track t;
+
             switch (_currentPiece)
             {
                 case TrackPiece.Straight:
-                    SelectTrack(TrackToolsCreator.CreateStraight(TrackPrefab, _currentParent, position, handle,
-                        _length, _endGrade, true));
+                    t = TrackToolsCreator.CreateStraight(TrackPrefab, _currentParent, position, handle,
+                        _length, _endGrade, true);
+                    ApplySettingsToTrack(t);
+                    SelectTrack(t);
                     break;
                 case TrackPiece.Curve:
-                    SelectTrack(TrackToolsCreator.CreateCurve(TrackPrefab, _currentParent, position, handle, _orientation,
-                        _radius, _arc, _maxArcPerPoint, _endGrade, true));
+                    t = TrackToolsCreator.CreateCurve(TrackPrefab, _currentParent, position, handle, _orientation,
+                        _radius, _arc, _maxArcPerPoint, _endGrade, true);
+                    ApplySettingsToTrack(t);
+                    SelectTrack(t);
                     break;
                 case TrackPiece.Switch:
                     SelectGameObject(TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
@@ -222,14 +230,18 @@ namespace Mapify.Editor.Tools
 
         public void CreateSpecial(Vector3 attachPoint, Vector3 handlePosition)
         {
+            Track t;
+
             switch (_currentSpecial)
             {
                 case SpecialTrackPiece.Buffer:
                     TrackToolsCreator.CreateBuffer(BufferPrefab, _currentParent, attachPoint, handlePosition, true);
                     break;
                 case SpecialTrackPiece.SwitchCurve:
-                    SelectTrack(TrackToolsCreator.CreateSwitchCurve(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
-                        _orientation, _connectingPoint, true));
+                    t = TrackToolsCreator.CreateSwitchCurve(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
+                        _orientation, _connectingPoint, true);
+                    ApplySettingsToTrack(t);
+                    SelectTrack(t);
                     break;
                 case SpecialTrackPiece.Connect2:
                     CreateConnect2();
@@ -253,19 +265,25 @@ namespace Mapify.Editor.Tools
 
         private void CreateConnect2()
         {
+            Track t;
+
             switch (_selectionType)
             {
                 case SelectionType.Track:
                     BezierPoint p0 = _useHandle2Start ? _selectedTracks[0].Curve[0] : _selectedTracks[0].Curve.Last();
                     BezierPoint p1 = _useHandle2End ? _selectedTracks[1].Curve[0] : _selectedTracks[1].Curve.Last();
 
-                    SelectTrack(TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, p0, p1,
-                        _useHandle2Start, _useHandle2End, _lengthMultiplier, true));
+                    t = TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, p0, p1,
+                        _useHandle2Start, _useHandle2End, _lengthMultiplier, true);
+                    ApplySettingsToTrack(t);
+                    SelectTrack(t);
 
                     break;
                 case SelectionType.BezierPoint:
-                    SelectTrack(TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, _selectedPoints[0], _selectedPoints[1],
-                                _useHandle2Start, _useHandle2End, _lengthMultiplier, true));
+                    t = TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, _selectedPoints[0], _selectedPoints[1],
+                                _useHandle2Start, _useHandle2End, _lengthMultiplier, true);
+                    ApplySettingsToTrack(t);
+                    SelectTrack(t);
                     break;
                 default:
                     break;
@@ -388,6 +406,8 @@ namespace Mapify.Editor.Tools
         public void ResetCreationSettings(bool all)
         {
             _endGrade = 0.0f;
+            _heightOffset = 0.5f;
+            _smoothMix = 1.0f;
 
             if (all || _currentPiece == TrackPiece.Straight)
             {
@@ -609,6 +629,15 @@ namespace Mapify.Editor.Tools
             EditorGUILayout.HelpBox("Not implemented yet!", MessageType.Warning);
         }
 
+        private void ApplySettingsToTrack(Track t)
+        {
+            t.transform.parent = _currentParent;
+            t.age = _trackAge;
+            t.generateSigns = _generateSigns;
+            t.generateBallast = _generateBallast;
+            t.generateSleepers = _generateSleepers;
+        }
+
         #endregion
 
         #region DATA STRUCTURES
@@ -627,6 +656,18 @@ namespace Mapify.Editor.Tools
             }
 
             public float GetGrade() => MathHelper.GetGrade(Position, Handle);
+
+            public static AttachPoint FromBezierPoint(BezierPoint bp, bool isBehind)
+            {
+                if (isBehind)
+                {
+                    return new AttachPoint(bp.position, bp.globalHandle2);
+                }
+                else
+                {
+                    return new AttachPoint(bp.position, bp.globalHandle1);
+                }
+            }
         }
 
         private class PreviewPointCache
@@ -636,6 +677,7 @@ namespace Mapify.Editor.Tools
             public Vector3[] Points;
             public bool DrawButton;
             public string Tooltip;
+            public bool AllowGUI;
 
             public static string NewString => "★";
             public static string NextString => "→";
@@ -649,27 +691,116 @@ namespace Mapify.Editor.Tools
                 Points = System.Array.Empty<Vector3>();
                 DrawButton = true;
                 Tooltip = "";
+                AllowGUI = true;
             }
 
-            public void Draw()
+            public void DrawLines()
             {
-                if (DrawButton)
-                {
-                    // TODO: use a disc instead of this so it is not selectable.
-                    Handles.FreeRotateHandle(Quaternion.identity, Attach.Position,
-                            HandleUtility.GetHandleSize(Attach.Position) * 0.15f);
-                }
-
                 for (int i = 0; i < Lines.Length; i++)
                 {
                     Handles.DrawPolyLine(Lines[i]);
                 }
+            }
+
+            public void DrawPointsGUI(SceneView scene)
+            {
+                if (DrawButton)
+                {
+                    Handles.DrawWireDisc(HandleUtility.WorldToGUIPoint(Attach.Position), Vector3.forward, 15.0f);
+                    // TODO: use a disc instead of this so it is not selectable.
+                    //Handles.FreeRotateHandle(Quaternion.identity, Attach.Position,
+                    //        HandleUtility.GetHandleSize(Attach.Position) * 0.15f);
+                }
 
                 for (int i = 0; i < Points.Length; i++)
                 {
-                    Handles.FreeRotateHandle(Quaternion.identity, Points[i],
-                        HandleUtility.GetHandleSize(Points[i]) * 0.05f);
+                    Handles.DrawWireDisc(HandleUtility.WorldToGUIPoint(Points[i]), Vector3.forward, 5.0f);
+                    //Handles.FreeRotateHandle(Quaternion.identity, Points[i],
+                    //    HandleUtility.GetHandleSize(Points[i]) * 0.05f);
                 }
+            }
+        }
+
+        private class FreeformTrackHelper
+        {
+            public Vector3 StartNormal;
+            public Vector3? Start;
+            public Vector3? StartHandle;
+            public Vector3? Next;
+            public Vector3? NextHandle;
+            public Track WorkingTrack;
+            public int? UndoIndex;
+            public bool Locked;
+
+            public bool HasStart => Start.HasValue;
+            public bool IsStartSnapped => StartHandle.HasValue;
+            public bool IsNextSnapped => Next.HasValue;
+
+            public FreeformTrackHelper(Vector3 normal)
+            {
+                StartNormal = normal;
+                Start = null;
+                StartHandle = null;
+                Next = null;
+                NextHandle = null;
+                WorkingTrack = null;
+                UndoIndex = null;
+                Locked = false;
+            }
+
+            public void CheckForSnap(Vector3 v, float radius)
+            {
+                Vector3 pos;
+                Vector3 hand;
+                bool snapped = TrackToolsHelper.CheckForTrackSnap(v, radius, out pos, out hand);
+
+                // Start has a value, so we are working with new points.
+                if (Start.HasValue)
+                {
+                    if (snapped)
+                    {
+                        NextHandle = hand;
+                    }
+                    else
+                    {
+                        NextHandle = null;
+                    }
+
+                    Next = pos;
+
+                    return;
+                }
+
+                if (snapped)
+                {
+                    StartHandle = hand;
+                }
+                else
+                {
+                    StartHandle = null;
+                }
+
+                Start = pos;
+            }
+
+            public AttachPoint ToAttachPoint()
+            {
+                if (WorkingTrack)
+                {
+                    return AttachPoint.FromBezierPoint(WorkingTrack.Curve.Last(), false);
+                }
+
+                if (!Start.HasValue)
+                {
+                    throw new System.Exception("Start is null!");
+                }
+
+                if (StartHandle.HasValue)
+                {
+                    return new AttachPoint(Start.Value, StartHandle.Value);
+                }
+
+                return new AttachPoint(Start.Value, Start.Value);
             }
         }
 

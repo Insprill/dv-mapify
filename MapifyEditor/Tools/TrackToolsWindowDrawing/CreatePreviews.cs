@@ -13,7 +13,7 @@ namespace Mapify.Editor.Tools
         private List<PreviewPointCache> _nextCache = new List<PreviewPointCache>();
         private List<PreviewPointCache> _backCache = new List<PreviewPointCache>();
 
-        private void CreatePreviews()
+        private void CreatePiecePreviews()
         {
             ClearPreviews();
             DoNullCheck();

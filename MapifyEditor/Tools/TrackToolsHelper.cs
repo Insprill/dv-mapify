@@ -1,4 +1,5 @@
 using Mapify.Editor.Utils;
+using UnityEditor;
 using UnityEngine;
 using static Mapify.Editor.Tools.ToolEnums;
 
@@ -13,6 +14,14 @@ namespace Mapify.Editor.Tools
         /// The radius used when curves need to match switches.
         /// </summary>
         public const float DefaultSwitchRadius = 181.9430668f;
+        public static Track[] CachedTracks = new Track[0];
+
+        public static bool HasCachedTracks => CachedTracks.Length > 0;
+
+        public static void CreateCache()
+        {
+            CachedTracks = GetAllActiveTracks();
+        }
 
         /// <summary>
         /// Calculates the height difference between 2 grades over a certain length.
@@ -183,6 +192,192 @@ namespace Mapify.Editor.Tools
             return $"[{t.yardId}{t.trackId}{t.trackType.LetterId()}]";
         }
 
+        public static Vector3[] GetSmoothBezierToConnectSimple(Vector3 attachPosition, Vector3 attachHandle, Vector3 newTarget)
+        {
+            float length = (newTarget - attachPosition).magnitude * MathHelper.OneThird;
+            Vector3 dir = (attachPosition - attachHandle).normalized;
+            Vector3 handle = attachPosition + dir * length * 2;
+
+            handle = newTarget + (handle - newTarget).normalized * length;
+
+            return new Vector3[] { attachPosition,
+                attachPosition + dir * length,
+                handle,
+                newTarget };
+        }
+
+        public static Vector3[] GetSmoothBezierToConnectSimple(Vector3 attachPosition, Vector3 attachHandle, Vector3 newTarget, float maxAngle)
+        {
+            Vector3 dir = (attachPosition - attachHandle).normalized;
+            Vector3 dirNext = (newTarget - attachPosition).normalized;
+            float angle = Vector3.Angle(dir, dirNext);
+
+            if (angle > maxAngle)
+            {
+                dirNext = Quaternion.AngleAxis(maxAngle, Vector3.Cross(dir, dirNext)) * dir;
+            }
+
+            newTarget = Vector3.Project(newTarget - attachPosition, dirNext) + attachPosition;
+
+            return GetSmoothBezierToConnectSimple(attachPosition, attachHandle, newTarget);
+        }
+
+        public static Vector3[] GetSmoothBezierToConnectComplex(Vector3 attachPosition, Vector3 attachHandle, Vector3 newTarget)
+        {
+            Vector3 dir = (attachPosition - attachHandle).normalized;
+            Vector3 dirNext = (newTarget - attachPosition).normalized;
+            Quaternion rot = Quaternion.FromToRotation(dir, dirNext);
+
+            float length = (newTarget - attachPosition).magnitude * MathHelper.OneThird;
+            bool sub360 = Vector3.Dot(dir, dirNext) < 0;
+
+            dirNext = rot * dirNext;
+            float angle = Vector3.Angle(dir, dirNext);
+
+            if (sub360)
+            {
+                angle = 360 - angle;
+            }
+
+            length *= 1 + MathHelper.ArcToBezierHandleLength(angle * Mathf.Deg2Rad);
+
+            return new Vector3[] { attachPosition,
+                attachPosition + dir * length,
+                newTarget - dirNext * length,
+                newTarget };
+        }
+
+        public static Vector3[] GetSmoothBezierToConnectComplex(Vector3 attachPosition, Vector3 attachHandle, Vector3 newTarget, float maxAngle)
+        {
+            Vector3 dir = (attachPosition - attachHandle).normalized;
+            Vector3 dirNext = (newTarget - attachPosition).normalized;
+            float angle = Vector3.Angle(dir, dirNext);
+
+            if (angle > maxAngle)
+            {
+                dirNext = Quaternion.AngleAxis(maxAngle, Vector3.Cross(dir, dirNext)) * dir;
+            }
+
+            newTarget = Vector3.Project(newTarget - attachPosition, dirNext) + attachPosition;
+
+            return GetSmoothBezierToConnectComplex(attachPosition, attachHandle, newTarget);
+        }
+
+        public static Vector3[] GetSmoothBezierToConnectMix(Vector3 attachPosition, Vector3 attachHandle, Vector3 newTarget, float mix)
+        {
+            Vector3[] s = GetSmoothBezierToConnectSimple(attachPosition, attachHandle, newTarget);
+            Vector3[] c = GetSmoothBezierToConnectComplex(attachPosition, attachHandle, newTarget);
+
+            return new Vector3[] {Vector3.Lerp(s[0], c[0], mix),
+                Vector3.Lerp(s[1], c[1], mix),
+                Vector3.Lerp(s[2], c[2], mix),
+                Vector3.Lerp(s[3], c[3], mix) };
+        }
+
+        public static Vector3[] GetSmoothBezierToConnectMix(Vector3 attachPosition, Vector3 attachHandle, Vector3 newTarget, float maxAngle, float mix)
+        {
+            Vector3[] s = GetSmoothBezierToConnectSimple(attachPosition, attachHandle, newTarget, maxAngle);
+            Vector3[] c = GetSmoothBezierToConnectComplex(attachPosition, attachHandle, newTarget, maxAngle);
+
+            return new Vector3[] {Vector3.Lerp(s[0], c[0], mix),
+                Vector3.Lerp(s[1], c[1], mix),
+                Vector3.Lerp(s[2], c[2], mix),
+                Vector3.Lerp(s[3], c[3], mix) };
+        }
+
+        /// <summary>
+        /// Returns all active <see cref="Track"/> objects.
+        /// </summary>
+        /// <remarks>
+        /// This function is VERY slow, it is recommended to cache the result.
+        /// </remarks>
+        public static Track[] GetAllActiveTracks()
+        {
+            return Object.FindObjectsOfType<Track>();
+        }
+
+        /// <summary>
+        /// Searches <see cref="CachedTracks"/> for a possible snap point.
+        /// </summary>
+        /// <param name="point">The point to snap.</param>
+        /// <param name="snappedPosition">The position where to snap.</param>
+        /// <param name="snappedHandle">The handle of the snap.</param>
+        /// <returns>True if there was a snap.</returns>
+        /// <remarks>
+        /// Both <paramref name="snappedPosition"/> and <paramref name="snappedHandle"/> will be equal to
+        /// <paramref name="point"/> in case no snap position is found.
+        /// </remarks>
+        public static bool CheckForTrackSnap(Vector3 point, float radius, out Vector3 snappedPosition, out Vector3 snappedHandle)
+        {
+            BezierCurve here;
+            radius *= radius;
+
+            for (int i = 0; i < CachedTracks.Length; i++)
+            {
+                here = CachedTracks[i].Curve;
+
+                if ((point - here[0].position).sqrMagnitude <= radius)
+                {
+                    snappedPosition = here[0].position;
+                    snappedHandle = here[0].globalHandle2;
+                    return true;
+                }
+
+                if ((point - here.Last().position).sqrMagnitude <= radius)
+                {
+                    snappedPosition = here.Last().position;
+                    snappedHandle = here.Last().globalHandle1;
+                    return true;
+                }
+            }
+
+            snappedPosition = point;
+            snappedHandle = point;
+            return false;
+        }
+
+        /// <summary>
+        /// Reverses a cubic bezier represented by its 4 control points.
+        /// </summary>
+        public static Vector3[] ReverseCurve(Vector3[] curve)
+        {
+            return new Vector3[] { curve[3],
+                curve[2],
+                curve[1],
+                curve[0] };
+        }
+
+        /// <summary>
+        /// Adjusts the handle of a bezier curve vertically to match a normal at a position.
+        /// </summary>
+        /// <param name="position">The point of the curve.</param>
+        /// <param name="handle">The handle at that point.</param>
+        /// <param name="normal">The normal at that point.</param>
+        /// <returns>The modified handle.</returns>
+        /// <remarks>In case the normal is not vertical enough, the handle is not changed.</remarks>
+        public static Vector3 HandleMatchNormal(Vector3 position, Vector3 handle, Vector3 normal)
+        {
+            // The normal not being somewhat vertical can cause weird values, so don't change in these cases.
+            if (Mathf.Approximately(normal.y, 0))
+            {
+                return handle;
+            }
+
+            Vector3 dir = handle - position;
+            normal = Vector3.ProjectOnPlane(normal, Vector3.Cross(dir, Vector3.up));
+            dir.y = 0;
+            dir.y = dir.magnitude * MathHelper.GetGrade(Vector3.Angle(normal, Vector3.up));
+
+            if (Vector3.Dot(normal, dir) > 0)
+            {
+                dir.y = -dir.y;
+            }
+
+            return position + dir;
+        }
+
+        #region INTERNAL
+
         // Copies a track's fields to another.
         internal static void CopyTrackFields(Track original, Track other)
         {
@@ -236,5 +431,7 @@ namespace Mapify.Editor.Tools
         {
             return trackDistance * 2.0f;
         }
+
+        #endregion
     }
 }

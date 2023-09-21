@@ -12,10 +12,26 @@ namespace Mapify.Editor.Tools
         private bool _showCreation = true;
         private CreationMode _creationMode = CreationMode.Piece;
         private TrackPiece _currentPiece = TrackPiece.Straight;
+
+        // Global options.
         private Transform _currentParent;
+        private TrackAge _trackAge = TrackAge.New;
+        private bool _generateSigns = false;
+        private bool _generateBallast = true;
+        private bool _generateSleepers = true;
+
+        // Options used in multiple pieces.
         private TrackOrientation _orientation;
         private float _endGrade = 0.0f;
         private float _trackDistance = 4.5f;
+
+        // Freeform.
+        private float _heightOffset = 0.5f;
+        private float _smoothMix = 1.0f;
+        private float _fixToNormal = 1.0f;
+        private bool _showSnapPoint = true;
+        private bool _quickBuild = true;
+        private bool _creating = false;
 
         // Straight.
         private float _length = 100.0f;
@@ -87,10 +103,7 @@ namespace Mapify.Editor.Tools
                 EditorGUILayout.Space();
                 EditorGUI.indentLevel++;
 
-                _currentParent = (Transform)EditorGUILayout.ObjectField(
-                    new GUIContent("Track parent", "The parent transform for new tracks"),
-                    _currentParent, typeof(Transform), true);
-                EditorGUILayout.Space();
+                DrawGlobalOptions();
 
                 GUI.backgroundColor *= 0.8f;
                 _creationMode = (CreationMode)GUILayout.SelectionGrid((int)_creationMode, _creationModeContents, 2, GUI.skin.button);
@@ -113,9 +126,6 @@ namespace Mapify.Editor.Tools
 
                 EditorGUI.indentLevel--;
                 EditorGUILayout.Space();
-                DoNullCheck();
-                DrawCreationButtons();
-                EditorGUILayout.Space();
 
                 // Only have one of the 2 open.
                 _showEditing = false;
@@ -124,9 +134,94 @@ namespace Mapify.Editor.Tools
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
+        private void DrawGlobalOptions()
+        {
+            _currentParent = (Transform)EditorGUILayout.ObjectField(
+                new GUIContent("Track parent", "The parent transform for new tracks"),
+                _currentParent, typeof(Transform), true);
+            _trackAge = (TrackAge)EditorGUILayout.EnumPopup(
+                new GUIContent("Track age"),
+                _trackAge);
+            _generateSigns = EditorGUILayout.Toggle(
+                new GUIContent("Generate signs"),
+                _generateSigns);
+            _generateBallast = EditorGUILayout.Toggle(
+                new GUIContent("Generate ballast"),
+                _generateBallast);
+            _generateSleepers = EditorGUILayout.Toggle(
+                new GUIContent("Generate sleepers"),
+                _generateSleepers);
+
+            EditorGUILayout.Space();
+        }
+
         private void DrawCreationFreeformOptions()
         {
+            GUILayoutOption widthOption = GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.2f);
 
+            _heightOffset = EditorGUILayout.FloatField(
+                new GUIContent("Height offset", "The height at which the track is placed, above the clicked point"),
+                _heightOffset);
+            _smoothMix = EditorGUILayout.Slider(
+                new GUIContent("Smooth mode", "How the smoothing between points should be calculated"),
+                _smoothMix, 0.0f, 1.0f);
+            _fixToNormal = EditorGUILayout.Slider(
+                new GUIContent("Use collision normals", "How the grade should match the clicked position, 0 being perfectly smooth to the curve " +
+                "and 1 being perfectly matching the clicked position"),
+                _fixToNormal, 0.0f, 1.0f);
+            _lengthMultiplier = EditorGUILayout.FloatField(
+                new GUIContent("Length multiplier", "A multiplier that changes handle length, for smoother or tighter curves"),
+                _lengthMultiplier);
+            _showSnapPoint = EditorGUILayout.Toggle(
+                new GUIContent("Show snap point", "Show where the click will snap to."),
+                _showSnapPoint);
+            _quickBuild = EditorGUILayout.Toggle(
+                new GUIContent("Quick build", "Instantly lay new track on click."),
+                _quickBuild);
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            if (_creating)
+            {
+                GUI.backgroundColor *= EditorHelper.Cancel;
+
+                if (GUILayout.Button(new GUIContent("Stop", "Concludes the track creation"), widthOption))
+                {
+                    StopFreeform();
+                }
+            }
+            else
+            {
+                GUI.backgroundColor *= EditorHelper.Accept;
+
+                if (GUILayout.Button(new GUIContent("Start", "Begins the track creation"), widthOption))
+                {
+                    StartFreeform();
+                }
+            }
+
+            GUI.backgroundColor = Color.white;
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void StartFreeform()
+        {
+            TrackToolsHelper.CreateCache();
+            _creating = true;
+        }
+
+        private void StopFreeform()
+        {
+            if (_freeformTrackHelper != null && _freeformTrackHelper.UndoIndex.HasValue)
+            {
+                Undo.CollapseUndoOperations(_freeformTrackHelper.UndoIndex.Value);
+            }
+
+            _freeformTrackHelper = null;
+            _creating = false;
         }
 
         private void DrawCreationPieceOptions()
@@ -161,6 +256,10 @@ namespace Mapify.Editor.Tools
                     NotImplementedGUI();
                     break;
             }
+
+            EditorGUILayout.Space();
+            DoNullCheck();
+            DrawCreationButtons();
         }
 
         #region PIECE CREATION OPTIONS
@@ -493,7 +592,6 @@ namespace Mapify.Editor.Tools
             _useHandle2End = EditorGUILayout.Toggle(new GUIContent("Switch end",
                 "Change the direction at the end"),
                 _useHandle2End);
-
             _lengthMultiplier = EditorGUILayout.FloatField(
                 new GUIContent("Length multiplier", "A multiplier that changes handle length, for smoother or tighter curves"),
                 _lengthMultiplier);

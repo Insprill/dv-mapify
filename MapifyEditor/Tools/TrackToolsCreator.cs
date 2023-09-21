@@ -1161,7 +1161,7 @@ namespace Mapify.Editor.Tools
             t.Curve[0].globalHandle2 = p0 - h0;
             t.Curve[1].globalHandle1 = p1 - h1;
 
-            t.gameObject.name = $"Connecting Track [{t.Curve.length:F3}m]";
+            t.gameObject.name = $"Connecting Track [{t.GetHorizontalLength():F3}m]";
 
 #if UNITY_EDITOR
             if (registerUndo)
@@ -1356,6 +1356,40 @@ namespace Mapify.Editor.Tools
 #endif
 
             return new Switch[] { s00, s01, s10, s11 };
+        }
+
+        /// <summary>
+        /// Instantiates a <see cref="Track"/> from a cubic bezier.
+        /// </summary>
+        /// <param name="prefab">The base track prefab.</param>
+        /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
+        /// <param name="p0">The starting point of the track.</param>
+        /// <param name="p1">The handle at the starting point.</param>
+        /// <param name="p2">The handle at the ending point.</param>
+        /// <param name="p3">The ending point of the track.</param>
+        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
+        /// <returns>The instantiated <see cref="Track"/>.</returns>
+        public static Track CreateBezier(Track prefab, Transform parent, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, bool registerUndo)
+        {
+            Track t = Object.Instantiate(prefab);
+            t.transform.parent = parent;
+            t.transform.position = p0;
+
+            t.Curve[0].position = p0;
+            t.Curve[1].position = p3;
+            t.Curve[0].globalHandle2 = p1;
+            t.Curve[1].globalHandle1 = p2;
+
+            t.gameObject.name = $"Bezier Track [{t.GetHorizontalLength():F3}m]";
+
+#if UNITY_EDITOR
+            if (registerUndo)
+            {
+                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Bezier Track");
+            }
+#endif
+
+            return t;
         }
     }
 }

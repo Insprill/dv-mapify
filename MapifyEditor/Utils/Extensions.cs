@@ -320,6 +320,20 @@ namespace Mapify.Editor.Utils
             return true;
         }
 
+        public static Vector3[] GetAllPoints(this BezierCurve curve)
+        {
+            Vector3[] points = new Vector3[curve.pointCount * 3];
+
+            for (int i = 0; i < curve.pointCount; i++)
+            {
+                points[(i * 3)] = curve[i].globalHandle1;
+                points[(i * 3) + 1] = curve[i].position;
+                points[(i * 3) + 2] = curve[i].globalHandle2;
+            }
+
+            return points;
+        }
+
         // BezierPoint.
         /// <summary>
         /// Returns the grade for the next handle.

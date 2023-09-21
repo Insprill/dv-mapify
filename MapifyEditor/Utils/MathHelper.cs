@@ -11,6 +11,11 @@ namespace Mapify.Editor.Utils
         /// <summary>2π (6.28318...)</summary>
         public const float Tau = (float)(Math.PI * 2.0);
 
+        private static Plane _yPlane = new Plane(Vector3.up, 0);
+
+        /// <summary>The plane <c>Y=0</c>.</summary>
+        public static Plane YPlane => _yPlane;
+
         /// <summary>Clamps a float to the range [-180, 180].</summary>
         public static float ClampAngle(float value)
         {

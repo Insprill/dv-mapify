@@ -43,6 +43,11 @@ namespace Mapify.Editor.Utils
             Handles.DrawPolyLine(MathHelper.SampleBezier(p0, p1, p2, p3, samples));
         }
 
+        public static void DrawBezier(Vector3[] points, int samples = 8)
+        {
+            Handles.DrawPolyLine(MathHelper.SampleBezier(points, samples));
+        }
+
         public static bool MultipleSelectionFoldout<T>(string foldoutName, string identifier, bool show, T[] objects, int max = -1) where T : UnityEngine.Object
         {
             if (max > objects.Length || max == -1)

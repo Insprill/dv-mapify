@@ -124,6 +124,13 @@ namespace Mapify.Editor.Tools
                 new GUIContent($"{CurrentTrack.GetHeightChange():F3}m"));
             EditorGUILayout.LabelField(new GUIContent("Average grade", "Average grade of the track"),
                 new GUIContent($"{CurrentTrack.GetAverageGrade() * 100.0f:F2}%"));
+
+            EditorGUILayout.Space();
+
+            if (GUILayout.Button(new GUIContent("Frame whole piece", "Moves the scene view camera to show the whole piece")))
+            {
+                SceneView.lastActiveSceneView.Frame(GeometryUtility.CalculateBounds(CurrentTrack.Curve.GetAllPoints(), Matrix4x4.identity), false);
+            }
         }
 
         private void DrawPointSelection()

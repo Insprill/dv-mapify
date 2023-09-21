@@ -18,49 +18,75 @@ namespace Mapify.Editor.Tools
                 return;
             }
 
-            // Reduce creation frequency.
-            _updateCounter = (_updateCounter + 1) % _updateFrequency;
+            // Get some context of where we are.
+            Event e = Event.current;
 
-            if (!_performanceMode || _updateCounter % _updateFrequency == 0)
+            // Make sure this is only done once per frame.
+            // Also check for mouse up events, in order for performance mode to
+            // update after something like a drag is performed.
+            if (e.type == EventType.Repaint ||
+                e.type == EventType.MouseUp)
             {
-                // Only check if the window is closed if the last state is open.
-                if (_isOpen && !HasOpenInstances<TrackToolsWindow>())
+                // Reduce creation frequency.
+                _updateCounter = (_updateCounter + 1) % _updateFrequency;
+
+                // Force update on mouse up.
+                if (e.type == EventType.MouseUp)
                 {
-                    _isOpen = false;
-                    UnregisterEvents();
-                    return;
+                    _updateCounter = 0;
                 }
 
-                CreatePreviews();
+                if (!_performanceMode || _updateCounter % _updateFrequency == 0)
+                {
+                    // Only check if the window is closed if the last state is open.
+                    // This is here to reduce frequency of calls too.
+                    if (_isOpen && !HasOpenInstances<TrackToolsWindow>())
+                    {
+                        _isOpen = false;
+                        UnregisterEvents();
+                        return;
+                    }
+
+                    if (_isInPieceMode)
+                    {
+                        CreatePiecePreviews();
+                    }
+                    else
+                    {
+                        ClearPreviews();
+                    }
+                }
             }
 
-            HandleMouseEvents();
+            // Handle stuff that needs the mouse, like the freeform tool.
+            HandleMouseEvents(scene);
 
             // Only draw handles for track creation if the creation foldout is active.
             if (_showCreation)
             {
-                DrawCreationPreviews();
+                DrawCreationPreviews(scene);
             }
 
+            // Ditto, for editing.
             if (_showEditing)
             {
-                DrawEditingPreviews();
+                DrawEditingPreviews(scene);
             }
 
             // Extra curve drawing.
             if (CurrentTrack)
             {
-                DrawTrackExtraPreviews();
+                DrawTrackExtraPreviews(scene, CurrentTrack, _zTestTrack, _sampleCount);
             }
         }
 
-        private void DrawCreationPreviews()
+        private void DrawCreationPreviews(SceneView scene)
         {
             using (new Handles.DrawingScope(_newColour))
             {
                 for (int i = 0; i < _newCache.Count; i++)
                 {
-                    _newCache[i].Draw();
+                    _newCache[i].DrawLines();
                 }
             }
 
@@ -68,7 +94,7 @@ namespace Mapify.Editor.Tools
             {
                 for (int i = 0; i < _backCache.Count; i++)
                 {
-                    _backCache[i].Draw();
+                    _backCache[i].DrawLines();
                 }
             }
 
@@ -76,119 +102,83 @@ namespace Mapify.Editor.Tools
             {
                 for (int i = 0; i < _nextCache.Count; i++)
                 {
-                    _nextCache[i].Draw();
+                    _nextCache[i].DrawLines();
                 }
             }
 
             Handles.BeginGUI();
 
-            for (int i = 0; i < _newCache.Count; i++)
+            foreach (var cache in _newCache)
             {
-                if (!_newCache[i].DrawButton)
+                using (new Handles.DrawingScope(_newColour))
+                {
+                    cache.DrawPointsGUI(scene);
+                }
+
+                if (!cache.DrawButton)
                 {
                     continue;
                 }
 
-                if (GUI.Button(new Rect(GetButtonPositionForAttachPoint(_newCache[i].Attach), _buttonSize),
-                    new GUIContent(_newCache[i].Tooltip, "New track")))
+                GUI.enabled = cache.AllowGUI;
+
+                if (GUI.Button(new Rect(GetButtonPositionForAttachPoint(cache.Attach), _buttonSize),
+                    new GUIContent(cache.Tooltip, "New track")))
                 {
                     CreateNewTrack();
                 }
             }
 
-            for (int i = 0; i < _backCache.Count; i++)
+            foreach (var cache in _backCache)
             {
-                if (!_backCache[i].DrawButton)
+                using (new Handles.DrawingScope(_backwardColour))
+                {
+                    cache.DrawPointsGUI(scene);
+                }
+
+                if (!cache.DrawButton)
                 {
                     continue;
                 }
 
-                if (GUI.Button(new Rect(GetButtonPositionForAttachPoint(_backCache[i].Attach), _buttonSize),
-                    new GUIContent(_backCache[i].Tooltip, "Previous track")))
+                GUI.enabled = cache.AllowGUI;
+
+                if (GUI.Button(new Rect(GetButtonPositionForAttachPoint(cache.Attach), _buttonSize),
+                    new GUIContent(cache.Tooltip, "Previous track")))
                 {
-                    CreateTrack(_backCache[i].Attach);
+                    CreateTrack(cache.Attach);
                 }
             }
 
-            for (int i = 0; i < _nextCache.Count; i++)
+            foreach (var cache in _nextCache)
             {
-                if (!_nextCache[i].DrawButton)
+                using (new Handles.DrawingScope(_forwardColour))
+                {
+                    cache.DrawPointsGUI(scene);
+                }
+
+                if (!cache.DrawButton)
                 {
                     continue;
                 }
 
-                if (GUI.Button(new Rect(GetButtonPositionForAttachPoint(_nextCache[i].Attach), _buttonSize),
-                    new GUIContent(_nextCache[i].Tooltip, "Next track")))
+                GUI.enabled = cache.AllowGUI;
+
+                if (GUI.Button(new Rect(GetButtonPositionForAttachPoint(cache.Attach), _buttonSize),
+                    new GUIContent(cache.Tooltip, "Next track")))
                 {
-                    CreateTrack(_nextCache[i].Attach);
+                    CreateTrack(cache.Attach);
                 }
             }
+
+            GUI.enabled = true;
 
             Handles.EndGUI();
         }
 
-        private void DrawEditingPreviews()
+        private void DrawEditingPreviews(SceneView scene)
         {
 
-        }
-
-        private void DrawTrackExtraPreviews()
-        {
-            // If there's a height change, draw the same curve but completely level.
-            if (!CurrentTrack.Curve.IsCompletelyLevel())
-            {
-                float y = CurrentTrack.Curve[0].position.y;
-                Vector3 p0, p1, p2, p3;
-
-                using (new Handles.DrawingScope(CurrentTrack.Curve.drawColor.Negative()))
-                {
-                    p0 = CurrentTrack.Curve[0].position;
-                    p1 = CurrentTrack.Curve[0].globalHandle2;
-
-                    Handles.Label(p0 + Vector3.up * HandleUtility.GetHandleSize(p0),
-                        $"{MathHelper.GetGrade(p0, p1) * 100.0f:F2}%");
-
-                    for (int i = 1; i < CurrentTrack.Curve.pointCount; i++)
-                    {
-                        p0 = CurrentTrack.Curve[i - 1].position;
-                        p1 = CurrentTrack.Curve[i - 1].globalHandle2;
-                        p2 = CurrentTrack.Curve[i].globalHandle1;
-                        p3 = CurrentTrack.Curve[i].position;
-
-                        Handles.Label(p3 + Vector3.up * HandleUtility.GetHandleSize(p3),
-                            $"{MathHelper.GetGrade(p2, p3) * 100.0f:F2}%");
-
-                        p0.y = y;
-                        p1.y = y;
-                        p2.y = y;
-                        p3.y = y;
-
-                        EditorHelper.DrawBezier(p0, p1, p2, p3, _sampleCount);
-                        Handles.DrawLine(p3, CurrentTrack.Curve[i].position);
-                    }
-                }
-            }
-
-            if (_zTestTrack)
-            {
-                using (new Handles.DrawingScope(CurrentTrack.Curve.drawColor.Negative()))
-                {
-                    var ztest = Handles.zTest;
-                    Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
-
-                    for (int i = 1; i < CurrentTrack.Curve.pointCount; i++)
-                    {
-                        EditorHelper.DrawBezier(
-                            CurrentTrack.Curve[i - 1].position,
-                            CurrentTrack.Curve[i - 1].globalHandle2,
-                            CurrentTrack.Curve[i].globalHandle1,
-                            CurrentTrack.Curve[i].position,
-                            _sampleCount);
-                    }
-
-                    Handles.zTest = ztest;
-                }
-            }
         }
 
         private Vector2 GetButtonPositionForAttachPoint(AttachPoint p)
@@ -198,6 +188,105 @@ namespace Mapify.Editor.Tools
 
             // The button for each attach point is near it, moved towards its destination and upwards.
             return pos + (dir.normalized * -40.0f) - _buttonSize * 0.5f - new Vector2(0, _buttonSize.y);
+        }
+
+        private static void DrawTrackExtraPreviews(SceneView scene, Track t, bool zTest, int samples = 8)
+        {
+            // If there's a height change, draw the same curve but completely level.
+            if (!t.Curve.IsCompletelyLevel())
+            {
+                float y = t.Curve[0].position.y;
+                Vector3 p0, p1, p2, p3;
+
+                using (new Handles.DrawingScope(t.Curve.drawColor.Negative()))
+                {
+                    p0 = t.Curve[0].position;
+                    p1 = t.Curve[0].globalHandle2;
+
+                    Handles.Label(p0 + Vector3.up * HandleUtility.GetHandleSize(p0),
+                        $"{MathHelper.GetGrade(p0, p1) * 100.0f:F2}%");
+
+                    for (int i = 1; i < t.Curve.pointCount; i++)
+                    {
+                        p0 = t.Curve[i - 1].position;
+                        p1 = t.Curve[i - 1].globalHandle2;
+                        p2 = t.Curve[i].globalHandle1;
+                        p3 = t.Curve[i].position;
+
+                        Handles.Label(p3 + Vector3.up * HandleUtility.GetHandleSize(p3),
+                            $"{MathHelper.GetGrade(p2, p3) * 100.0f:F2}%");
+
+                        p0.y = y;
+                        p1.y = y;
+                        p2.y = y;
+                        p3.y = y;
+
+                        EditorHelper.DrawBezier(p0, p1, p2, p3, samples);
+                        Handles.DrawLine(p3, t.Curve[i].position);
+                    }
+                }
+            }
+
+            if (zTest)
+            {
+                using (new Handles.DrawingScope(t.Curve.drawColor.Negative()))
+                {
+                    var ztest = Handles.zTest;
+                    Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
+
+                    for (int i = 1; i < t.Curve.pointCount; i++)
+                    {
+                        EditorHelper.DrawBezier(
+                            t.Curve[i - 1].position,
+                            t.Curve[i - 1].globalHandle2,
+                            t.Curve[i].globalHandle1,
+                            t.Curve[i].position,
+                            samples);
+                    }
+
+                    Handles.zTest = ztest;
+                }
+            }
+        }
+
+        public static void DrawCurveGrades(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, bool includeFirst, int samples)
+        {
+            Vector3[] results = MathHelper.SampleBezier(p0, p1, p2, p3, samples);
+            Vector3 tan;
+            Vector3 flatSample;
+            GUIContent label;
+            Rect rect;
+
+            // Draw vertical lines.
+            Handles.color = Color.black;
+            for (int i =  1; i < results.Length; i++)
+            {
+                flatSample = results[i];
+                flatSample.y = results[0].y;
+                Handles.DrawLine(results[i], flatSample);
+            }
+            Handles.color = Color.white;
+
+            Handles.BeginGUI();
+
+            for (int i = includeFirst ? 0 : 1; i < results.Length; i++)
+            {
+                tan = BezierCurve.Tangent(p0, p1, p2, p3, i / (float)samples);
+                //Handles.Label(results[i] + Vector3.up * HandleUtility.GetHandleSize(results[i]), new GUIContent(
+                //    $"{MathHelper.GetGrade(results[i], results[i] + tan) * 100.0f:F2}%"));
+
+                label = new GUIContent(new GUIContent($"{MathHelper.GetGrade(Vector3.zero, tan) * 100.0f:F2}%"));
+                rect = HandleUtility.WorldPointToSizedRect(results[i], label, GUI.skin.label);
+                rect.position += new Vector2(-20, -30);
+                GUI.Label(rect, label);
+            }
+
+            Handles.EndGUI();
+        }
+
+        public static void DrawCurveGrades(Vector3[] curve, bool includeFirst, int samples)
+        {
+            DrawCurveGrades(curve[0], curve[1], curve[2], curve[3], includeFirst, samples);
         }
     }
 }

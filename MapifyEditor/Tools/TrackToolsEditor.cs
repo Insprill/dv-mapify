@@ -179,5 +179,33 @@ namespace Mapify.Editor.Tools
                 to.globalHandle2 = from.globalHandle2;
             }
         }
+
+        public static void MatchTrackToTerrain(Track t, float heightOffset, float maxDistance, float reverseOffset, float normalMatch)
+        {
+            if (t.IsSwitch || t.IsTurntable)
+            {
+                return;
+            }
+
+            Vector3 newOffset = Vector3.up * heightOffset;
+            Vector3 hitOffset = Vector3.up * reverseOffset;
+            RaycastHit hit;
+            BezierPoint bp;
+
+            for (int i = 0; i < t.Curve.pointCount; i++)
+            {
+                bp = t.Curve[i];
+
+                if (Physics.Raycast(bp.position + hitOffset, Vector3.down, out hit, maxDistance + reverseOffset))
+                {
+                    bp.position = hit.point + newOffset;
+
+                    bp.globalHandle1 = Vector3.Lerp(bp.globalHandle1,
+                        TrackToolsHelper.HandleMatchNormal(bp.position, bp.globalHandle1, hit.normal), normalMatch);
+                    bp.globalHandle2 = Vector3.Lerp(bp.globalHandle2,
+                        TrackToolsHelper.HandleMatchNormal(bp.position, bp.globalHandle2, hit.normal), normalMatch);
+                }
+            }
+        }
     }
 }

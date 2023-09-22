@@ -11,9 +11,14 @@ namespace Mapify.Editor.Tools
         private bool _showEditing = false;
         private EditingMode _editingMode = EditingMode.Merge;
 
+        // Terrain match.
+        public float _maxDistance = 500.0f;
+        public float _reverseOffset = 5.0f;
+
         // Editing mode.
         private readonly GUIContent[] _editingModeContents = {
             new GUIContent("Merge", "Merges multiple tracks into a one"),
+            new GUIContent("Terrain match", "Matches tracks to terrain and other objects")
         };
 
         private void DrawEditingFoldout()
@@ -39,6 +44,9 @@ namespace Mapify.Editor.Tools
                 {
                     case EditingMode.Merge:
                         DrawTrackMerge();
+                        break;
+                    case EditingMode.MatchTerrain:
+                        DrawMatchTerrain();
                         break;
                     default:
                         EditorGUILayout.HelpBox("Coming soon!", MessageType.Info);
@@ -76,6 +84,48 @@ namespace Mapify.Editor.Tools
                 if (_selectedTracks.Length > 1)
                 {
                     TrackToolsEditor.MergeTracks(_selectedTracks, 0.01f, true);
+                }
+            }
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUI.backgroundColor = Color.white;
+            GUI.enabled = true;
+        }
+
+        private void DrawMatchTerrain()
+        {
+            _heightOffset = EditorGUILayout.FloatField(
+                new GUIContent("Height offset", "The height at which the track is placed, above the terrain"),
+                _heightOffset);
+            _maxDistance = EditorGUILayout.FloatField(
+                new GUIContent("Max distance", "How far each point can be moved downwards"),
+                _maxDistance);
+            _reverseOffset = EditorGUILayout.FloatField(
+                new GUIContent("Reverse offset", "How far above each point terrain will be considered"),
+                _reverseOffset);
+            _fixToNormal = EditorGUILayout.Slider(
+                new GUIContent("Use collision normals", "How the grade should match the terrain, 0 is keeping the original handles " +
+                "and 1 being perfectly matching the terrain position"),
+                _fixToNormal, 0.0f, 1.0f);
+
+            _showTracks = EditorHelper.MultipleSelectionFoldout("Selected tracks", "Track", _showTracks, _selectedTracks);
+
+            EditorGUILayout.Space();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUI.backgroundColor = EditorHelper.Accept;
+            GUI.enabled = _selectedTracks.Length > 1;
+
+            if (GUILayout.Button("Match", GUILayout.MaxWidth(EditorGUIUtility.labelWidth)))
+            {
+                for (int i = 0; i < _selectedTracks.Length; i++)
+                {
+                    TrackToolsEditor.MatchTrackToTerrain(_selectedTracks[i],
+                        _heightOffset,
+                        _maxDistance,
+                        _reverseOffset,
+                        _fixToNormal);
                 }
             }
 

@@ -344,63 +344,7 @@ namespace Mapify.Editor.Tools
         /// </remarks>
         public void TryGetDefaultAssets()
         {
-            string[] guids;
-
-            if (TrackPrefab == null)
-            {
-                guids = AssetDatabase.FindAssets("Track", new[] { "Assets/Mapify/Prefabs/Trackage" });
-
-                if (guids.Length > 0)
-                {
-                    TrackPrefab = AssetDatabase.LoadAssetAtPath<Track>(AssetDatabase.GUIDToAssetPath(guids[0]));
-                }
-            }
-
-            if (BufferPrefab == null)
-            {
-                guids = AssetDatabase.FindAssets("Buffer Stop", new[] { "Assets/Mapify/Prefabs/Trackage" });
-
-                if (guids.Length > 0)
-                {
-                    BufferPrefab = AssetDatabase.LoadAssetAtPath<BufferStop>(AssetDatabase.GUIDToAssetPath(guids[0]));
-                }
-            }
-
-            if (LeftSwitch == null)
-            {
-                guids = AssetDatabase.FindAssets("Switch Left", new[] { "Assets/Mapify/Prefabs/Trackage" });
-
-                if (guids.Length > 0)
-                {
-                    LeftSwitch = AssetDatabase.LoadAssetAtPath<Switch>(AssetDatabase.GUIDToAssetPath(guids[0]));
-                }
-            }
-
-            if (RightSwitch == null)
-            {
-                guids = AssetDatabase.FindAssets("Switch Right", new[] { "Assets/Mapify/Prefabs/Trackage" });
-
-                if (guids.Length > 0)
-                {
-                    RightSwitch = AssetDatabase.LoadAssetAtPath<Switch>(AssetDatabase.GUIDToAssetPath(guids[0]));
-                }
-            }
-
-            if (TurntablePrefab == null)
-            {
-                guids = AssetDatabase.FindAssets("Turntable", new[] { "Assets/Mapify/Prefabs/Trackage" });
-
-                for (int i = 0; i < guids.Length; i++)
-                {
-                    var turn = AssetDatabase.LoadAssetAtPath<Turntable>(AssetDatabase.GUIDToAssetPath(guids[i]));
-
-                    if (turn != null)
-                    {
-                        TurntablePrefab = turn;
-                        break;
-                    }
-                }
-            }
+            TrackToolsHelper.TryGetDefaultPrefabs(ref TrackPrefab, ref BufferPrefab, ref LeftSwitch, ref RightSwitch, ref TurntablePrefab);
         }
 
         public void ResetCreationSettings(bool all)

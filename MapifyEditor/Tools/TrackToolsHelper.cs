@@ -433,5 +433,84 @@ namespace Mapify.Editor.Tools
         }
 
         #endregion
+
+        #region EDITOR ONLY
+#if UNITY_EDITOR
+
+        /// <summary>
+        /// Tries to assign the default prefabs in case a value is null.
+        /// </summary>
+        /// <param name="track"></param>
+        /// <param name="buffer"></param>
+        /// <param name="switchLeft"></param>
+        /// <param name="switchRight"></param>
+        /// <param name="turntable"></param>
+        /// <remarks>
+        /// This will only look in the default directory (Mapify folder in the Assets root).
+        /// If a parameter is not null, it will not be replaced.
+        /// </remarks>
+        public static void TryGetDefaultPrefabs(ref Track track, ref BufferStop buffer, ref Switch switchLeft, ref Switch switchRight, ref Turntable turntable)
+        {
+            string[] guids;
+
+            if (track == null)
+            {
+                guids = AssetDatabase.FindAssets("Track", new[] { "Assets/Mapify/Prefabs/Trackage" });
+
+                if (guids.Length > 0)
+                {
+                    track = AssetDatabase.LoadAssetAtPath<Track>(AssetDatabase.GUIDToAssetPath(guids[0]));
+                }
+            }
+
+            if (buffer == null)
+            {
+                guids = AssetDatabase.FindAssets("Buffer Stop", new[] { "Assets/Mapify/Prefabs/Trackage" });
+
+                if (guids.Length > 0)
+                {
+                    buffer = AssetDatabase.LoadAssetAtPath<BufferStop>(AssetDatabase.GUIDToAssetPath(guids[0]));
+                }
+            }
+
+            if (switchLeft == null)
+            {
+                guids = AssetDatabase.FindAssets("Switch Left", new[] { "Assets/Mapify/Prefabs/Trackage" });
+
+                if (guids.Length > 0)
+                {
+                    switchLeft = AssetDatabase.LoadAssetAtPath<Switch>(AssetDatabase.GUIDToAssetPath(guids[0]));
+                }
+            }
+
+            if (switchRight == null)
+            {
+                guids = AssetDatabase.FindAssets("Switch Right", new[] { "Assets/Mapify/Prefabs/Trackage" });
+
+                if (guids.Length > 0)
+                {
+                    switchRight = AssetDatabase.LoadAssetAtPath<Switch>(AssetDatabase.GUIDToAssetPath(guids[0]));
+                }
+            }
+
+            if (turntable == null)
+            {
+                guids = AssetDatabase.FindAssets("Turntable", new[] { "Assets/Mapify/Prefabs/Trackage" });
+
+                for (int i = 0; i < guids.Length; i++)
+                {
+                    var turn = AssetDatabase.LoadAssetAtPath<Turntable>(AssetDatabase.GUIDToAssetPath(guids[i]));
+
+                    if (turn != null)
+                    {
+                        turntable = turn;
+                        break;
+                    }
+                }
+            }
+        }
+
+#endif
+        #endregion
     }
 }

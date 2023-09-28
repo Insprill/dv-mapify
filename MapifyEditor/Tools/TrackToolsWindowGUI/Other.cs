@@ -1,3 +1,4 @@
+using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
 using static Mapify.Editor.Tools.ToolEnums;
@@ -40,21 +41,21 @@ namespace Mapify.Editor.Tools
             {
                 EditorGUI.indentLevel++;
 
-                TrackPrefab = (Track)EditorGUILayout.ObjectField(
+                TrackPrefab = EditorHelper.ObjectField(
                     new GUIContent("Track prefab"),
-                    TrackPrefab, typeof(Track), true);
-                BufferPrefab = (BufferStop)EditorGUILayout.ObjectField(
+                    TrackPrefab, true);
+                BufferPrefab = EditorHelper.ObjectField(
                     new GUIContent("Buffer prefab"),
-                    BufferPrefab, typeof(BufferStop), true);
-                LeftSwitch = (Switch)EditorGUILayout.ObjectField(
+                    BufferPrefab, true);
+                LeftSwitch = EditorHelper.ObjectField(
                     new GUIContent("Left switch prefab"),
-                    LeftSwitch, typeof(Switch), true);
-                RightSwitch = (Switch)EditorGUILayout.ObjectField(
+                    LeftSwitch, true);
+                RightSwitch = EditorHelper.ObjectField(
                     new GUIContent("Right switch prefab"),
-                    RightSwitch, typeof(Switch), true);
-                TurntablePrefab = (Turntable)EditorGUILayout.ObjectField(
+                    RightSwitch, true);
+                TurntablePrefab = EditorHelper.ObjectField(
                     new GUIContent("Turntable prefab"),
-                    TurntablePrefab, typeof(Turntable), true);
+                    TurntablePrefab, true);
 
                 EditorGUI.indentLevel--;
                 EditorGUILayout.Space();

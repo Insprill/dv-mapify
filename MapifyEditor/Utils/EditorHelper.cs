@@ -80,6 +80,13 @@ namespace Mapify.Editor.Utils
         {
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         }
+
+        // Wrapper to avoid having to constantly type all the castings and types.
+        public static T ObjectField<T>(GUIContent label, T obj, bool allowSceneObjects,
+            params GUILayoutOption[] options) where T : Object
+        {
+            return (T)EditorGUILayout.ObjectField(label, obj, typeof(T), allowSceneObjects, options);
+        }
     }
 }
 #endif

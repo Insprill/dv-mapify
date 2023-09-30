@@ -197,8 +197,41 @@ namespace Mapify.Editor
 
             EditorUtility.ClearProgressBar();
 
+            //put big assets in their own assetbundle to avoid the combined assetbundle getting too big.
+            //Unity cannot load assetbundles larger then 4GB.
+            for (var i = 0; i < assetPaths.Count; i++)
+            {
+                string absolutePath = Path.GetFullPath(assetPaths[i]);
+
+                //skip directories
+                if ((File.GetAttributes(absolutePath) & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    continue;
+                }
+
+                long fileSize = new FileInfo(absolutePath).Length;
+
+                if (fileSize > 500*1000000) //500MB
+                {
+                    Debug.Log("Putting asset "+assetPaths[i]+" in it's own bundle because it's large: "+fileSize/1000000+" MB");
+
+                    string[] pathArray = { assetPaths[i] };
+                    builds.Add(new AssetBundleBuild {
+                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+Path.GetFileName(absolutePath),
+                        assetNames = pathArray
+                    });
+
+                    //make sure it doesn't get built twice
+                    assetPaths[i] = null;
+                }
+            }
+
+            //remove null
+            assetPaths.RemoveAll(item => item == null);
+
+            //build the other assets
             builds.Add(new AssetBundleBuild {
-                assetBundleName = Names.ASSETS_ASSET_BUNDLE,
+                assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX,
                 assetNames = assetPaths.ToArray()
             });
             builds.Add(new AssetBundleBuild {

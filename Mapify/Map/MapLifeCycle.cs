@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DV.CashRegister;
@@ -28,7 +29,7 @@ namespace Mapify.Map
         public static Action OnCleanup;
 
         private static bool isMapLoaded;
-        private static AssetBundle assets;
+        private static List<AssetBundle> assets_assetBundles;
         private static AssetBundle scenes;
         private static string originalRailwayScenePath;
         private static string originalGameContentScenePath;
@@ -50,17 +51,24 @@ namespace Mapify.Map
             yield return null;
 
             // Load asset bundles
-            Mapify.LogDebug(() => $"Loading AssetBundle '{Names.ASSETS_ASSET_BUNDLE}'");
             string mapDir = Maps.GetDirectory(basicMapInfo);
-            AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(Names.ASSETS_ASSET_BUNDLE, mapDir));
-            DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = Names.ASSETS_ASSET_BUNDLE;
-            do
-            {
-                loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, Mathf.RoundToInt(assetsReq.progress * 100));
-                yield return null;
-            } while (!assetsReq.isDone);
+            string[] assets_assetBundlePaths = Maps.GetMapAssets(Names.ASSETS_ASSET_BUNDLES_PREFIX+"*", mapDir);
+            assets_assetBundles = new List<AssetBundle>();
 
-            assets = assetsReq.assetBundle;
+            foreach (var ass in assets_assetBundlePaths)
+            {
+                var assetFileName = Path.GetFileName(ass);
+                Mapify.LogDebug(() => $"Loading AssetBundle '{assetFileName}'");
+                AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(assetFileName, mapDir));
+                DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = assetFileName;
+                do
+                {
+                    loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, Mathf.RoundToInt(assetsReq.progress * 100));
+                    yield return null;
+                } while (!assetsReq.isDone);
+
+                assets_assetBundles.Add(assetsReq.assetBundle);
+            }
 
             Mapify.LogDebug(() => $"Loading AssetBundle '{Names.SCENES_ASSET_BUNDLE}'");
             AssetBundleCreateRequest scenesReq = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(Names.SCENES_ASSET_BUNDLE, mapDir));
@@ -74,7 +82,21 @@ namespace Mapify.Map
             scenes = scenesReq.assetBundle;
 
             // Register MapInfo
-            MapInfo mapInfo = assets.LoadAllAssets<MapInfo>()[0];
+            MapInfo mapInfo = null;
+            foreach (var ass in assets_assetBundles)
+            {
+                var results = ass.LoadAllAssets<MapInfo>();
+                if (results.Length > 0) //found the MapInfo
+                {
+                    mapInfo = results[0];
+                    break;
+                }
+            }
+
+            if (mapInfo is null)
+            {
+                Mapify.LogError("Couldn't find MapInfo");
+            }
             Maps.RegisterLoadedMap(mapInfo);
 
             // Load scenes for us to steal assets from
@@ -223,11 +245,16 @@ namespace Mapify.Map
             originalRailwayScenePath = null;
             originalGameContentScenePath = null;
             scenesToLoad = 0;
-            if (assets != null)
+
+            for (var i = 0; i < assets_assetBundles.Count; i++)
             {
-                assets.Unload(true);
-                assets = null;
+                if (assets_assetBundles[i] != null)
+                {
+                    assets_assetBundles[i].Unload(true);
+                    assets_assetBundles[i] = null;
+                }
             }
+            assets_assetBundles = new List<AssetBundle>();
 
             if (scenes != null)
             {

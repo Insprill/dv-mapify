@@ -217,7 +217,7 @@ namespace Mapify.Editor
 
                     string[] pathArray = { assetPaths[i] };
                     builds.Add(new AssetBundleBuild {
-                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+Path.GetFileName(absolutePath),
+                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+'_'+Path.GetFileName(absolutePath),
                         assetNames = pathArray
                     });
 

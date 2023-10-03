@@ -382,6 +382,18 @@ namespace Mapify.Editor.Tools
                 _backCache[0].Tooltip = PreviewPointCache.BackString;
             }
         }
+
+        private void CreateEditingPreviews()
+        {
+            switch (_editingMode)
+            {
+                case EditingMode.InsertPoint:
+
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
 #endif

@@ -1,3 +1,4 @@
+using Mapify.Editor.Utils;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -206,6 +207,20 @@ namespace Mapify.Editor.Tools
                         TrackToolsHelper.HandleMatchNormal(bp.position, bp.globalHandle2, hit.normal), normalMatch);
                 }
             }
+        }
+
+        public static void CreatePointBetween2(Track t, int point, float f)
+        {
+            Vector3[][] curves = MathHelper.SplitBezier(t.Curve.AsControlPoints(point), f);
+
+            BezierPoint bp0 = t.Curve[point];
+            BezierPoint bp2 = t.Curve[point + 1];
+            BezierPoint bp1 = t.Curve.InsertPointAt(point + 1, curves[0][3]);
+
+            bp0.globalHandle2 = curves[0][1];
+            bp1.globalHandle1 = curves[0][2];
+            bp1.globalHandle2 = curves[1][1];
+            bp2.globalHandle1 = curves[1][2];
         }
     }
 }

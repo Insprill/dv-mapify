@@ -164,5 +164,32 @@ namespace Mapify.Editor.Utils
 
             return results;
         }
+
+        /// <summary>
+        /// Splits a bezier curve into 2 at a point.
+        /// </summary>
+        /// <param name="curve">The 4 points of a cubic bezier.</param>
+        /// <param name="f">The point in the curve where it is split.</param>
+        /// <returns></returns>
+        public static Vector3[][] SplitBezier(Vector3[] curve, float f)
+        {
+            Vector3[][] results = new Vector3[2][];
+            results[0] = new Vector3[4];
+            results[1] = new Vector3[4];
+
+            Vector3 mid = curve[1] + (curve[2] - curve[1]) * f;
+
+            results[0][0] = curve[0];
+            results[0][1] = curve[0] + (curve[1] - curve[0]) * f;
+            results[0][2] = results[0][1] + (mid - results[0][1]) * f;
+            results[0][3] = BezierCurve.GetCubicCurvePoint(curve[0], curve[1], curve[2], curve[3], f);
+
+            results[1][3] = curve[3];
+            results[1][2] = curve[3] + (curve[2] - curve[3]) * f;
+            results[1][1] = results[1][2] + (mid - results[1][2]) * f;
+            results[1][0] = results[0][3];
+
+            return results;
+        }
     }
 }

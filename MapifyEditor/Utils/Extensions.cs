@@ -201,6 +201,14 @@ namespace Mapify.Editor.Utils
             return new[] { curve[0], curve.Last() };
         }
 
+        public static Vector3[] AsControlPoints(this BezierCurve curve, int from)
+        {
+            return new Vector3[] { curve[from].position,
+                curve[from].globalHandle2,
+                curve[from + 1].globalHandle1,
+                curve[from + 1].position};
+        }
+
         #endregion
 
         #region C# Utils

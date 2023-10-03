@@ -23,7 +23,11 @@ namespace Mapify.Editor.Utils
 
             EditorGUILayout.MinMaxSlider(label, ref minTemp, ref maxTemp, minLimit, maxLimit, options);
 
-            return (Mathf.RoundToInt(minTemp), Mathf.RoundToInt(maxTemp));
+            (int Min, int Max) results = (Mathf.RoundToInt(minTemp), Mathf.RoundToInt(maxTemp));
+            results.Min = Mathf.Max(minLimit, results.Min);
+            results.Max = Mathf.Min(maxLimit, results.Max);
+
+            return results;
         }
 
         public static char CharField(GUIContent label, char c, params GUILayoutOption[] options)

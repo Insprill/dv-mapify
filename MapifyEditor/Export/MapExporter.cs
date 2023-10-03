@@ -172,15 +172,30 @@ namespace Mapify.Editor
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
             List<string> assetPaths = new List<string>(allAssetPaths.Length - builds.Count);
             List<string> scenePaths = new List<string>();
-            for (int i = 0; i < allAssetPaths.Length; i++)
+
+            for (var i = 0; i < allAssetPaths.Length; i++)
             {
-                string assetPath = allAssetPaths[i];
+                var assetPath = allAssetPaths[i];
+
                 if (!assetPath.StartsWith("Assets/")) continue;
                 AssetImporter importer = AssetImporter.GetAtPath(assetPath);
-                if (importer == null || importer is MonoImporter || importer is PluginImporter) continue;
+                if (importer is null || importer is MonoImporter || importer is PluginImporter) continue;
+
                 Object obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
                 if (obj is TerrainData) continue;
-                (obj is SceneAsset ? scenePaths : assetPaths).Add(assetPath);
+
+                if (obj is SceneAsset)
+                {
+                    scenePaths.Add(assetPath);
+                }
+                else if (assetPath.Contains("MapInfo.asset")) //todo the docs say "The name doesn't matter". Is there another way to find the MapInfo?
+                {
+                    CreateMapInfoBuild(assetPath, ref builds);
+                }
+                else
+                {
+                    assetPaths.Add(assetPath);
+                }
 
                 EditorUtility.DisplayProgressBar("Gathering assets", assetPath, i / (float)allAssetPaths.Length);
             }
@@ -203,16 +218,26 @@ namespace Mapify.Editor
                 .Sort();
 
             var builds = new List<AssetBundleBuild>(sortedTerrain.Length);
+
             for (int i = 0; i < sortedTerrain.Length; i++)
             {
-                builds[i] = new AssetBundleBuild
+                builds.Add(new AssetBundleBuild
                 {
                     assetBundleName = $"terraindata_{i}",
                     assetNames = new[] { AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData) }
-                };
+                });
             }
 
             return builds;
+        }
+
+        private static void CreateMapInfoBuild(string mapInfoPath, ref List<AssetBundleBuild> builds)
+        {
+            builds.Add(new AssetBundleBuild
+            {
+                assetBundleName = Names.MAP_INFO_ASSET_BUNDLE,
+                assetNames = new[] { mapInfoPath }
+            });
         }
 
         private static void CreateSceneBuilds(List<string> scenePaths, ref List<AssetBundleBuild> builds)
@@ -225,8 +250,6 @@ namespace Mapify.Editor
 
         private static void CreateAssetsBuilds(List<string> assetPaths, ref List<AssetBundleBuild> builds)
         {
-            //todo put mapinfo in its own assetbundle so we don't have to search though all of them to find it.
-
             //put big assets in their own assetbundle to avoid the combined assetbundle getting too big.
             //Unity cannot load assetbundles larger then 4GB.
             long assetBundleSize = 0;

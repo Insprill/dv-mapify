@@ -58,6 +58,9 @@ namespace Mapify.Map
             foreach (var ass in assets_assetBundlePaths)
             {
                 var assetFileName = Path.GetFileName(ass);
+
+                if (assetFileName.EndsWith(".manifest")) { continue; }
+
                 Mapify.LogDebug(() => $"Loading AssetBundle '{assetFileName}'");
                 AssetBundleCreateRequest assetsReq = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(assetFileName, mapDir));
                 DisplayLoadingInfo_OnLoadingStatusChanged_Patch.what = assetFileName;
@@ -81,22 +84,19 @@ namespace Mapify.Map
 
             scenes = scenesReq.assetBundle;
 
-            //todo put mapinfo in its own assetbundle so we don't have to search though all of them to find it.
-            // Register MapInfo
-            MapInfo mapInfo = null;
-            foreach (var ass in assets_assetBundles)
+            // Register mapinfo
+            Mapify.LogDebug(() => $"Loading AssetBundle '{Names.MAP_INFO_ASSET_BUNDLE}'");
+            AssetBundleCreateRequest mapInfoRequest = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(Names.MAP_INFO_ASSET_BUNDLE, mapDir));
+            do
             {
-                var results = ass.LoadAllAssets<MapInfo>();
-                if (results.Length > 0) //found the MapInfo
-                {
-                    mapInfo = results[0];
-                    break;
-                }
-            }
+                loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, Mathf.RoundToInt(mapInfoRequest.progress * 100));
+                yield return null;
+            } while (!mapInfoRequest.isDone);
 
+            var mapInfo = mapInfoRequest.assetBundle.LoadAllAssets<MapInfo>()[0];
             if (mapInfo is null)
             {
-                Mapify.LogError("Couldn't find MapInfo");
+                Debug.LogError("Failed to load mapinfo");
             }
             Maps.RegisterLoadedMap(mapInfo);
 

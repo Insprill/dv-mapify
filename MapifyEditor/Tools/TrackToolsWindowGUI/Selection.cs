@@ -61,9 +61,9 @@ namespace Mapify.Editor.Tools
 
         private void DrawTrackSelection()
         {
-            EditorGUILayout.ObjectField(
+            EditorHelper.ObjectField(
                 new GUIContent($"Current track"),
-                CurrentTrack, typeof(Track), true);
+                CurrentTrack, true);
 
             EditorGUILayout.LabelField("Total selected", _selectedTracks.Length.ToString());
 
@@ -135,9 +135,9 @@ namespace Mapify.Editor.Tools
 
         private void DrawPointSelection()
         {
-            EditorGUILayout.ObjectField(
+            EditorHelper.ObjectField(
                 new GUIContent("Current point"),
-                CurrentPoint, typeof(BezierPoint), true);
+                CurrentPoint, true);
 
             EditorGUILayout.LabelField("Handle 1");
             EditorGUI.indentLevel++;
@@ -176,9 +176,9 @@ namespace Mapify.Editor.Tools
 
         private void DrawSwitchSelection()
         {
-            EditorGUILayout.ObjectField(
+            EditorHelper.ObjectField(
                 new GUIContent("Current switch"),
-                CurrentSwitch, typeof(Switch), true);
+                CurrentSwitch, true);
 
             EditorGUILayout.LabelField(new GUIContent("North angle", "Angle in relation to the North"),
                 new GUIContent($"{MathHelper.AngleToNorth(CurrentSwitch.transform.forward):F2}°"));
@@ -218,9 +218,9 @@ namespace Mapify.Editor.Tools
 
         private void DrawTurntableSelection()
         {
-            EditorGUILayout.ObjectField(
+            EditorHelper.ObjectField(
                 new GUIContent("Current turntable"),
-                CurrentTurntable, typeof(Turntable), true);
+                CurrentTurntable, true);
 
             EditorGUILayout.Space();
 

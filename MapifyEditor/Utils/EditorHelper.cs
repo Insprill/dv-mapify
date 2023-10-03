@@ -70,9 +70,7 @@ namespace Mapify.Editor.Utils
 
             for (int i = 0; i < max; i++)
             {
-                EditorGUILayout.ObjectField(
-                    new GUIContent($"{identifier} {i}"),
-                    objects[i], typeof(T), true);
+                ObjectField(new GUIContent($"{identifier} {i}"), objects[i], true);
             }
 
             EditorGUI.indentLevel--;

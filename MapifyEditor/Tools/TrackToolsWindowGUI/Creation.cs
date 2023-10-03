@@ -136,9 +136,9 @@ namespace Mapify.Editor.Tools
 
         private void DrawGlobalOptions()
         {
-            _currentParent = (Transform)EditorGUILayout.ObjectField(
+            _currentParent = EditorHelper.ObjectField(
                 new GUIContent("Track parent", "The parent transform for new tracks"),
-                _currentParent, typeof(Transform), true);
+                _currentParent, true);
             _trackAge = (TrackAge)EditorGUILayout.EnumPopup(
                 new GUIContent("Track age"),
                 _trackAge);

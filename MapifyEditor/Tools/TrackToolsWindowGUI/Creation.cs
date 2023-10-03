@@ -220,6 +220,11 @@ namespace Mapify.Editor.Tools
                 Undo.CollapseUndoOperations(_freeformTrackHelper.UndoIndex.Value);
             }
 
+            if (_freeformTrackHelper != null && _freeformTrackHelper.WorkingTrack)
+            {
+                Selection.activeGameObject = _freeformTrackHelper.WorkingTrack.gameObject;
+            }
+
             _freeformTrackHelper = null;
             _creating = false;
         }

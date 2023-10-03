@@ -91,6 +91,18 @@ namespace Mapify.Editor.Utils
         {
             return (T)EditorGUILayout.ObjectField(label, obj, typeof(T), allowSceneObjects, options);
         }
+
+        public static void BeginHorizontalCentre()
+        {
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+        }
+
+        public static void EndHorizontalCentre()
+        {
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+        }
     }
 }
 #endif

@@ -138,7 +138,7 @@ namespace Mapify.Editor
 
             BuildUpdater.Update();
 
-            AssetBundleBuild[] builds = CreateBuilds(EditorSceneManager.GetSceneByPath(Scenes.TERRAIN));
+            AssetBundleBuild[] builds = CreateBuilds();
 
             bool success = BuildPipeline.BuildAssetBundles(
                 mapExportDir,
@@ -165,22 +165,12 @@ namespace Mapify.Editor
             return success;
         }
 
-        private static AssetBundleBuild[] CreateBuilds(Scene terrainScene)
+        private static AssetBundleBuild[] CreateBuilds()
         {
-            Terrain[] sortedTerrain = terrainScene.GetAllComponents<Terrain>()
-                .Where(terrain => terrain.gameObject.activeInHierarchy)
-                .ToArray()
-                .Sort();
-
-            List<AssetBundleBuild> builds = new List<AssetBundleBuild>(sortedTerrain.Length + 2);
-            for (int i = 0; i < sortedTerrain.Length; i++)
-                builds.Add(new AssetBundleBuild {
-                    assetBundleName = $"terraindata_{i}",
-                    assetNames = new[] { AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData) }
-                });
+            var builds = CreateTerrainBuilds();
 
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            List<string> assetPaths = new List<string>(allAssetPaths.Length - sortedTerrain.Length);
+            List<string> assetPaths = new List<string>(allAssetPaths.Length - builds.Count);
             List<string> scenePaths = new List<string>();
             for (int i = 0; i < allAssetPaths.Length; i++)
             {
@@ -197,8 +187,52 @@ namespace Mapify.Editor
 
             EditorUtility.ClearProgressBar();
 
+            CreateSceneBuilds(scenePaths, ref builds);
+            CreateAssetsBuilds(assetPaths, ref builds);
+
+            return builds.ToArray();
+        }
+
+        private static List<AssetBundleBuild> CreateTerrainBuilds()
+        {
+            var terrainScene = EditorSceneManager.GetSceneByPath(Scenes.TERRAIN);
+
+            Terrain[] sortedTerrain = terrainScene.GetAllComponents<Terrain>()
+                .Where(terrain => terrain.gameObject.activeInHierarchy)
+                .ToArray()
+                .Sort();
+
+            var builds = new List<AssetBundleBuild>(sortedTerrain.Length);
+            for (int i = 0; i < sortedTerrain.Length; i++)
+            {
+                builds[i] = new AssetBundleBuild
+                {
+                    assetBundleName = $"terraindata_{i}",
+                    assetNames = new[] { AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData) }
+                };
+            }
+
+            return builds;
+        }
+
+        private static void CreateSceneBuilds(List<string> scenePaths, ref List<AssetBundleBuild> builds)
+        {
+            builds.Add(new AssetBundleBuild {
+                assetBundleName = Names.SCENES_ASSET_BUNDLE,
+                assetNames = scenePaths.ToArray()
+            });
+        }
+
+        private static void CreateAssetsBuilds(List<string> assetPaths, ref List<AssetBundleBuild> builds)
+        {
+            //todo put mapinfo in its own assetbundle so we don't have to search though all of them to find it.
+
             //put big assets in their own assetbundle to avoid the combined assetbundle getting too big.
             //Unity cannot load assetbundles larger then 4GB.
+            long assetBundleSize = 0;
+            long assetBundleNumber = 1;
+            var asssetBundleFiles = new List<string>();
+
             for (var i = 0; i < assetPaths.Count; i++)
             {
                 string absolutePath = Path.GetFullPath(assetPaths[i]);
@@ -211,36 +245,35 @@ namespace Mapify.Editor
 
                 long fileSize = new FileInfo(absolutePath).Length;
 
-                if (fileSize > 500*1000000) //500MB
+                // if the asset would get too big, create a new assetbundle
+                const long maxBundleSize = 500 * 1000000; //500MB
+                if (assetBundleSize > 0 && assetBundleSize + fileSize > maxBundleSize)
                 {
-                    Debug.Log("Putting asset "+assetPaths[i]+" in it's own bundle because it's large: "+fileSize/1000000+" MB");
-
-                    string[] pathArray = { assetPaths[i] };
                     builds.Add(new AssetBundleBuild {
-                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+'_'+Path.GetFileName(absolutePath),
-                        assetNames = pathArray
+                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+'_'+assetBundleNumber,
+                        assetNames = asssetBundleFiles.ToArray()
                     });
 
-                    //make sure it doesn't get built twice
-                    assetPaths[i] = null;
+                    assetBundleSize = 0;
+                    assetBundleNumber++;
+                    asssetBundleFiles = new List<string>();
+                }
+
+                asssetBundleFiles.Add(assetPaths[i]);
+                assetBundleSize += fileSize;
+
+                //if this is the last asset, create a new assetbundle
+                if(assetBundleSize > 0 && i >= assetPaths.Count-1)
+                {
+                    builds.Add(new AssetBundleBuild {
+                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+'_'+assetBundleNumber,
+                        assetNames = asssetBundleFiles.ToArray()
+                    });
                 }
             }
-
-            //remove null
-            assetPaths.RemoveAll(item => item == null);
-
-            //build the other assets
-            builds.Add(new AssetBundleBuild {
-                assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX,
-                assetNames = assetPaths.ToArray()
-            });
-            builds.Add(new AssetBundleBuild {
-                assetBundleName = Names.SCENES_ASSET_BUNDLE,
-                assetNames = scenePaths.ToArray()
-            });
-
-            return builds.ToArray();
         }
+
+
 
         private static void CreateMapInfo(string filePath, MapInfo mapInfo)
         {

@@ -81,6 +81,7 @@ namespace Mapify.Map
 
             scenes = scenesReq.assetBundle;
 
+            //todo put mapinfo in its own assetbundle so we don't have to search though all of them to find it.
             // Register MapInfo
             MapInfo mapInfo = null;
             foreach (var ass in assets_assetBundles)

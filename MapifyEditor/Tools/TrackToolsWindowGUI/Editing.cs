@@ -10,14 +10,15 @@ namespace Mapify.Editor.Tools
     {
         private bool _showEditing = false;
         private EditingMode _editingMode = EditingMode.Merge;
+        private int _editStartIndex = 0;
+        private int _editEndIndex = 1;
+        private float _editPercent = 0.5f;
 
         // Terrain match.
         private float _maxDistance = 500.0f;
         private float _reverseOffset = 5.0f;
 
         // InsertPoint
-        private int _insertIndex = 0;
-        private float _insertPercent = 0.5f;
 
         // Editing mode.
         private readonly GUIContent[] _editingModeContents = {
@@ -150,14 +151,20 @@ namespace Mapify.Editor.Tools
                 return;
             }
 
-            _insertIndex = EditorHelper.MinMaxSliderInt(
+            (_editStartIndex, _editEndIndex) = EditorHelper.MinMaxSliderInt(
                 new GUIContent("Split points", "The 2 points between which the insertion will happen"),
-                _insertIndex, _insertIndex + 1, 0, CurrentTrack.Curve.pointCount - 1).Min;
-            _insertPercent = EditorGUILayout.Slider(
-                new GUIContent("Point in curve"),
-                _insertPercent, 0.0f, 1.0f);
+                _editStartIndex, _editEndIndex, 0, CurrentTrack.Curve.pointCount - 1);
 
-            _insertIndex = Mathf.Min(_insertIndex, CurrentTrack.Curve.pointCount - 2);
+            if (_editStartIndex >= _editEndIndex)
+            {
+                EditorGUILayout.HelpBox("The 2 points cannot be the same!", MessageType.Error);
+            }
+
+            _editPercent = EditorGUILayout.Slider(
+                new GUIContent("Point in curve"),
+                _editPercent, 0.0f, 1.0f);
+
+            _editStartIndex = Mathf.Min(_editStartIndex, CurrentTrack.Curve.pointCount - 2);
 
             EditorGUILayout.Space();
             GUILayout.BeginHorizontal();
@@ -166,7 +173,10 @@ namespace Mapify.Editor.Tools
 
             if (GUILayout.Button("Insert", GUILayout.MaxWidth(EditorGUIUtility.labelWidth)))
             {
-                TrackToolsEditor.CreatePointBetween2(CurrentTrack, _insertIndex, _insertPercent);
+                for (int i = _editEndIndex - 1; i >= _editStartIndex; i--)
+                {
+                    TrackToolsEditor.CreatePointBetween2(CurrentTrack, i, _editPercent);
+                }
             }
 
             GUILayout.FlexibleSpace();

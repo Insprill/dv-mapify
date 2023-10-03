@@ -217,6 +217,10 @@ namespace Mapify.Editor.Tools
             BezierPoint bp2 = t.Curve[point + 1];
             BezierPoint bp1 = t.Curve.InsertPointAt(point + 1, curves[0][3]);
 
+            bp0.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp1.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp2.handleStyle = BezierPoint.HandleStyle.Broken;
+
             bp0.globalHandle2 = curves[0][1];
             bp1.globalHandle1 = curves[0][2];
             bp1.globalHandle2 = curves[1][1];

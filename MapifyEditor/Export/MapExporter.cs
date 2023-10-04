@@ -173,6 +173,8 @@ namespace Mapify.Editor
             List<string> assetPaths = new List<string>(allAssetPaths.Length - builds.Count);
             List<string> scenePaths = new List<string>();
 
+            var mapInfoPath = AssetDatabase.GetAssetPath(EditorAssets.FindAsset<MapInfo>());
+
             for (var i = 0; i < allAssetPaths.Length; i++)
             {
                 var assetPath = allAssetPaths[i];
@@ -188,7 +190,7 @@ namespace Mapify.Editor
                 {
                     scenePaths.Add(assetPath);
                 }
-                else if (assetPath.Contains("MapInfo.asset")) //todo the docs say "The name doesn't matter". Is there another way to find the MapInfo?
+                else if (assetPath == mapInfoPath)
                 {
                     CreateMapInfoBuild(assetPath, ref builds);
                 }

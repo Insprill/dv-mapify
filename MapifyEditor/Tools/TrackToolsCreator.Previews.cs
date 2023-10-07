@@ -34,33 +34,31 @@ namespace Mapify.Editor.Tools
             public static Vector3[] PreviewStraight(Vector3 attachPoint, Vector3 handlePosition, float length, float endGrade,
                 out Vector3[] points, int samples = 8)
             {
-                Vector3[][] gen = GenerateStraightBezier(attachPoint, handlePosition, length, endGrade);
+                var curves = GenerateStraightBezier(attachPoint, handlePosition, length, endGrade);
                 List<Vector3> lines = new List<Vector3>();
                 List<Vector3> ps = new List<Vector3>();
 
-                for (int i = 0; i < gen.Length; i += 4)
+                for (int i = 0; i < curves.Length; i += 4)
                 {
-                    ps.Add(gen[i][0]);
-                    lines.AddRange(MathHelper.SampleBezier(gen[i], samples));
+                    ps.Add(curves[i].P0);
+                    lines.AddRange(curves[i].Sample(samples));
                 }
 
                 points = ps.ToArray();
                 return lines.ToArray();
             }
 
-            public static Vector3[] PreviewCurve(Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float radius,
+            public static Vector3[] PreviewArcCurve(Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float radius,
                 float arc, float maxArc, float endGrade, out Vector3[] points, int samples = 8)
             {
-                Vector3[][] gen = GenerateCurveBeziers(attachPoint, handlePosition, orientation, radius, arc, maxArc, endGrade);
+                var curves = GenerateCurveBeziers(attachPoint, handlePosition, orientation, radius, arc, maxArc, endGrade);
                 List<Vector3> lines = new List<Vector3>();
-                List<Vector3> ps = new List<Vector3>();
+                List<Vector3> ps = new List<Vector3> { curves[0].P0 };
 
-                ps.Add(gen[0][0]);
-
-                for (int i = 0; i < gen.Length; i++)
+                for (int i = 0; i < curves.Length; i++)
                 {
-                    ps.Add(gen[i][0]);
-                    lines.AddRange(MathHelper.SampleBezier(gen[i], samples));
+                    ps.Add(curves[i].P0);
+                    lines.AddRange(curves[i].Sample(samples));
                 }
 
                 points = ps.ToArray();
@@ -70,7 +68,7 @@ namespace Mapify.Editor.Tools
             public static Vector3[][] PreviewSwitch(Switch prefab, Vector3 attachPoint, Vector3 handlePosition, SwitchPoint connectingPoint,
                 int samples = 8)
             {
-                Vector3[][] curves = TrackToolsHelper.GetSwitchBeziers(prefab, attachPoint, handlePosition, connectingPoint);
+                var curves = TrackToolsHelper.GetSwitchBeziers(prefab, attachPoint, handlePosition, connectingPoint);
 
                 return new[]
                 {
@@ -564,13 +562,13 @@ namespace Mapify.Editor.Tools
             {
                 List<Vector3[]> results = new List<Vector3[]>();
 
-                Vector3[][] temp = TrackToolsHelper.GetSwitchBeziers(prefab, attachPoint, handlePosition,
+                SimpleBezier[] temp = TrackToolsHelper.GetSwitchBeziers(prefab, attachPoint, handlePosition,
                     isTrailing ? SwitchPoint.Through : SwitchPoint.Joint);
                 results.AddRange(MathHelper.SampleBeziers(temp, samples));
-                (Vector3 Point, Vector3 Handle) mid0 = (temp[1][3], temp[1][2]);
+                (Vector3 Point, Vector3 Handle) mid0 = (temp[1].P3, temp[1].P2);
 
-                Vector3 point = temp[0][3];
-                Vector3 dir = (temp[0][1] - temp[0][0]).normalized;
+                Vector3 point = temp[0].P3;
+                Vector3 dir = (temp[0].P1 - temp[0].P0).normalized;
 
                 Vector3 offset = (orientation == TrackOrientation.Left ?
                     MathHelper.RotateCCW(dir.Flatten()) :
@@ -580,7 +578,7 @@ namespace Mapify.Editor.Tools
 
                 temp = TrackToolsHelper.GetSwitchBeziers(prefab, point2, point2 - dir, SwitchPoint.Through);
                 results.AddRange(MathHelper.SampleBeziers(temp, samples));
-                (Vector3 Point, Vector3 Handle) mid1 = (temp[1][3], temp[1][2]);
+                (Vector3 Point, Vector3 Handle) mid1 = (temp[1].P3, temp[1].P2);
 
                 results.Add(PreviewConnect2(mid0.Point, mid0.Handle, mid1.Point, mid1.Handle, 1.0f, samples));
 
@@ -621,38 +619,38 @@ namespace Mapify.Editor.Tools
                 float minAngle = TrackToolsHelper.CalculateSwitchAngle(leftPrefab) * Mathf.Rad2Deg;
                 float arc = Mathf.Clamp(crossAngle - (minAngle * 2.0f), 0.1f, 90.0f - (minAngle * 2.0f));
 
-                Vector3[][] temp = TrackToolsHelper.GetSwitchBeziers(orientation == TrackOrientation.Left ? leftPrefab : rightPrefab,
+                SimpleBezier[] temp = TrackToolsHelper.GetSwitchBeziers(orientation == TrackOrientation.Left ? leftPrefab : rightPrefab,
                     attachPoint, handlePosition, SwitchPoint.Joint);
-                results.AddRange(MathHelper.SampleBeziers(temp, samples));
-                Vector3 mid00 = temp[0][3];
+                results.AddRange(MathHelper.SampleBeziers(temp));
+                Vector3 mid00 = temp[0].P3;
 
-                Vector3 dir = temp[0][3] - temp[0][0];
+                Vector3 dir = temp[0].P3 - temp[0].P0;
 
-                temp = GenerateCurveBeziers(temp[1][3], temp[1][2], orientation, radius, arc, 90, 0);
-                results.Add(MathHelper.SampleBezier(temp[0], samples));
+                temp = GenerateCurveBeziers(temp[1].P3, temp[1].P2, orientation, radius, arc, 90, 0);
+                results.Add(temp[0].Sample(samples));
 
                 temp = TrackToolsHelper.GetSwitchBeziers(orientation == TrackOrientation.Left ? rightPrefab : leftPrefab,
-                    temp[0][3], temp[0][2], SwitchPoint.Diverging);
+                    temp[0].P3, temp[0].P2, SwitchPoint.Diverging);
                 results.AddRange(MathHelper.SampleBeziers(temp));
-                Vector3 mid10 = temp[0][3];
+                Vector3 mid10 = temp[0].P3;
 
                 Vector3 mid = MathHelper.LineLineIntersection(
                     attachPoint.Flatten(), (attachPoint + dir).Flatten(),
-                    temp[0][0].Flatten(), temp[0][3].Flatten()).To3D(attachPoint.y);
+                    temp[0].P0.Flatten(), temp[0].P3.Flatten()).To3D(attachPoint.y);
                 Vector3 next = MathHelper.MirrorAround(attachPoint, mid);
 
                 temp = TrackToolsHelper.GetSwitchBeziers(orientation == TrackOrientation.Left ? leftPrefab : rightPrefab,
                     next, next + dir, SwitchPoint.Joint);
                 results.AddRange(MathHelper.SampleBeziers(temp, samples));
-                Vector3 mid01 = temp[0][3];
+                Vector3 mid01 = temp[0].P3;
 
-                temp = GenerateCurveBeziers(temp[1][3], temp[1][2], orientation, radius, arc, 90, 0);
+                temp = GenerateCurveBeziers(temp[1].P3, temp[1].P2, orientation, radius, arc, 90, 0);
                 results.Add(MathHelper.SampleBezier(temp[0], samples));
 
                 temp = TrackToolsHelper.GetSwitchBeziers(orientation == TrackOrientation.Left ? rightPrefab : leftPrefab,
-                    temp[0][3], temp[0][2], SwitchPoint.Diverging);
+                    temp[0].P3, temp[0].P2, SwitchPoint.Diverging);
                 results.AddRange(MathHelper.SampleBeziers(temp));
-                Vector3 mid11 = temp[0][3];
+                Vector3 mid11 = temp[0].P3;
 
                 results.Add(new Vector3[] { mid00, mid01 });
                 results.Add(new Vector3[] { mid10, mid11 });

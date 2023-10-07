@@ -184,6 +184,12 @@ namespace Mapify.Editor.Utils
                 alpha ? 1.0f - color.a : color.a);
         }
 
+        public static float HorizontalMagnitude(this Vector3 vector)
+        {
+            vector.y = 0;
+            return vector.magnitude;
+        }
+
         #endregion
 
         #region Bezier Curves

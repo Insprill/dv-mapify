@@ -43,25 +43,21 @@ namespace Mapify.Editor.Tools
         /// <param name="handlePosition">The handle of the attachment point.</param>
         /// <param name="connectingPoint">Which point of the switch connects to the attachment point.</param>
         /// <returns>An array with 2 arrays representing the through track (index <c>0</c>) and diverging track (index <c>1</c>).</returns>
-        public static Vector3[][] GetSwitchBeziers(Switch s, Vector3 attachPoint, Vector3 handlePosition, SwitchPoint connectingPoint)
+        public static SimpleBezier[] GetSwitchBeziers(Switch s, Vector3 attachPoint, Vector3 handlePosition, SwitchPoint connectingPoint)
         {
             // Create the original beziers.
-            Vector3[][] curves = new Vector3[][]
+            SimpleBezier[] curves = new SimpleBezier[]
             {
-                new Vector3[]
-                {
+                new SimpleBezier(
                     s.GetJointPoint().position,
                     s.GetJointPoint().globalHandle2,
                     s.GetThroughPoint().globalHandle1,
-                    s.GetThroughPoint().position
-                },
-                new Vector3[]
-                {
+                    s.GetThroughPoint().position),
+                new SimpleBezier(
                     s.GetDivergeJoinPoint().position,
                     s.GetDivergeJoinPoint().globalHandle2,
                     s.GetDivergingPoint().globalHandle1,
-                    s.GetDivergingPoint().position
-                }
+                    s.GetDivergingPoint().position)
             };
 
             // Rotate and move the points to fit the target locations.
@@ -95,10 +91,10 @@ namespace Mapify.Editor.Tools
 
             for (int i = 0; i < 2; i++)
             {
-                for (int j = 0; j < curves[i].Length; j++)
-                {
-                    curves[i][j] = (rot * (rotRoot * (curves[i][j] - pivot))) + attachPoint;
-                }
+                curves[i].P0 = (rot * (rotRoot * (curves[i].P0 - pivot))) + attachPoint;
+                curves[i].P1 = (rot * (rotRoot * (curves[i].P1 - pivot))) + attachPoint;
+                curves[i].P2 = (rot * (rotRoot * (curves[i].P2 - pivot))) + attachPoint;
+                curves[i].P3 = (rot * (rotRoot * (curves[i].P3 - pivot))) + attachPoint;
             }
 
             return curves;

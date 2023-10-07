@@ -232,7 +232,7 @@ namespace Mapify.Editor.Tools
         private void StartNewTrack(Vector3[] curve)
         {
             _freeformTrackHelper.WorkingTrack = TrackToolsCreator.CreateBezier(TrackPrefab, _currentParent,
-                curve[0], curve[1], curve[2], curve[3], true);
+                curve[0], curve[1], curve[2], curve[3]);
 
             _freeformTrackHelper.UndoIndex = Undo.GetCurrentGroup();
             _freeformTrackHelper.WorkingTrack.name = "Freeform Track";

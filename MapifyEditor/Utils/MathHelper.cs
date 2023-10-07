@@ -153,6 +153,11 @@ namespace Mapify.Editor.Utils
             return SampleBezier(curve[0], curve[1], curve[2], curve[3], samples);
         }
 
+        public static Vector3[] SampleBezier(SimpleBezier curve, int samples = 8)
+        {
+            return SampleBezier(curve.P0, curve.P1, curve.P2, curve.P3, samples);
+        }
+
         public static Vector3[][] SampleBeziers(Vector3[][] curves, int samples = 8)
         {
             Vector3[][] results = new Vector3[curves.Length][];
@@ -160,6 +165,18 @@ namespace Mapify.Editor.Utils
             for (int i = 0; i < curves.Length; i++)
             {
                 results[i] = SampleBezier(curves[i], samples);
+            }
+
+            return results;
+        }
+
+        public static Vector3[][] SampleBeziers(SimpleBezier[] curves, int samples = 8)
+        {
+            Vector3[][] results = new Vector3[curves.Length][];
+
+            for (int i = 0; i < curves.Length; i++)
+            {
+                results[i] = curves[i].Sample(samples);
             }
 
             return results;

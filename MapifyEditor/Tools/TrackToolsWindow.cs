@@ -188,32 +188,47 @@ namespace Mapify.Editor.Tools
         public void CreateTrack(Vector3 position, Vector3 handle)
         {
             Track t;
+            GameObject go;
 
             switch (_currentPiece)
             {
                 case TrackPiece.Straight:
-                    t = TrackToolsCreator.CreateStraight(TrackPrefab, _currentParent, position, handle,
-                        _length, _endGrade, true);
+                    t = TrackToolsCreator.CreateStraight(_currentParent, position, handle,
+                        _length, _endGrade);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
+                    Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Straight");
                     break;
                 case TrackPiece.Curve:
-                    t = TrackToolsCreator.CreateCurve(TrackPrefab, _currentParent, position, handle, _orientation,
-                        _radius, _arc, _maxArcPerPoint, _endGrade, true);
+                    t = TrackToolsCreator.CreateArcCurve(_currentParent, position, handle, _orientation,
+                        _radius, _arc, _maxArcPerPoint, _endGrade);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
+                    Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Curve");
                     break;
                 case TrackPiece.Switch:
-                    SelectGameObject(TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
-                        _orientation, _connectingPoint, true).gameObject);
+                    go = TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
+                        _orientation, _connectingPoint).gameObject;
+                    SelectGameObject(go);
+                    Undo.RegisterCreatedObjectUndo(go, "Created Switch");
                     break;
                 case TrackPiece.Yard:
-                    SelectGameObject(TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, position, handle,
-                        _orientation, _trackDistance, _yardOptions, out _, true)[0].gameObject);
+                    go = TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, position, handle,
+                        _orientation, _trackDistance, _yardOptions, out _)[0].gameObject;
+                    SelectGameObject(go);
+                    Undo.RegisterCreatedObjectUndo(go.transform.parent.gameObject, "Created Yard");
                     break;
                 case TrackPiece.Turntable:
-                    SelectGameObject(TrackToolsCreator.CreateTurntable(TurntablePrefab, TrackPrefab, _currentParent, position, handle,
-                        _turntableOptions, true, out _).gameObject);
+                    go = TrackToolsCreator.CreateTurntable(TurntablePrefab, TrackPrefab, _currentParent, position, handle,
+                        _turntableOptions, out Track[] exits).gameObject;
+                    SelectGameObject(go);
+                    Undo.RegisterCreatedObjectUndo(go, "Created Turntable");
+                    int group = Undo.GetCurrentGroup();
+                    for (int i = 0; i < exits.Length; i++)
+                    {
+                        Undo.RegisterCreatedObjectUndo(exits[i].gameObject, "Created turntable exit");
+                    }
+                    Undo.CollapseUndoOperations(group);
                     break;
                 case TrackPiece.Special:
                     CreateSpecial(position, handle);
@@ -231,32 +246,41 @@ namespace Mapify.Editor.Tools
         public void CreateSpecial(Vector3 attachPoint, Vector3 handlePosition)
         {
             Track t;
+            GameObject go;
 
             switch (_currentSpecial)
             {
                 case SpecialTrackPiece.Buffer:
-                    TrackToolsCreator.CreateBuffer(BufferPrefab, _currentParent, attachPoint, handlePosition, true);
+                    go = TrackToolsCreator.CreateBuffer(BufferPrefab, _currentParent, attachPoint, handlePosition).gameObject;
+                    Undo.RegisterCreatedObjectUndo(go, "Created Buffer Stop");
                     break;
                 case SpecialTrackPiece.SwitchCurve:
                     t = TrackToolsCreator.CreateSwitchCurve(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
-                        _orientation, _connectingPoint, true);
+                        _orientation, _connectingPoint);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
+                    Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Switch Curve");
                     break;
                 case SpecialTrackPiece.Connect2:
                     CreateConnect2();
                     break;
                 case SpecialTrackPiece.Crossover:
-                    SelectGameObject(TrackToolsCreator.CreateCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
-                        _orientation, _trackDistance, _isTrailing, _switchDistance, true)[0].gameObject);
+                    go = TrackToolsCreator.CreateCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                        _orientation, _trackDistance, _isTrailing, _switchDistance)[0].gameObject;
+                    SelectGameObject(go);
+                    Undo.RegisterCreatedObjectUndo(go.transform.parent.gameObject, "Created Crossover");
                     break;
                 case SpecialTrackPiece.ScissorsCrossover:
-                    SelectGameObject(TrackToolsCreator.CreateScissorsCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
-                        _orientation, _trackDistance, _switchDistance, true)[3].gameObject);
+                    go = TrackToolsCreator.CreateScissorsCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                        _orientation, _trackDistance, _switchDistance)[3].gameObject;
+                    SelectGameObject(go);
+                    Undo.RegisterCreatedObjectUndo(go.transform.parent.gameObject, "Created Scissors Crossover");
                     break;
                 case SpecialTrackPiece.DoubleSlip:
-                    SelectGameObject(TrackToolsCreator.CreateDoubleSlip(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
-                        _orientation, _crossAngle, true)[2].gameObject);
+                    go = TrackToolsCreator.CreateDoubleSlip(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                        _orientation, _crossAngle)[2].gameObject;
+                    SelectGameObject(go);
+                    Undo.RegisterCreatedObjectUndo(go.transform.parent.gameObject, "Created Double Slip");
                     break;
                 default:
                     throw new System.Exception("Invalid mode!");
@@ -274,16 +298,17 @@ namespace Mapify.Editor.Tools
                     BezierPoint p1 = _useHandle2End ? _selectedTracks[1].Curve[0] : _selectedTracks[1].Curve.Last();
 
                     t = TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, p0, p1,
-                        _useHandle2Start, _useHandle2End, _lengthMultiplier, true);
+                        _useHandle2Start, _useHandle2End, _lengthMultiplier);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
-
+                    Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Connect 2");
                     break;
                 case SelectionType.BezierPoint:
                     t = TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, _selectedPoints[0], _selectedPoints[1],
-                                _useHandle2Start, _useHandle2End, _lengthMultiplier, true);
+                                _useHandle2Start, _useHandle2End, _lengthMultiplier);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
+                    Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Connect 2");
                     break;
                 default:
                     break;

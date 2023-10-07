@@ -100,19 +100,19 @@ namespace Mapify.Editor.Tools
                 case TrackPiece.Curve:
                     foreach (var cache in _newCache)
                     {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewCurve(
+                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewArcCurve(
                             cache.Attach.Position, cache.Attach.Handle,
                             _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out cache.Points, _sampleCount) };
                     }
                     foreach (var cache in _nextCache)
                     {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewCurve(
+                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewArcCurve(
                             cache.Attach.Position, cache.Attach.Handle,
                             _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out cache.Points, _sampleCount) };
                     }
                     foreach (var cache in _backCache)
                     {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewCurve(
+                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewArcCurve(
                             cache.Attach.Position, cache.Attach.Handle,
                             _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out cache.Points, _sampleCount) };
                     }

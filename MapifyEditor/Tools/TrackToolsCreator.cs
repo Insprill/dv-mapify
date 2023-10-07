@@ -12,6 +12,22 @@ namespace Mapify.Editor.Tools
     /// </summary>
     public static partial class TrackToolsCreator
     {
+        public static Track GetEmptyTrack()
+        {
+            return new GameObject().AddComponent<Track>();
+        }
+
+        public static Track GetEmptyTrack(string name, Transform parent, Vector3 position)
+        {
+            Track t = GetEmptyTrack();
+
+            t.name = name;
+            t.transform.parent = parent;
+            t.transform.position = position;
+
+            return t;
+        }
+
         // Bézier generation.
         // Separate functions so they can be used for previews, avoiding duplicating the code.
         /// <summary>
@@ -22,9 +38,9 @@ namespace Mapify.Editor.Tools
         /// <param name="length">Horizontal length for the track.</param>
         /// <param name="endGrade">Grade at the end of the track.</param>
         /// <returns>
-        /// An array with the points for cubic bezier curves in the format [P0, P1, P2, P3].
+        /// An array of cubic beziers.
         /// </returns>
-        public static Vector3[][] GenerateStraightBezier(Vector3 attachPoint, Vector3 handlePosition, float length, float endGrade)
+        public static SimpleBezier[] GenerateStraightBezier(Vector3 attachPoint, Vector3 handlePosition, float length, float endGrade)
         {
             // Create in 2D.
             Vector2 p0 = attachPoint.Flatten();
@@ -42,13 +58,10 @@ namespace Mapify.Editor.Tools
             float handleLength = length * MathHelper.OneThird;
 
             // Return in 3D.
-            return new Vector3[][] { new Vector3[]
-            {
-                p0.To3D(attachPoint.y),
-                p1.To3D(attachPoint.y + startGrade * handleLength),
-                p2.To3D(attachPoint.y + heightDif - endGrade * handleLength),
-                p3.To3D(attachPoint.y + heightDif)
-            } };
+            return new SimpleBezier[] { new SimpleBezier(p0.To3D(attachPoint.y),
+                    p1.To3D(attachPoint.y + startGrade * handleLength),
+                    p2.To3D(attachPoint.y + heightDif - endGrade * handleLength),
+                    p3.To3D(attachPoint.y + heightDif)) };
         }
 
         /// <summary>
@@ -62,17 +75,17 @@ namespace Mapify.Editor.Tools
         /// <param name="maxArc">Maximum arc allowed before the curve needs to be divided into multiple parts.</param>
         /// <param name="endGrade">The grade at the end of the track.</param>
         /// <returns>
-        /// An array with the points for cubic bezier curves in the format [P0, P1, P2, P3].
+        /// An array of cubic beziers.
         /// </returns>
-        public static Vector3[][] GenerateCurveBeziers(Vector3 attachPoint, Vector3 handlePosition,
+        public static SimpleBezier[] GenerateCurveBeziers(Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float radius, float arc, float maxArc, float endGrade)
         {
             bool isLeft = orientation == TrackOrientation.Left;
 
             // Create in 2D.
-            Vector2 p0 = attachPoint.Flatten();
-            Vector2 dir = (p0 - handlePosition.Flatten()).normalized;
-            Vector2 pivot = p0 + (isLeft ? MathHelper.RotateCCW(dir) : MathHelper.RotateCW(dir)) * radius;
+            Vector2 current = attachPoint.Flatten();
+            Vector2 dir = (current - handlePosition.Flatten()).normalized;
+            Vector2 pivot = current + (isLeft ? MathHelper.RotateCCW(dir) : MathHelper.RotateCW(dir)) * radius;
 
             // Split the bezier for smoother arcs.
             int arcCount = Mathf.CeilToInt(arc / maxArc);
@@ -91,9 +104,9 @@ namespace Mapify.Editor.Tools
             // Create controls and their respective handles.
             for (int i = 0; i < arcCount; i++)
             {
-                controls[i] = (p0 - dir * handleLength, p0, p0 + dir * handleLength);
+                controls[i] = (current - dir * handleLength, current, current + dir * handleLength);
                 // Rotate control around pivot to become the next control.
-                p0 = MathHelper.RotateAround(p0, actualArc, pivot);
+                current = MathHelper.RotateAround(current, actualArc, pivot);
                 dir = MathHelper.Rotate(dir, actualArc);
             }
 
@@ -102,8 +115,8 @@ namespace Mapify.Editor.Tools
             // Determine the grade at the start.
             float startGrade = MathHelper.GetGrade(handlePosition, attachPoint);
 
-
-            Vector3[][] points = new Vector3[arcCount][];
+            SimpleBezier[] curves = new SimpleBezier[arcCount];
+            Vector3 p0, p1, p2, p3;
             float height = attachPoint.y;
             float nextgrade;
             float angle = Mathf.Atan(startGrade);
@@ -112,9 +125,8 @@ namespace Mapify.Editor.Tools
             // Move from 2D to 3D.
             for (int i = 0; i < arcCount; i++)
             {
-                points[i] = new Vector3[4];
-                points[i][0] = controls[i].Here.To3D(height);
-                points[i][1] = controls[i].Next.To3D(height + startGrade * handleLength);
+                p0 = controls[i].Here.To3D(height);
+                p1 = controls[i].Next.To3D(height + startGrade * handleLength);
 
                 // Apply change to next point.
                 angle += angleStep;
@@ -122,11 +134,13 @@ namespace Mapify.Editor.Tools
                 height += TrackToolsHelper.CalculateHeightDifference(startGrade, nextgrade, arcLength);
                 startGrade = nextgrade;
 
-                points[i][2] = controls[i + 1].Back.To3D(height - nextgrade * handleLength);
-                points[i][3] = controls[i + 1].Here.To3D(height);
+                p2 = controls[i + 1].Back.To3D(height - nextgrade * handleLength);
+                p3 = controls[i + 1].Here.To3D(height);
+
+                curves[i] = new SimpleBezier(p0, p1, p2, p3);
             }
 
-            return points;
+            return curves;
         }
 
         // Normal pieces
@@ -135,38 +149,29 @@ namespace Mapify.Editor.Tools
         /// <summary>
         /// Instantiates a straight <see cref="Track"/> and returns it.
         /// </summary>
-        /// <param name="prefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
         /// <param name="length">Horizontal length for the track.</param>
         /// <param name="endGrade">Grade at the end of the track.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateStraight(Track prefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            float length, float endGrade, bool registerUndo)
+        public static Track CreateStraight(Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            float length, float endGrade)
         {
-            // Instantiate track.
-            Track t = Object.Instantiate(prefab);
-            t.gameObject.name = $"Straight [{length}m]";
-            t.transform.parent = parent;
-            t.transform.position = attachPoint;
+            Track t = GetEmptyTrack($"[Straight][{length}m]", parent, attachPoint);
+            BezierPoint bp;
 
             // Generate bezier points.
-            Vector3[][] points = GenerateStraightBezier(attachPoint, handlePosition, length, endGrade);
+            var curves = GenerateStraightBezier(attachPoint, handlePosition, length, endGrade);
 
             // Assign the points to the curve.
-            t.Curve[0].position = points[0][0];
-            t.Curve[1].position = points[0][3];
-            t.Curve[0].globalHandle2 = points[0][1];
-            t.Curve[1].globalHandle1 = points[0][2];
+            bp = t.Curve.AddPointAt(curves[0].P0);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp.globalHandle2 = curves[0].P1;
 
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Straight Track");
-            }
-#endif
+            bp = t.Curve.AddPointAt(curves[0].P3);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp.globalHandle1 = curves[0].P2;
 
             return t;
         }
@@ -178,36 +183,28 @@ namespace Mapify.Editor.Tools
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="p0">The starting point.</param>
         /// <param name="p1">The ending point.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateStraight2Point(Track prefab, Transform parent, Vector3 p0, Vector3 p1, bool registerUndo)
+        public static Track CreateStraight2Point(Track prefab, Transform parent, Vector3 p0, Vector3 p1)
         {
-            Track t = Object.Instantiate(prefab);
-            t.transform.parent = parent;
-            t.transform.position = p0;
-            t.gameObject.name = $"Straight [{(p1 - p0).magnitude}m]";
+            Track t = GetEmptyTrack($"[Straight][{(p1 - p0).HorizontalMagnitude()}m]", parent, p0);
+            BezierPoint bp;
 
-            // Similar to the other but no calculations needed, use the points directly.
-            t.Curve[0].position = p0;
-            t.Curve[1].position = p1;
-            t.Curve[0].globalHandle2 = Vector3.Lerp(p0, p1, MathHelper.OneThird);
-            t.Curve[1].globalHandle1 = Vector3.Lerp(p1, p0, MathHelper.OneThird);
+            // Assign the points to the curve.
+            bp = t.Curve.AddPointAt(p0);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp.globalHandle2 = Vector3.Lerp(p0, p1, MathHelper.OneThird);
 
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Straight Track");
-            }
-#endif
+            bp = t.Curve.AddPointAt(p1);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp.globalHandle1 = Vector3.Lerp(p1, p0, MathHelper.OneThird);
 
             return t;
         }
 
         // Curves.
         /// <summary>
-        /// Instantiates a curved <see cref="Track"/> and returns it.
+        /// Instantiates a <see cref="Track"/> that approximates a circular arc and returns it.
         /// </summary>
-        /// <param name="prefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
@@ -216,42 +213,27 @@ namespace Mapify.Editor.Tools
         /// <param name="arc">Arc in degrees.</param>
         /// <param name="maxArc">Maximum arc allowed before the curve needs to be divided into multiple parts.</param>
         /// <param name="endGrade">The grade at the end of the track.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateCurve(Track prefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            TrackOrientation orientation, float radius, float arc, float maxArc, float endGrade, bool registerUndo)
+        public static Track CreateArcCurve(Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float radius, float arc, float maxArc, float endGrade)
         {
-            // Instantiate track.
-            Track t = Object.Instantiate(prefab);
-            t.gameObject.name = $"Curve [{orientation}]/[R:{radius}m]/[{arc}°]";
-            t.transform.parent = parent;
-            t.transform.position = attachPoint;
+            Track t = GetEmptyTrack($"[Arc Curve {orientation}][R{radius}m][{arc}°]", parent, attachPoint);
 
-            Vector3[][] generated = GenerateCurveBeziers(attachPoint, handlePosition, orientation, radius, arc, maxArc, endGrade);
+            var curves = GenerateCurveBeziers(attachPoint, handlePosition, orientation, radius, arc, maxArc, endGrade);
 
-            for (int i = 1; i < generated.Length; i++)
+            BezierPoint bp = t.Curve.AddPointAt(attachPoint);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+
+            for (int i = 0; i < curves.Length; i++)
             {
-                t.Curve.AddPointAt(Vector3.zero);
-                t.Curve[i].handleStyle = BezierPoint.HandleStyle.Connected;
+                bp.globalHandle2 = curves[i].P1;
+                bp = t.Curve.AddPointAt(curves[i].P3);
+                bp.handleStyle = BezierPoint.HandleStyle.Connected;
+                bp.globalHandle1 = curves[i].P2;
             }
 
-            t.Curve[0].handleStyle = BezierPoint.HandleStyle.Broken;
             t.Curve.Last().handleStyle = BezierPoint.HandleStyle.Broken;
-
-            for (int i = 1; i < t.Curve.pointCount; i++)
-            {
-                t.Curve[i - 1].position = generated[i - 1][0];
-                t.Curve[i].position = generated[i - 1][3];
-                t.Curve[i - 1].globalHandle2 = generated[i - 1][1];
-                t.Curve[i].globalHandle1 = generated[i - 1][2];
-            }
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Curve Track");
-            }
-#endif
+            t.Curve.Last().handle2 = Vector3.zero;
 
             return t;
         }
@@ -267,18 +249,17 @@ namespace Mapify.Editor.Tools
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
         /// <param name="orientation">Wether the diverging track should exit to the left or right.</param>
         /// <param name="connectingPoint">Which of the 3 exits of the switch is connected to the attachment point.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
         /// <remarks>
         /// Derail Valley switches are static assets, and their tracks cannot be changed.
         /// <para>The switches are also always made at a grade of <b>0%</b>.</para> 
         /// </remarks>
         public static Switch CreateSwitch(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            TrackOrientation orientation, SwitchPoint connectingPoint, bool registerUndo)
+            TrackOrientation orientation, SwitchPoint connectingPoint)
         {
             // Create switch object.
             Switch s = Object.Instantiate(orientation == TrackOrientation.Left ? leftPrefab : rightPrefab);
-            s.gameObject.name = $"Switch [{orientation}]";
+            s.gameObject.name = $"[Switch {orientation}]";
             s.transform.parent = parent;
             // Helper variables.
             Vector3 pivot;
@@ -313,13 +294,6 @@ namespace Mapify.Editor.Tools
             s.transform.position = rot * (rotRoot * -pivot) + attachPoint;
             s.transform.rotation = rot * rotRoot;
 
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(s.gameObject, "Create Switch");
-            }
-#endif
-
             return s;
         }
 
@@ -346,7 +320,6 @@ namespace Mapify.Editor.Tools
         /// <param name="startingTrackId">The starting number of the sidings.</param>
         /// <param name="reverseNumbers">Whether the track numbers should increase FROM the starting ID or decrease TO the starting ID.</param>
         /// <param name="sidings">An array with all sidings.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
         /// <remarks>
         /// For yards with the same number of tracks on both sides, it is recommended to set <paramref name="alternateSides"/> to <c>true</c>.
@@ -372,19 +345,19 @@ namespace Mapify.Editor.Tools
         /// <seealso cref="CreateSwitch(Switch, Switch, Transform, Vector3, Vector3, TrackOrientation, SwitchPoint, bool)"/>
         public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool half, bool alternateSides, float minimumLength,
-            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings, bool registerUndo)
+            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
             if (half)
             {
                 return CreateHalfYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
                     mainSideTracks, otherSideTracks, alternateSides, minimumLength, stationId, yardId, startingTrackId, reverseNumbers,
-                    out sidings, registerUndo);
+                    out sidings);
             }
             else
             {
                 return CreateFullYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
                     mainSideTracks, otherSideTracks, alternateSides, minimumLength, stationId, yardId, startingTrackId, reverseNumbers,
-                    out sidings, registerUndo);
+                    out sidings);
             }
         }
 
@@ -401,20 +374,19 @@ namespace Mapify.Editor.Tools
         /// <param name="trackDistance">The distance between the sidings.</param>
         /// <param name="yardOptions">Settings for the creation of the yard.</param>
         /// <param name="sidings">An array with all sidings.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
         /// <seealso cref="CreateYard(Switch, Switch, Track, Transform, Vector3, Vector3, TrackOrientation, float, int, int, bool, float, string, char, byte, bool)"/>
         public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            TrackOrientation orientation, float trackDistance, YardOptions yardOptions, out Track[] sidings, bool registerUndo)
+            TrackOrientation orientation, float trackDistance, YardOptions yardOptions, out Track[] sidings)
         {
             return CreateYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
                 yardOptions.TracksMainSide, yardOptions.TracksOtherSide, yardOptions.Half, yardOptions.AlternateSides, yardOptions.MinimumLength,
-                yardOptions.StationId, yardOptions.YardId, yardOptions.StartTrackId, yardOptions.ReverseNumbers, out sidings, registerUndo);
+                yardOptions.StationId, yardOptions.YardId, yardOptions.StartTrackId, yardOptions.ReverseNumbers, out sidings);
         }
 
         private static Switch[] CreateFullYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool alternateSides, float minimumLength,
-            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings, bool registerUndo)
+            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
             if (mainSideTracks < 1)
             {
@@ -444,7 +416,7 @@ namespace Mapify.Editor.Tools
             startObj.transform.position = attachPoint;
 
             // Create the switches for the first side.
-            side1 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, startObj.transform, attachPoint, handlePosition,
+            side1 = CreateSwitchSprawl(leftPrefab, rightPrefab, startObj.transform, attachPoint, handlePosition,
                 orientation, mainSideTracks, trackDistance, out s, out merge1);
             mid = s.GetThroughPoint();
             start = s;
@@ -453,9 +425,9 @@ namespace Mapify.Editor.Tools
             if (otherSideTracks > 0)
             {
                 // Create a straight to separate the switches and then the other side.
-                t = CreateStraight(trackPrefab, startObj.transform, mid.position, mid.globalHandle1,
-                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
-                side2 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, startObj.transform,
+                t = CreateStraight(startObj.transform, mid.position, mid.globalHandle1,
+                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0);
+                side2 = CreateSwitchSprawl(leftPrefab, rightPrefab, startObj.transform,
                     t.Curve[1].position, t.Curve[1].globalHandle1, FlipOrientation(orientation), otherSideTracks,
                     trackDistance, out s, out merge2);
                 mid = s.GetThroughPoint();
@@ -473,23 +445,23 @@ namespace Mapify.Editor.Tools
             // There's no need to alternate if there's no tracks on the other side.
             if (alternateSides && otherSideTracks > 0)
             {
-                side4 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform, attachPoint, attachPoint + dir,
+                side4 = CreateSwitchSprawl(leftPrefab, rightPrefab, endObj.transform, attachPoint, attachPoint + dir,
                     orientation, otherSideTracks, trackDistance, out s, out merge4);
                 mid = s.GetThroughPoint();
                 // Final switch, return it later.
                 end = s;
 
                 // Create a straight to separate the switches and then the other side.
-                t = CreateStraight(trackPrefab, endObj.transform, mid.position, mid.globalHandle1,
-                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
-                side3 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform,
+                t = CreateStraight(endObj.transform, mid.position, mid.globalHandle1,
+                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0);
+                side3 = CreateSwitchSprawl(leftPrefab, rightPrefab, endObj.transform,
                     t.Curve[1].position, t.Curve[1].globalHandle1, FlipOrientation(orientation), mainSideTracks,
                     trackDistance, out s, out merge3);
                 mid = s.GetThroughPoint();
             }
             else
             {
-                side3 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform, attachPoint, attachPoint + dir,
+                side3 = CreateSwitchSprawl(leftPrefab, rightPrefab, endObj.transform, attachPoint, attachPoint + dir,
                     FlipOrientation(orientation), mainSideTracks, trackDistance, out s, out merge3);
                 mid = s.GetThroughPoint();
                 // Final switch, return it later.
@@ -499,16 +471,16 @@ namespace Mapify.Editor.Tools
                 if (otherSideTracks > 0)
                 {
                     // Create a straight to separate the switches and then the other side.
-                    t = CreateStraight(trackPrefab, endObj.transform, mid.position, mid.globalHandle1,
-                        TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
-                    side4 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, endObj.transform,
+                    t = CreateStraight(endObj.transform, mid.position, mid.globalHandle1,
+                        TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0);
+                    side4 = CreateSwitchSprawl(leftPrefab, rightPrefab, endObj.transform,
                         t.Curve[1].position, t.Curve[1].globalHandle1, orientation, otherSideTracks, trackDistance, out s, out merge4);
                     mid = s.GetThroughPoint();
                 }
             }
 
             // Create an empty GameObject to be the parent of the whole yard.
-            GameObject yardObj = new GameObject($"Yard [Station:{stationId}]/[ID:{yardId}]")
+            GameObject yardObj = new GameObject($"[Yard {stationId} {yardId}]")
             {
                 transform =
                 {
@@ -569,7 +541,7 @@ namespace Mapify.Editor.Tools
             {
                 if ((side1[i].position - side3[i].position).sqrMagnitude > 0)
                 {
-                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side1[i].position, side3[i].position, false);
+                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side1[i].position, side3[i].position);
                 }
                 else
                 {
@@ -589,7 +561,7 @@ namespace Mapify.Editor.Tools
             }
 
             // Middle track.
-            t = CreateStraight2Point(trackPrefab, yardObj.transform, midStart.position, mid.position, false);
+            t = CreateStraight2Point(trackPrefab, yardObj.transform, midStart.position, mid.position);
             AssignYardProperties(t, stationId, yardId, startingTrackId);
             startingTrackId = change(startingTrackId);
             storageTracks.Add(t);
@@ -599,7 +571,7 @@ namespace Mapify.Editor.Tools
             {
                 if ((side2[i].position - side4[i].position).sqrMagnitude > 0)
                 {
-                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side2[i].position, side4[i].position, false);
+                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side2[i].position, side4[i].position);
                 }
                 else
                 {
@@ -626,20 +598,13 @@ namespace Mapify.Editor.Tools
             Object.DestroyImmediate(startObj);
             Object.DestroyImmediate(endObj);
 
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(yardObj, "Created Yard");
-            }
-#endif
-
             sidings = storageTracks.ToArray();
             return new Switch[] { start, end };
         }
 
         private static Switch[] CreateHalfYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool alternateSides, float minimumLength,
-            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings, bool registerUndo)
+            string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
             if (mainSideTracks < 1)
             {
@@ -674,7 +639,7 @@ namespace Mapify.Editor.Tools
             startObj.transform.position = attachPoint;
 
             // Create the switches for the first side.
-            side1 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, startObj.transform, attachPoint, handlePosition,
+            side1 = CreateSwitchSprawl(leftPrefab, rightPrefab, startObj.transform, attachPoint, handlePosition,
                 orientation, mainSideTracks, trackDistance, out s, out merge1);
             mid = s.GetThroughPoint();
             start = s;
@@ -683,16 +648,16 @@ namespace Mapify.Editor.Tools
             if (otherSideTracks > 0)
             {
                 // Create a straight to separate the switches and then the other side.
-                t = CreateStraight(trackPrefab, startObj.transform, mid.position, mid.globalHandle1,
-                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0, false);
-                side2 = CreateSwitchSprawl(leftPrefab, rightPrefab, trackPrefab, startObj.transform,
+                t = CreateStraight(startObj.transform, mid.position, mid.globalHandle1,
+                    TrackToolsHelper.CalculateYardMidSwitchDistance(trackDistance), 0);
+                side2 = CreateSwitchSprawl(leftPrefab, rightPrefab, startObj.transform,
                     t.Curve[1].position, t.Curve[1].globalHandle1, FlipOrientation(orientation), otherSideTracks,
                     trackDistance, out s, out merge2);
                 mid = s.GetThroughPoint();
             }
 
             // Create an empty GameObject to be the parent of the whole yard.
-            GameObject yardObj = new GameObject($"Yard [Station:{stationId}]/[ID:{yardId}]")
+            GameObject yardObj = new GameObject($"[Yard {stationId} {yardId}]")
             {
                 transform =
                 {
@@ -786,7 +751,7 @@ namespace Mapify.Editor.Tools
             {
                 if ((side1[i].position - side3[i]).sqrMagnitude > 0)
                 {
-                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side1[i].position, side3[i], false);
+                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side1[i].position, side3[i]);
                 }
                 else
                 {
@@ -806,7 +771,7 @@ namespace Mapify.Editor.Tools
             }
 
             // Middle track.
-            t = CreateStraight2Point(trackPrefab, yardObj.transform, midEnd, mid.position, false);
+            t = CreateStraight2Point(trackPrefab, yardObj.transform, midEnd, mid.position);
             AssignYardProperties(t, stationId, yardId, startingTrackId);
             startingTrackId = change(startingTrackId);
             storageTracks.Add(t);
@@ -816,7 +781,7 @@ namespace Mapify.Editor.Tools
             {
                 if ((side2[i].position - side4[i]).sqrMagnitude > 0)
                 {
-                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side2[i].position, side4[i], false);
+                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side2[i].position, side4[i]);
                 }
                 else
                 {
@@ -841,25 +806,18 @@ namespace Mapify.Editor.Tools
 
             Object.DestroyImmediate(startObj);
 
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(yardObj, "Created Yard");
-            }
-#endif
-
             sidings = storageTracks.ToArray();
             return new Switch[] { start };
         }
 
         // Switches on each side of the yard.
-        private static List<BezierPoint> CreateSwitchSprawl(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
+        private static List<BezierPoint> CreateSwitchSprawl(Switch leftPrefab, Switch rightPrefab, Transform parent,
             Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, int sideTracks, float trackDistance, out Switch start,
             out Track[] endMerge)
         {
             // Starting switch.
             // Switch stands are all on the outside of the yard.
-            start = CreateSwitch(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, SwitchPoint.Joint, false);
+            start = CreateSwitch(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, SwitchPoint.Joint);
             start.standSide = Switch.StandSide.DIVERGING;
             start.defaultState = Switch.StandSide.THROUGH;
             Switch s = start;
@@ -880,9 +838,9 @@ namespace Mapify.Editor.Tools
             // Create a new switch for each extra track.
             for (int i = 1; i < sideTracks; i++)
             {
-                t = CreateStraight(trackPrefab, parent, now.position, now.globalHandle1, length, 0, false);
+                t = CreateStraight(parent, now.position, now.globalHandle1, length, 0);
                 s = CreateSwitch(leftPrefab, rightPrefab, parent, t.Curve[1].position, t.Curve[1].globalHandle1,
-                    orientation, SwitchPoint.Joint, false);
+                    orientation, SwitchPoint.Joint);
                 now = s.GetThroughPoint();
                 points.Add(s.GetDivergingPoint());
                 s.standSide = Switch.StandSide.THROUGH;
@@ -893,10 +851,10 @@ namespace Mapify.Editor.Tools
             // Final track gets no switch.
             // Also store the final 2 tracks (straight and curve) to be merged with the siding, to increase its size.
             endMerge = new Track[2];
-            t = CreateStraight(trackPrefab, parent, now.position, now.globalHandle1, length, 0, false);
+            t = CreateStraight(parent, now.position, now.globalHandle1, length, 0);
             endMerge[0] = t;
             t = CreateSwitchCurve(leftPrefab, rightPrefab, parent, t.Curve[1].position, t.Curve[1].globalHandle1,
-                orientation, SwitchPoint.Joint, false);
+                orientation, SwitchPoint.Joint);
             endMerge[1] = t;
             points.Add(t.Curve[1]);
 
@@ -906,7 +864,7 @@ namespace Mapify.Editor.Tools
         // Assign the properties to the yard track.
         private static void AssignYardProperties(Track t, string stationId, char yardId, byte trackId)
         {
-            t.name = $"Track [{yardId}{trackId}S]/[{t.Curve.length}m]";
+            t.name = $"[Siding {yardId}{trackId}S][{t.Curve.length}m]";
             t.trackId = trackId;
             t.yardId = yardId;
             t.stationId = stationId;
@@ -931,12 +889,10 @@ namespace Mapify.Editor.Tools
         /// <param name="angleBetweenExits">The angle between each exit track.</param>
         /// <param name="exitTrackCount">The number of exit tracks.</param>
         /// <param name="exitTrackLength">The length of the exit tracks.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <param name="exitTracks">All the exit tracks created.</param>
         /// <returns>The instantiated <see cref="Turntable"/>.</returns>
         public static Turntable CreateTurntable(Turntable turntablePrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            float radius, float depth, float rotationOffset, float tracksOffset, float angleBetweenExits, int exitTrackCount, float exitTrackLength,
-            bool registerUndo, out Track[] exitTracks)
+            float radius, float depth, float rotationOffset, float tracksOffset, float angleBetweenExits, int exitTrackCount, float exitTrackLength, out Track[] exitTracks)
         {
             // Helper variables for the turntable.
             Vector3 dir = (attachPoint - handlePosition).normalized;
@@ -944,20 +900,10 @@ namespace Mapify.Editor.Tools
 
             // Create the turntable.
             Turntable tt = Object.Instantiate(turntablePrefab);
-            tt.name = "Turntable";
+            tt.name = "[Turntable]";
             tt.transform.parent = parent;
             tt.transform.position = pivot - new Vector3(0, depth, 0);
             tt.transform.rotation = Quaternion.AngleAxis(rotationOffset, Vector3.up) * Quaternion.LookRotation(dir);
-
-#if UNITY_EDITOR
-            int undoGroup = 0;
-
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(tt.gameObject, "Create Turntable");
-                undoGroup = Undo.GetCurrentGroup();
-            }
-#endif
 
             // Helper variables for the exit tracks.
             Quaternion rotRoot = Quaternion.AngleAxis(rotationOffset, Vector3.up);
@@ -969,18 +915,11 @@ namespace Mapify.Editor.Tools
             for (int i = 0; i < exitTrackCount; i++)
             {
                 // Create a flat straight track for each exit.
-                exitTracks[i] = CreateStraight(trackPrefab, parent, pivot + rotDir * radius, pivot - rotDir,
-                    exitTrackLength, 0, registerUndo);
+                exitTracks[i] = CreateStraight(parent, pivot + rotDir * radius, pivot - rotDir,
+                    exitTrackLength, 0);
+                exitTracks[i].name = $"[Exit Track {i} {exitTrackLength}m]";
                 rotDir = rot * rotDir;
             }
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.CollapseUndoOperations(undoGroup);
-                Undo.SetCurrentGroupName("Create Turntable");
-            }
-#endif
 
             return tt;
         }
@@ -994,15 +933,14 @@ namespace Mapify.Editor.Tools
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
         /// <param name="turntableOptions">Settings for the creation of the turntable.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <param name="exitTracks">All the exit tracks created.</param>
         /// <returns>The instantiated <see cref="Turntable"/>.</returns>
         public static Turntable CreateTurntable(Turntable turntablePrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            TurntableOptions turntableOptions, bool registerUndo, out Track[] exitTracks)
+            TurntableOptions turntableOptions, out Track[] exitTracks)
         {
             return CreateTurntable(turntablePrefab, trackPrefab, parent, attachPoint, handlePosition, turntableOptions.TurntableRadius,
                 turntableOptions.TurntableDepth, turntableOptions.RotationOffset, turntableOptions.TracksOffset, turntableOptions.AngleBetweenExits,
-                turntableOptions.ExitTrackCount, turntableOptions.ExitTrackLength, registerUndo, out exitTracks);
+                turntableOptions.ExitTrackCount, turntableOptions.ExitTrackLength, out exitTracks);
         }
 
         // Special pieces
@@ -1014,22 +952,14 @@ namespace Mapify.Editor.Tools
         /// <param name="parent">The parent <see cref="Transform"/> for the buffer.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="BufferStop"/>.</returns>
-        public static BufferStop CreateBuffer(BufferStop prefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition, bool registerUndo)
+        public static BufferStop CreateBuffer(BufferStop prefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition)
         {
             BufferStop buffer = Object.Instantiate(prefab);
             buffer.transform.parent = parent;
             buffer.transform.position = attachPoint;
             buffer.transform.rotation = Quaternion.LookRotation(handlePosition - attachPoint);
-            buffer.gameObject.name = "Buffer";
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(buffer.gameObject, "Create Buffer");
-            }
-#endif
+            buffer.gameObject.name = "[Buffer Stop]";
 
             return buffer;
         }
@@ -1043,10 +973,9 @@ namespace Mapify.Editor.Tools
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
         /// <param name="orientation">Which side the curve turns to.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
         public static Track CreateSwitchCurve(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            TrackOrientation orientation, SwitchPoint connectingPoint, bool registerUndo)
+            TrackOrientation orientation, SwitchPoint connectingPoint)
         {
             Track t;
             if (orientation == TrackOrientation.Left)
@@ -1097,14 +1026,7 @@ namespace Mapify.Editor.Tools
             t.transform.parent = parent;
             t.transform.position = rot * (rotRoot * -pivot) + attachPoint;
             t.transform.rotation = rot * rotRoot;
-            t.name = "Diverging Curve";
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Switch Curve");
-            }
-#endif
+            t.name = "[Diverging Curve]";
 
             return t;
         }
@@ -1119,16 +1041,14 @@ namespace Mapify.Editor.Tools
         /// <param name="useHandle2Start">Which of <paramref name="p0"/>'s handles to use.</param>
         /// <param name="useHandle2End">Which of <paramref name="p1"/>'s handles to use.</param>
         /// <param name="lengthMultiplier">The multiplier for the final handle length.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
         public static Track CreateConnect2Point(Track prefab, Transform parent, BezierPoint p0, BezierPoint p1,
-            bool useHandle2Start, bool useHandle2End, float lengthMultiplier, bool registerUndo)
+            bool useHandle2Start, bool useHandle2End, float lengthMultiplier)
         {
             return CreateConnect2Point(prefab, parent, p0.position, p1.position,
                 useHandle2Start ? p0.globalHandle2 : p0.globalHandle1,
                 useHandle2End ? p1.globalHandle2 : p1.globalHandle1,
-                lengthMultiplier,
-                registerUndo);
+                lengthMultiplier);
         }
 
         /// <summary>
@@ -1141,10 +1061,9 @@ namespace Mapify.Editor.Tools
         /// <param name="h0">The handle at the starting point.</param>
         /// <param name="h1">The handle at the ending point.</param>
         /// <param name="lengthMultiplier">The multiplier for the final handle length.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
         public static Track CreateConnect2Point(Track prefab, Transform parent, Vector3 p0, Vector3 p1,
-            Vector3 h0, Vector3 h1, float lengthMultiplier, bool registerUndo)
+            Vector3 h0, Vector3 h1, float lengthMultiplier)
         {
             // One third of the distance is a good base length for smoothing.
             float length = (p0 - p1).magnitude * MathHelper.OneThird * lengthMultiplier;
@@ -1161,14 +1080,7 @@ namespace Mapify.Editor.Tools
             t.Curve[0].globalHandle2 = p0 - h0;
             t.Curve[1].globalHandle1 = p1 - h1;
 
-            t.gameObject.name = $"Connecting Track [{t.GetHorizontalLength():F3}m]";
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Connecting Track");
-            }
-#endif
+            t.gameObject.name = $"[Connecting Track {t.GetHorizontalLength():F3}m]";
 
             return t;
         }
@@ -1186,13 +1098,12 @@ namespace Mapify.Editor.Tools
         /// <param name="trackDistance">The distance between the parallel tracks.</param>
         /// <param name="trailing">Whether to the crossover is in front or comes from behind.</param>
         /// <param name="switchDistance">The distance between the switches on the same track.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>An array with the <see cref="Switch"/> at the attachment point (index <c>0</c>) and the other <see cref="Switch"/> (index <c>1</c>).</returns>
         public static Switch[] CreateCrossover(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
             Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, bool trailing,
-            float switchDistance, bool registerUndo)
+            float switchDistance)
         {
-            GameObject crossObj = new GameObject($"Crossover [{orientation}]");
+            GameObject crossObj = new GameObject($"[Crossover {orientation}]");
             crossObj.transform.parent = parent;
             crossObj.transform.position = attachPoint;
 
@@ -1208,7 +1119,7 @@ namespace Mapify.Editor.Tools
             }
 
             Switch s1 = CreateSwitch(leftPrefab, rightPrefab, crossObj.transform,
-                attachPoint, handlePosition, orientation, sp, false);
+                attachPoint, handlePosition, orientation, sp);
             BezierPoint bp1 = s1.GetDivergingPoint();
 
             Vector3 point = s1.GetThroughPoint().position;
@@ -1221,17 +1132,10 @@ namespace Mapify.Editor.Tools
             point = point + (dir * switchDistance) + offset;
 
             Switch s2 = CreateSwitch(leftPrefab, rightPrefab, crossObj.transform,
-                point, point - dir, orientation, SwitchPoint.Through, false);
+                point, point - dir, orientation, SwitchPoint.Through);
             BezierPoint bp2 = s2.GetDivergingPoint();
 
-            CreateConnect2Point(trackPrefab, crossObj.transform, bp1, bp2, false, false, 1.0f, false);
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(crossObj, "Create Crossover");
-            }
-#endif
+            CreateConnect2Point(trackPrefab, crossObj.transform, bp1, bp2, false, false, 1.0f);
 
             return new Switch[] { s1, s2 };
         }
@@ -1248,16 +1152,15 @@ namespace Mapify.Editor.Tools
         /// <param name="orientation">The side of the parallel track.</param>
         /// <param name="trackDistance">The distance between the parallel tracks.</param>
         /// <param name="switchDistance">The distance between the switches on the same track.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>
         /// An array of <see cref="Switch"/>es in the following order: [0] attach [1] opposite to 0 [2] next to 0 [3] opposite to 2.
         /// </returns>
         public static Switch[] CreateScissorsCrossover(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
-            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, float switchDistance, bool registerUndo)
+            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, float switchDistance)
         {
             // Create 2 crossovers offset from eachother.
             var c1 = CreateCrossover(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation,
-                trackDistance, false, switchDistance, false);
+                trackDistance, false, switchDistance);
 
             Vector3 dir = (attachPoint - handlePosition).normalized;
 
@@ -1266,7 +1169,7 @@ namespace Mapify.Editor.Tools
                 MathHelper.RotateCW(dir.Flatten())).To3D(0) * trackDistance;
 
             var c2 = CreateCrossover(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint + offset, handlePosition + offset,
-                FlipOrientation(orientation), trackDistance, false, switchDistance, false);
+                FlipOrientation(orientation), trackDistance, false, switchDistance);
 
             // Reparent the 2nd crossover's pieces to the first, and rename.
             var t1 = c1[0].transform.parent;
@@ -1274,18 +1177,11 @@ namespace Mapify.Editor.Tools
 
             t2.ReparentAllChildren(t1);
             Object.DestroyImmediate(t2.gameObject);
-            t1.gameObject.name = "Scissors Crossover";
+            t1.gameObject.name = "[Scissors Crossover]";
 
             // Join the 2 crossovers.
-            CreateConnect2Point(trackPrefab, t1, c1[0].GetThroughPoint(), c2[1].GetThroughPoint(), false, false, 1.0f, false);
-            CreateConnect2Point(trackPrefab, t1, c2[0].GetThroughPoint(), c1[1].GetThroughPoint(), false, false, 1.0f, false);
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(t1.gameObject, "Create Scissors Crossover");
-            }
-#endif
+            CreateConnect2Point(trackPrefab, t1, c1[0].GetThroughPoint(), c2[1].GetThroughPoint(), false, false, 1.0f);
+            CreateConnect2Point(trackPrefab, t1, c2[0].GetThroughPoint(), c1[1].GetThroughPoint(), false, false, 1.0f);
 
             // Return all 4 switches.
             return new Switch[] { c1[0], c1[1], c2[0], c2[1] };
@@ -1302,15 +1198,14 @@ namespace Mapify.Editor.Tools
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
         /// <param name="orientation">The side to which the first switch turns to.</param>
         /// <param name="crossAngle">The angle at which the 2 middle tracks cross eachother.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>
         /// An array of <see cref="Switch"/>es in the following order: [0] attach [1] diverging attach [2] opposite to 0 [3] opposite to 1.
         /// </returns>
         public static Switch[] CreateDoubleSlip(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
-            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float crossAngle, bool registerUndo)
+            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float crossAngle)
         {
             // Create the parent object.
-            GameObject obj = new GameObject("Double Slip");
+            GameObject obj = new GameObject("[Double Slip]");
             obj.transform.parent = parent;
             obj.transform.position = attachPoint;
 
@@ -1323,11 +1218,11 @@ namespace Mapify.Editor.Tools
 
             // First side.
             // Creates a switch, a curve, and then another switch connected through its diverging track.
-            Switch s00 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, attachPoint, handlePosition, orientation, SwitchPoint.Joint, false);
+            Switch s00 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, attachPoint, handlePosition, orientation, SwitchPoint.Joint);
             bp = s00.GetDivergingPoint();
-            bp = CreateCurve(trackPrefab, obj.transform, bp.position, bp.globalHandle1, orientation, radius, arc, 180.0f, 0, false).Curve.Last();
+            bp = CreateArcCurve(obj.transform, bp.position, bp.globalHandle1, orientation, radius, arc, 180.0f, 0).Curve.Last();
             Switch s01 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
-                FlipOrientation(orientation), SwitchPoint.Diverging, false);
+                FlipOrientation(orientation), SwitchPoint.Diverging);
 
             // Calculate the middle crossover's position by interesecting the 2 through tracks.
             bp = s00.GetJointPoint();
@@ -1339,21 +1234,14 @@ namespace Mapify.Editor.Tools
             Vector3 next = MathHelper.MirrorAround(attachPoint, mid);
 
             // Repeat the process for the other side.
-            Switch s10 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, next, next + dir, orientation, SwitchPoint.Joint, false);
+            Switch s10 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, next, next + dir, orientation, SwitchPoint.Joint);
             bp = s10.GetDivergingPoint();
-            bp = CreateCurve(trackPrefab, obj.transform, bp.position, bp.globalHandle1, orientation, radius, arc, 180.0f, 0, false).Curve.Last();
+            bp = CreateArcCurve(obj.transform, bp.position, bp.globalHandle1, orientation, radius, arc, 180.0f, 0).Curve.Last();
             Switch s11 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
-                FlipOrientation(orientation), SwitchPoint.Diverging, false);
+                FlipOrientation(orientation), SwitchPoint.Diverging);
 
-            CreateConnect2Point(trackPrefab, obj.transform, s00.GetThroughPoint(), s10.GetThroughPoint(), false, false, 1.0f, false);
-            CreateConnect2Point(trackPrefab, obj.transform, s01.GetThroughPoint(), s11.GetThroughPoint(), false, false, 1.0f, false);
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(obj, "Create Double Slip");
-            }
-#endif
+            CreateConnect2Point(trackPrefab, obj.transform, s00.GetThroughPoint(), s10.GetThroughPoint(), false, false, 1.0f);
+            CreateConnect2Point(trackPrefab, obj.transform, s01.GetThroughPoint(), s11.GetThroughPoint(), false, false, 1.0f);
 
             return new Switch[] { s00, s01, s10, s11 };
         }
@@ -1367,9 +1255,8 @@ namespace Mapify.Editor.Tools
         /// <param name="p1">The handle at the starting point.</param>
         /// <param name="p2">The handle at the ending point.</param>
         /// <param name="p3">The ending point of the track.</param>
-        /// <param name="registerUndo">Whether to register the creation of this piece as part of the <see cref="Undo"/> calls.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateBezier(Track prefab, Transform parent, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, bool registerUndo)
+        public static Track CreateBezier(Track prefab, Transform parent, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
         {
             Track t = Object.Instantiate(prefab);
             t.transform.parent = parent;
@@ -1380,14 +1267,7 @@ namespace Mapify.Editor.Tools
             t.Curve[0].globalHandle2 = p1;
             t.Curve[1].globalHandle1 = p2;
 
-            t.gameObject.name = $"Bezier Track [{t.GetHorizontalLength():F3}m]";
-
-#if UNITY_EDITOR
-            if (registerUndo)
-            {
-                Undo.RegisterCreatedObjectUndo(t.gameObject, "Create Bezier Track");
-            }
-#endif
+            t.gameObject.name = $"[Bezier Track {t.GetHorizontalLength():F3}m]";
 
             return t;
         }

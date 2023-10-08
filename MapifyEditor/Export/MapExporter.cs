@@ -10,7 +10,6 @@ using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 using Object = UnityEngine.Object;
 
@@ -170,8 +169,9 @@ namespace Mapify.Editor
             var builds = CreateTerrainBuilds();
 
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            List<string> assetPaths = new List<string>(allAssetPaths.Length - builds.Count);
+            List<string> miscAssetsPaths = new List<string>(allAssetPaths.Length - builds.Count);
             List<string> scenePaths = new List<string>();
+            List<string> customMapAssetsPaths = new List<string>();
 
             var mapInfoPath = AssetDatabase.GetAssetPath(EditorAssets.FindAsset<MapInfo>());
 
@@ -194,9 +194,13 @@ namespace Mapify.Editor
                 {
                     CreateMapInfoBuild(assetPath, ref builds);
                 }
+                else if (assetPath.StartsWith(Names.CUSTOM_MAP_ASSSETS_PATH))
+                {
+                    customMapAssetsPaths.Add(assetPath);
+                }
                 else
                 {
-                    assetPaths.Add(assetPath);
+                    miscAssetsPaths.Add(assetPath);
                 }
 
                 EditorUtility.DisplayProgressBar("Gathering assets", assetPath, i / (float)allAssetPaths.Length);
@@ -205,13 +209,25 @@ namespace Mapify.Editor
             EditorUtility.ClearProgressBar();
 
             CreateSceneBuilds(scenePaths, ref builds);
-            CreateAssetsBuilds(assetPaths, ref builds);
+            CreateCustomMapAssetsBuilds(customMapAssetsPaths, ref builds);
+            CreateMiscAssetsBuilds(miscAssetsPaths, ref builds);
 
             return builds.ToArray();
         }
 
+        private static void CreateCustomMapAssetsBuilds(List<string> assetsPaths, ref List<AssetBundleBuild> builds)
+        {
+            builds.Add(new AssetBundleBuild
+            {
+                assetBundleName = Names.CUSTOM_MAP_ASSETS_ASSET_BUNDLE,
+                assetNames = assetsPaths.ToArray()
+            });
+        }
+
         private static List<AssetBundleBuild> CreateTerrainBuilds()
         {
+            const string progressBarText = "Building terrain scene";
+            EditorUtility.DisplayProgressBar(progressBarText, "", 0);
             var terrainScene = EditorSceneManager.GetSceneByPath(Scenes.TERRAIN);
 
             Terrain[] sortedTerrain = terrainScene.GetAllComponents<Terrain>()
@@ -223,13 +239,18 @@ namespace Mapify.Editor
 
             for (int i = 0; i < sortedTerrain.Length; i++)
             {
+                string terrainName = AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData);
+
                 builds.Add(new AssetBundleBuild
                 {
                     assetBundleName = $"terraindata_{i}",
-                    assetNames = new[] { AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData) }
+                    assetNames = new[] { terrainName }
                 });
+
+                EditorUtility.DisplayProgressBar(progressBarText, terrainName, i / (float)sortedTerrain.Length);
             }
 
+            EditorUtility.ClearProgressBar();
             return builds;
         }
 
@@ -250,7 +271,7 @@ namespace Mapify.Editor
             });
         }
 
-        private static void CreateAssetsBuilds(List<string> assetPaths, ref List<AssetBundleBuild> builds)
+        private static void CreateMiscAssetsBuilds(List<string> assetPaths, ref List<AssetBundleBuild> builds)
         {
             //put big assets in their own assetbundle to avoid the combined assetbundle getting too big.
             //Unity cannot load assetbundles larger then 4GB.

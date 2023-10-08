@@ -116,7 +116,7 @@ namespace Mapify.Map
             LoadedMap = mapInfo;
         }
 
-        public static void UnreigsterLoadedMap()
+        public static void UnregisterLoadedMap()
         {
             IsDefaultMap = true;
             LoadedMap = null;

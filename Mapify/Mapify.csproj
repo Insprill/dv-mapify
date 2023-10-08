@@ -59,6 +59,7 @@
         <Reference Include="UnityEngine.PhysicsModule" />
         <Reference Include="UnityEngine.TerrainModule" />
         <Reference Include="UnityEngine.UI" />
+        <Reference Include="UnityEngine.UIModule" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

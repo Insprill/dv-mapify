@@ -172,13 +172,59 @@ namespace Mapify.Map
             {
                 yield return LoadAssetBundle(bundlePath, assetsDir, loadingInfo, loadingMapLogMsg);
                 StartLoadingScreenMusic(requestedBundle);
+                yield return null;
+                ShowLoadingScreenImage(requestedBundle);
             }
+        }
+
+        private static void ShowLoadingScreenImage(AssetBundle bundle)
+        {
+            Mapify.Log("Checking for custom loading screen images");
+
+            Texture2D customImage = null;
+
+            // bundle.LoadAsset doesnt work for some reason
+            // var customImage = bundle.LoadAsset<Texture2D>(Names.CUSTOM_MAP_ASSSETS_PATH + "loading_screen_image.jpg");
+            foreach (var ass in bundle.LoadAllAssets())
+            {
+                if (ass.name == "loading_screen_image")
+                {
+                    customImage = (Texture2D)ass;
+                    break;
+                }
+            }
+
+            if (customImage is null)
+            {
+                Mapify.Log("No custom loading screen image found");
+                return;
+            }
+
+            Mapify.Log("Showing custom loading screen image");
+
+            GameObject canvasGameObject = null;
+            foreach (GameObject go in Object.FindObjectsOfType(typeof(GameObject)))
+            {
+                if (go.name.Contains("LoadImage_Background_"))
+                {
+                    canvasGameObject = go;
+                    break;
+                }
+            }
+
+            if (canvasGameObject is null)
+            {
+                Mapify.LogError("cant find canvasGameObject");
+                return;
+            }
+
+            // set the image
+            canvasGameObject.GetComponent<CanvasRenderer>().SetTexture(customImage);
         }
 
         private static void StartLoadingScreenMusic(AssetBundle bundle)
         {
             Mapify.Log("Checking for custom loading screen music");
-            AudioSource mainMenuMusicSource = GameObject.Find("Audio Source - main menu music").GetComponent<AudioSource>();
 
             var customMusic = bundle.LoadAsset<AudioClip>(Names.CUSTOM_MAP_ASSSETS_PATH + "loading_screen_music.mp3");
             if (customMusic is null)
@@ -188,6 +234,7 @@ namespace Mapify.Map
             }
 
             Mapify.Log("Playing custom loading screen music");
+            AudioSource mainMenuMusicSource = GameObject.Find("Audio Source - main menu music").GetComponent<AudioSource>();
             mainMenuMusicSource.Pause();
             mainMenuMusicSource.clip = customMusic;
             mainMenuMusicSource.Play();

@@ -271,11 +271,6 @@ namespace Mapify.Editor.Tools
 
         private void DrawStraightOptions()
         {
-            if (!Require(TrackPrefab, "Track prefab"))
-            {
-                return;
-            }
-
             _length = EditorGUILayout.FloatField(
                     new GUIContent("Length", "Length of the next track section"),
                     _length);
@@ -304,11 +299,6 @@ namespace Mapify.Editor.Tools
 
         private void DrawCurveOptions()
         {
-            if (!Require(TrackPrefab, "Track prefab"))
-            {
-                return;
-            }
-
             DrawOrientationGUI("Which side the curve turns to");
 
             EditorGUILayout.BeginHorizontal();
@@ -391,8 +381,7 @@ namespace Mapify.Editor.Tools
 
         private void DrawYardOptions()
         {
-            if (!Require(TrackPrefab, "Track prefab") ||
-                !Require(LeftSwitch, "Left switch prefab") ||
+            if (!Require(LeftSwitch, "Left switch prefab") ||
                 !Require(RightSwitch, "Right switch prefab"))
             {
                 return;
@@ -557,11 +546,6 @@ namespace Mapify.Editor.Tools
 
         private void DrawConnect2Options()
         {
-            if (!Require(TrackPrefab, "Track prefab"))
-            {
-                return;
-            }
-
             switch (_selectionType)
             {
                 case SelectionType.Track:
@@ -604,8 +588,7 @@ namespace Mapify.Editor.Tools
 
         private void DrawCrossoverOptions()
         {
-            if (!Require(TrackPrefab, "Track prefab") ||
-                !Require(LeftSwitch, "Left switch prefab") ||
+            if (!Require(LeftSwitch, "Left switch prefab") ||
                 !Require(RightSwitch, "Right switch prefab"))
             {
                 return;
@@ -625,8 +608,7 @@ namespace Mapify.Editor.Tools
 
         private void DrawScissorsCrossoverOptions()
         {
-            if (!Require(TrackPrefab, "Track prefab") ||
-                !Require(LeftSwitch, "Left switch prefab") ||
+            if (!Require(LeftSwitch, "Left switch prefab") ||
                 !Require(RightSwitch, "Right switch prefab"))
             {
                 return;
@@ -644,8 +626,7 @@ namespace Mapify.Editor.Tools
 
         private void DrawDoubleSlipOptions()
         {
-            if (!Require(TrackPrefab, "Track prefab") ||
-                !Require(LeftSwitch, "Left switch prefab") ||
+            if (!Require(LeftSwitch, "Left switch prefab") ||
                 !Require(RightSwitch, "Right switch prefab"))
             {
                 return;

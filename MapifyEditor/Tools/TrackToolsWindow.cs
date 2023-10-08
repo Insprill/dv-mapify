@@ -39,9 +39,9 @@ namespace Mapify.Editor.Tools
 
         #region PROPERTIES
 
-        private bool _isLeft => _orientation == TrackOrientation.Left;
-        private bool _isInFreeformMode => _showCreation && _creationMode == CreationMode.Freeform;
-        private bool _isInPieceMode => _showCreation && _creationMode == CreationMode.Piece;
+        private bool IsLeft => _orientation == TrackOrientation.Left;
+        private bool IsInFreeformMode => _showCreation && _creationMode == CreationMode.Freeform;
+        private bool IsInPieceMode => _showCreation && _creationMode == CreationMode.Piece;
 
         public Track CurrentTrack => _selectedTracks.Length > 0 ? _selectedTracks[0] : null;
         public BezierPoint CurrentPoint => _selectedPoints.Length > 0 ? _selectedPoints[0] : null;
@@ -213,13 +213,13 @@ namespace Mapify.Editor.Tools
                     Undo.RegisterCreatedObjectUndo(go, "Created Switch");
                     break;
                 case TrackPiece.Yard:
-                    go = TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, position, handle,
+                    go = TrackToolsCreator.CreateYard(LeftSwitch, RightSwitch, _currentParent, position, handle,
                         _orientation, _trackDistance, _yardOptions, out _)[0].gameObject;
                     SelectGameObject(go);
                     Undo.RegisterCreatedObjectUndo(go.transform.parent.gameObject, "Created Yard");
                     break;
                 case TrackPiece.Turntable:
-                    go = TrackToolsCreator.CreateTurntable(TurntablePrefab, TrackPrefab, _currentParent, position, handle,
+                    go = TrackToolsCreator.CreateTurntable(TurntablePrefab, _currentParent, position, handle,
                         _turntableOptions, out Track[] exits).gameObject;
                     SelectGameObject(go);
                     Undo.RegisterCreatedObjectUndo(go, "Created Turntable");
@@ -265,19 +265,19 @@ namespace Mapify.Editor.Tools
                     CreateConnect2();
                     break;
                 case SpecialTrackPiece.Crossover:
-                    go = TrackToolsCreator.CreateCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                    go = TrackToolsCreator.CreateCrossover(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
                         _orientation, _trackDistance, _isTrailing, _switchDistance)[0].gameObject;
                     SelectGameObject(go);
                     Undo.RegisterCreatedObjectUndo(go.transform.parent.gameObject, "Created Crossover");
                     break;
                 case SpecialTrackPiece.ScissorsCrossover:
-                    go = TrackToolsCreator.CreateScissorsCrossover(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                    go = TrackToolsCreator.CreateScissorsCrossover(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
                         _orientation, _trackDistance, _switchDistance)[3].gameObject;
                     SelectGameObject(go);
                     Undo.RegisterCreatedObjectUndo(go.transform.parent.gameObject, "Created Scissors Crossover");
                     break;
                 case SpecialTrackPiece.DoubleSlip:
-                    go = TrackToolsCreator.CreateDoubleSlip(LeftSwitch, RightSwitch, TrackPrefab, _currentParent, attachPoint, handlePosition,
+                    go = TrackToolsCreator.CreateDoubleSlip(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
                         _orientation, _crossAngle)[2].gameObject;
                     SelectGameObject(go);
                     Undo.RegisterCreatedObjectUndo(go.transform.parent.gameObject, "Created Double Slip");
@@ -297,14 +297,14 @@ namespace Mapify.Editor.Tools
                     BezierPoint p0 = _useHandle2Start ? _selectedTracks[0].Curve[0] : _selectedTracks[0].Curve.Last();
                     BezierPoint p1 = _useHandle2End ? _selectedTracks[1].Curve[0] : _selectedTracks[1].Curve.Last();
 
-                    t = TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, p0, p1,
+                    t = TrackToolsCreator.CreateConnect2Point(_currentParent, p0, p1,
                         _useHandle2Start, _useHandle2End, _lengthMultiplier);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
                     Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Connect 2");
                     break;
                 case SelectionType.BezierPoint:
-                    t = TrackToolsCreator.CreateConnect2Point(TrackPrefab, _currentParent, _selectedPoints[0], _selectedPoints[1],
+                    t = TrackToolsCreator.CreateConnect2Point(_currentParent, _selectedPoints[0], _selectedPoints[1],
                                 _useHandle2Start, _useHandle2End, _lengthMultiplier);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
@@ -369,7 +369,8 @@ namespace Mapify.Editor.Tools
         /// </remarks>
         public void TryGetDefaultAssets()
         {
-            TrackToolsHelper.TryGetDefaultPrefabs(ref TrackPrefab, ref BufferPrefab, ref LeftSwitch, ref RightSwitch, ref TurntablePrefab);
+            Track t = null;
+            TrackToolsHelper.TryGetDefaultPrefabs(ref t, ref BufferPrefab, ref LeftSwitch, ref RightSwitch, ref TurntablePrefab);
         }
 
         public void ResetCreationSettings(bool all)
@@ -566,7 +567,7 @@ namespace Mapify.Editor.Tools
 
         private Switch GetCurrentSwitchPrefab()
         {
-            return _isLeft ? LeftSwitch : RightSwitch;
+            return IsLeft ? LeftSwitch : RightSwitch;
         }
 
         private Switch GetSwitch(TrackOrientation orientation)

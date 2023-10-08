@@ -179,12 +179,11 @@ namespace Mapify.Editor.Tools
         /// <summary>
         /// Instantiates a straight <see cref="Track"/> between 2 points and returns it.
         /// </summary>
-        /// <param name="prefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="p0">The starting point.</param>
         /// <param name="p1">The ending point.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateStraight2Point(Track prefab, Transform parent, Vector3 p0, Vector3 p1)
+        public static Track CreateStraight2Point(Transform parent, Vector3 p0, Vector3 p1)
         {
             Track t = GetEmptyTrack($"[Straight][{(p1 - p0).HorizontalMagnitude()}m]", parent, p0);
             BezierPoint bp;
@@ -343,19 +342,19 @@ namespace Mapify.Editor.Tools
         /// </para>
         /// </remarks>
         /// <seealso cref="CreateSwitch(Switch, Switch, Transform, Vector3, Vector3, TrackOrientation, SwitchPoint, bool)"/>
-        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool half, bool alternateSides, float minimumLength,
             string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
             if (half)
             {
-                return CreateHalfYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
-                    mainSideTracks, otherSideTracks, alternateSides, minimumLength, stationId, yardId, startingTrackId, reverseNumbers,
+                return CreateHalfYard(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
+                    mainSideTracks, otherSideTracks, minimumLength, stationId, yardId, startingTrackId, reverseNumbers,
                     out sidings);
             }
             else
             {
-                return CreateFullYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
+                return CreateFullYard(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
                     mainSideTracks, otherSideTracks, alternateSides, minimumLength, stationId, yardId, startingTrackId, reverseNumbers,
                     out sidings);
             }
@@ -376,15 +375,15 @@ namespace Mapify.Editor.Tools
         /// <param name="sidings">An array with all sidings.</param>
         /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
         /// <seealso cref="CreateYard(Switch, Switch, Track, Transform, Vector3, Vector3, TrackOrientation, float, int, int, bool, float, string, char, byte, bool)"/>
-        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, YardOptions yardOptions, out Track[] sidings)
         {
-            return CreateYard(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
+            return CreateYard(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
                 yardOptions.TracksMainSide, yardOptions.TracksOtherSide, yardOptions.Half, yardOptions.AlternateSides, yardOptions.MinimumLength,
                 yardOptions.StationId, yardOptions.YardId, yardOptions.StartTrackId, yardOptions.ReverseNumbers, out sidings);
         }
 
-        private static Switch[] CreateFullYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        private static Switch[] CreateFullYard(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool alternateSides, float minimumLength,
             string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
@@ -541,7 +540,7 @@ namespace Mapify.Editor.Tools
             {
                 if ((side1[i].position - side3[i].position).sqrMagnitude > 0)
                 {
-                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side1[i].position, side3[i].position);
+                    t = CreateStraight2Point(yardObj.transform, side1[i].position, side3[i].position);
                 }
                 else
                 {
@@ -561,7 +560,7 @@ namespace Mapify.Editor.Tools
             }
 
             // Middle track.
-            t = CreateStraight2Point(trackPrefab, yardObj.transform, midStart.position, mid.position);
+            t = CreateStraight2Point(yardObj.transform, midStart.position, mid.position);
             AssignYardProperties(t, stationId, yardId, startingTrackId);
             startingTrackId = change(startingTrackId);
             storageTracks.Add(t);
@@ -571,7 +570,7 @@ namespace Mapify.Editor.Tools
             {
                 if ((side2[i].position - side4[i].position).sqrMagnitude > 0)
                 {
-                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side2[i].position, side4[i].position);
+                    t = CreateStraight2Point(yardObj.transform, side2[i].position, side4[i].position);
                 }
                 else
                 {
@@ -602,8 +601,8 @@ namespace Mapify.Editor.Tools
             return new Switch[] { start, end };
         }
 
-        private static Switch[] CreateHalfYard(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
-            TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool alternateSides, float minimumLength,
+        private static Switch[] CreateHalfYard(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+            TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, float minimumLength,
             string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
             if (mainSideTracks < 1)
@@ -751,7 +750,7 @@ namespace Mapify.Editor.Tools
             {
                 if ((side1[i].position - side3[i]).sqrMagnitude > 0)
                 {
-                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side1[i].position, side3[i]);
+                    t = CreateStraight2Point(yardObj.transform, side1[i].position, side3[i]);
                 }
                 else
                 {
@@ -771,7 +770,7 @@ namespace Mapify.Editor.Tools
             }
 
             // Middle track.
-            t = CreateStraight2Point(trackPrefab, yardObj.transform, midEnd, mid.position);
+            t = CreateStraight2Point(yardObj.transform, midEnd, mid.position);
             AssignYardProperties(t, stationId, yardId, startingTrackId);
             startingTrackId = change(startingTrackId);
             storageTracks.Add(t);
@@ -781,7 +780,7 @@ namespace Mapify.Editor.Tools
             {
                 if ((side2[i].position - side4[i]).sqrMagnitude > 0)
                 {
-                    t = CreateStraight2Point(trackPrefab, yardObj.transform, side2[i].position, side4[i]);
+                    t = CreateStraight2Point(yardObj.transform, side2[i].position, side4[i]);
                 }
                 else
                 {
@@ -891,7 +890,7 @@ namespace Mapify.Editor.Tools
         /// <param name="exitTrackLength">The length of the exit tracks.</param>
         /// <param name="exitTracks">All the exit tracks created.</param>
         /// <returns>The instantiated <see cref="Turntable"/>.</returns>
-        public static Turntable CreateTurntable(Turntable turntablePrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        public static Turntable CreateTurntable(Turntable turntablePrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             float radius, float depth, float rotationOffset, float tracksOffset, float angleBetweenExits, int exitTrackCount, float exitTrackLength, out Track[] exitTracks)
         {
             // Helper variables for the turntable.
@@ -935,10 +934,10 @@ namespace Mapify.Editor.Tools
         /// <param name="turntableOptions">Settings for the creation of the turntable.</param>
         /// <param name="exitTracks">All the exit tracks created.</param>
         /// <returns>The instantiated <see cref="Turntable"/>.</returns>
-        public static Turntable CreateTurntable(Turntable turntablePrefab, Track trackPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        public static Turntable CreateTurntable(Turntable turntablePrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TurntableOptions turntableOptions, out Track[] exitTracks)
         {
-            return CreateTurntable(turntablePrefab, trackPrefab, parent, attachPoint, handlePosition, turntableOptions.TurntableRadius,
+            return CreateTurntable(turntablePrefab, parent, attachPoint, handlePosition, turntableOptions.TurntableRadius,
                 turntableOptions.TurntableDepth, turntableOptions.RotationOffset, turntableOptions.TracksOffset, turntableOptions.AngleBetweenExits,
                 turntableOptions.ExitTrackCount, turntableOptions.ExitTrackLength, out exitTracks);
         }
@@ -1034,7 +1033,6 @@ namespace Mapify.Editor.Tools
         /// <summary>
         /// Instantiates a <see cref="Track"/> that smoothly connects 2 <see cref="BezierPoint"/>.
         /// </summary>
-        /// <param name="prefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="p0">The starting point of the track.</param>
         /// <param name="p1">The ending point of the track.</param>
@@ -1042,10 +1040,10 @@ namespace Mapify.Editor.Tools
         /// <param name="useHandle2End">Which of <paramref name="p1"/>'s handles to use.</param>
         /// <param name="lengthMultiplier">The multiplier for the final handle length.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateConnect2Point(Track prefab, Transform parent, BezierPoint p0, BezierPoint p1,
+        public static Track CreateConnect2Point(Transform parent, BezierPoint p0, BezierPoint p1,
             bool useHandle2Start, bool useHandle2End, float lengthMultiplier)
         {
-            return CreateConnect2Point(prefab, parent, p0.position, p1.position,
+            return CreateConnect2Point(parent, p0.position, p1.position,
                 useHandle2Start ? p0.globalHandle2 : p0.globalHandle1,
                 useHandle2End ? p1.globalHandle2 : p1.globalHandle1,
                 lengthMultiplier);
@@ -1054,7 +1052,6 @@ namespace Mapify.Editor.Tools
         /// <summary>
         /// Instantiates a <see cref="Track"/> that smoothly connects 2 points.
         /// </summary>
-        /// <param name="prefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="p0">The starting point of the track.</param>
         /// <param name="p1">The ending point of the track.</param>
@@ -1062,7 +1059,7 @@ namespace Mapify.Editor.Tools
         /// <param name="h1">The handle at the ending point.</param>
         /// <param name="lengthMultiplier">The multiplier for the final handle length.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateConnect2Point(Track prefab, Transform parent, Vector3 p0, Vector3 p1,
+        public static Track CreateConnect2Point(Transform parent, Vector3 p0, Vector3 p1,
             Vector3 h0, Vector3 h1, float lengthMultiplier)
         {
             // One third of the distance is a good base length for smoothing.
@@ -1071,14 +1068,19 @@ namespace Mapify.Editor.Tools
             h0 = (h0 - p0).normalized * length;
             h1 = (h1 - p1).normalized * length;
 
-            Track t = Object.Instantiate(prefab);
+            BezierPoint bp;
+            Track t = GetEmptyTrack();
             t.transform.parent = parent;
             t.transform.position = p0;
 
-            t.Curve[0].position = p0;
-            t.Curve[1].position = p1;
-            t.Curve[0].globalHandle2 = p0 - h0;
-            t.Curve[1].globalHandle1 = p1 - h1;
+            // Assign the points to the curve.
+            bp = t.Curve.AddPointAt(p0);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp.globalHandle2 = p0 - h0;
+
+            bp = t.Curve.AddPointAt(p1);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp.globalHandle1 = p1 - h1;
 
             t.gameObject.name = $"[Connecting Track {t.GetHorizontalLength():F3}m]";
 
@@ -1090,7 +1092,6 @@ namespace Mapify.Editor.Tools
         /// </summary>
         /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
         /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
-        /// <param name="trackPrefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
@@ -1099,7 +1100,7 @@ namespace Mapify.Editor.Tools
         /// <param name="trailing">Whether to the crossover is in front or comes from behind.</param>
         /// <param name="switchDistance">The distance between the switches on the same track.</param>
         /// <returns>An array with the <see cref="Switch"/> at the attachment point (index <c>0</c>) and the other <see cref="Switch"/> (index <c>1</c>).</returns>
-        public static Switch[] CreateCrossover(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
+        public static Switch[] CreateCrossover(Switch leftPrefab, Switch rightPrefab, Transform parent,
             Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, bool trailing,
             float switchDistance)
         {
@@ -1135,7 +1136,7 @@ namespace Mapify.Editor.Tools
                 point, point - dir, orientation, SwitchPoint.Through);
             BezierPoint bp2 = s2.GetDivergingPoint();
 
-            CreateConnect2Point(trackPrefab, crossObj.transform, bp1, bp2, false, false, 1.0f);
+            CreateConnect2Point(crossObj.transform, bp1, bp2, false, false, 1.0f);
 
             return new Switch[] { s1, s2 };
         }
@@ -1145,7 +1146,6 @@ namespace Mapify.Editor.Tools
         /// </summary>
         /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
         /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
-        /// <param name="trackPrefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
@@ -1155,11 +1155,11 @@ namespace Mapify.Editor.Tools
         /// <returns>
         /// An array of <see cref="Switch"/>es in the following order: [0] attach [1] opposite to 0 [2] next to 0 [3] opposite to 2.
         /// </returns>
-        public static Switch[] CreateScissorsCrossover(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
+        public static Switch[] CreateScissorsCrossover(Switch leftPrefab, Switch rightPrefab, Transform parent,
             Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, float switchDistance)
         {
             // Create 2 crossovers offset from eachother.
-            var c1 = CreateCrossover(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint, handlePosition, orientation,
+            var c1 = CreateCrossover(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation,
                 trackDistance, false, switchDistance);
 
             Vector3 dir = (attachPoint - handlePosition).normalized;
@@ -1168,7 +1168,7 @@ namespace Mapify.Editor.Tools
                 MathHelper.RotateCCW(dir.Flatten()) :
                 MathHelper.RotateCW(dir.Flatten())).To3D(0) * trackDistance;
 
-            var c2 = CreateCrossover(leftPrefab, rightPrefab, trackPrefab, parent, attachPoint + offset, handlePosition + offset,
+            var c2 = CreateCrossover(leftPrefab, rightPrefab, parent, attachPoint + offset, handlePosition + offset,
                 FlipOrientation(orientation), trackDistance, false, switchDistance);
 
             // Reparent the 2nd crossover's pieces to the first, and rename.
@@ -1180,8 +1180,8 @@ namespace Mapify.Editor.Tools
             t1.gameObject.name = "[Scissors Crossover]";
 
             // Join the 2 crossovers.
-            CreateConnect2Point(trackPrefab, t1, c1[0].GetThroughPoint(), c2[1].GetThroughPoint(), false, false, 1.0f);
-            CreateConnect2Point(trackPrefab, t1, c2[0].GetThroughPoint(), c1[1].GetThroughPoint(), false, false, 1.0f);
+            CreateConnect2Point(t1, c1[0].GetThroughPoint(), c2[1].GetThroughPoint(), false, false, 1.0f);
+            CreateConnect2Point(t1, c2[0].GetThroughPoint(), c1[1].GetThroughPoint(), false, false, 1.0f);
 
             // Return all 4 switches.
             return new Switch[] { c1[0], c1[1], c2[0], c2[1] };
@@ -1192,7 +1192,6 @@ namespace Mapify.Editor.Tools
         /// </summary>
         /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
         /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
-        /// <param name="trackPrefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
@@ -1201,7 +1200,7 @@ namespace Mapify.Editor.Tools
         /// <returns>
         /// An array of <see cref="Switch"/>es in the following order: [0] attach [1] diverging attach [2] opposite to 0 [3] opposite to 1.
         /// </returns>
-        public static Switch[] CreateDoubleSlip(Switch leftPrefab, Switch rightPrefab, Track trackPrefab, Transform parent,
+        public static Switch[] CreateDoubleSlip(Switch leftPrefab, Switch rightPrefab, Transform parent,
             Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float crossAngle)
         {
             // Create the parent object.
@@ -1240,8 +1239,8 @@ namespace Mapify.Editor.Tools
             Switch s11 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
                 FlipOrientation(orientation), SwitchPoint.Diverging);
 
-            CreateConnect2Point(trackPrefab, obj.transform, s00.GetThroughPoint(), s10.GetThroughPoint(), false, false, 1.0f);
-            CreateConnect2Point(trackPrefab, obj.transform, s01.GetThroughPoint(), s11.GetThroughPoint(), false, false, 1.0f);
+            CreateConnect2Point(obj.transform, s00.GetThroughPoint(), s10.GetThroughPoint(), false, false, 1.0f);
+            CreateConnect2Point(obj.transform, s01.GetThroughPoint(), s11.GetThroughPoint(), false, false, 1.0f);
 
             return new Switch[] { s00, s01, s10, s11 };
         }
@@ -1249,23 +1248,27 @@ namespace Mapify.Editor.Tools
         /// <summary>
         /// Instantiates a <see cref="Track"/> from a cubic bezier.
         /// </summary>
-        /// <param name="prefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="p0">The starting point of the track.</param>
         /// <param name="p1">The handle at the starting point.</param>
         /// <param name="p2">The handle at the ending point.</param>
         /// <param name="p3">The ending point of the track.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateBezier(Track prefab, Transform parent, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
+        public static Track CreateBezier(Transform parent, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
         {
-            Track t = Object.Instantiate(prefab);
+            BezierPoint bp;
+            Track t = GetEmptyTrack();
             t.transform.parent = parent;
             t.transform.position = p0;
 
-            t.Curve[0].position = p0;
-            t.Curve[1].position = p3;
-            t.Curve[0].globalHandle2 = p1;
-            t.Curve[1].globalHandle1 = p2;
+            // Assign the points to the curve.
+            bp = t.Curve.AddPointAt(p0);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp.globalHandle2 = p1;
+
+            bp = t.Curve.AddPointAt(p3);
+            bp.handleStyle = BezierPoint.HandleStyle.Broken;
+            bp.globalHandle1 = p2;
 
             t.gameObject.name = $"[Bezier Track {t.GetHorizontalLength():F3}m]";
 

@@ -10,7 +10,6 @@ namespace Mapify.Editor.Tools
     {
         // Track prefabs.
         private bool _showPrefabs = false;
-        public Track TrackPrefab;
         public BufferStop BufferPrefab;
         public Switch LeftSwitch;
         public Switch RightSwitch;
@@ -41,9 +40,6 @@ namespace Mapify.Editor.Tools
             {
                 EditorGUI.indentLevel++;
 
-                TrackPrefab = EditorHelper.ObjectField(
-                    new GUIContent("Track prefab"),
-                    TrackPrefab, true);
                 BufferPrefab = EditorHelper.ObjectField(
                     new GUIContent("Buffer prefab"),
                     BufferPrefab, true);
@@ -72,7 +68,7 @@ namespace Mapify.Editor.Tools
                 false, TryGetDefaultAssets);
             menu.AddItem(new GUIContent("Clear prefabs",
                 "Sets all prefabs to null"),
-                false, () => { TrackPrefab = null; BufferPrefab = null; LeftSwitch = null; RightSwitch = null; TurntablePrefab = null; });
+                false, () => { BufferPrefab = null; LeftSwitch = null; RightSwitch = null; TurntablePrefab = null; });
             menu.DropDown(rect);
         }
 

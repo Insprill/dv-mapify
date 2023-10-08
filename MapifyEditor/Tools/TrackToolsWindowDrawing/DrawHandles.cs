@@ -47,7 +47,7 @@ namespace Mapify.Editor.Tools
                         return;
                     }
 
-                    if (_isInPieceMode)
+                    if (IsInPieceMode)
                     {
                         CreatePiecePreviews();
                     }

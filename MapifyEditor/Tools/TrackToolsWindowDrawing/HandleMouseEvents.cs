@@ -12,7 +12,7 @@ namespace Mapify.Editor.Tools
 
         private void HandleMouseEvents(SceneView scene)
         {
-            if (_isInFreeformMode)
+            if (IsInFreeformMode)
             {
                 // Since this mode requires mouse interaction and previews where the mouse is,
                 // force the window to send events when the mouse moves.
@@ -231,7 +231,7 @@ namespace Mapify.Editor.Tools
         // Create a track from the curve.
         private void StartNewTrack(Vector3[] curve)
         {
-            _freeformTrackHelper.WorkingTrack = TrackToolsCreator.CreateBezier(TrackPrefab, _currentParent,
+            _freeformTrackHelper.WorkingTrack = TrackToolsCreator.CreateBezier(_currentParent,
                 curve[0], curve[1], curve[2], curve[3]);
 
             _freeformTrackHelper.UndoIndex = Undo.GetCurrentGroup();

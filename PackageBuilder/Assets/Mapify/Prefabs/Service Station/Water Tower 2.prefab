@@ -23,6 +23,16 @@ PrefabInstance:
       propertyPath: asset
       value: 55
       objectReference: {fileID: 0}
+    - target: {fileID: 3543013568023383394, guid: 0f09051f0758f351bb1b1f1602ec5b51,
+        type: 3}
+      propertyPath: rotation.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 3543013568023383394, guid: 0f09051f0758f351bb1b1f1602ec5b51,
+        type: 3}
+      propertyPath: keepChildren
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6584377352624942545, guid: 0f09051f0758f351bb1b1f1602ec5b51,
         type: 3}
       propertyPath: m_RootOrder

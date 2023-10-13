@@ -23,6 +23,11 @@ PrefabInstance:
       propertyPath: asset
       value: 53
       objectReference: {fileID: 0}
+    - target: {fileID: 3543013568023383394, guid: a21c165e9bb9547d3a86bc0a6ef1fd91,
+        type: 3}
+      propertyPath: keepChildren
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6584377352624942545, guid: a21c165e9bb9547d3a86bc0a6ef1fd91,
         type: 3}
       propertyPath: m_RootOrder

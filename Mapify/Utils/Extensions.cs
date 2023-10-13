@@ -50,14 +50,15 @@ namespace Mapify.Utils
             return comp ? comp : gameObject.AddComponent<T>();
         }
 
-        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true)
+        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true, Vector3 rotation = default)
         {
             if (gameObject == other) throw new ArgumentException("Cannot replace self with self");
-            Transform t = gameObject.transform;
-            Transform ot = other.transform;
-            ot.SetParent(t.parent);
-            ot.SetPositionAndRotation(t.position, t.rotation);
-            ot.SetSiblingIndex(t.GetSiblingIndex());
+            Transform thisTransform = gameObject.transform;
+            Transform otherTransform = other.transform;
+            otherTransform.SetParent(thisTransform.parent);
+            otherTransform.SetPositionAndRotation(thisTransform.position, thisTransform.rotation);
+            otherTransform.Rotate(rotation);
+            otherTransform.SetSiblingIndex(thisTransform.GetSiblingIndex());
             if (preserveTypes != null)
                 foreach (Type type in preserveTypes)
                 {
@@ -73,8 +74,8 @@ namespace Mapify.Utils
                 }
 
             if (keepChildren)
-                foreach (Transform child in t.GetChildren())
-                    child.SetParent(ot);
+                foreach (Transform child in thisTransform.GetChildren())
+                    child.SetParent(otherTransform);
 
             GameObject.DestroyImmediate(gameObject);
             return other;
@@ -234,9 +235,9 @@ namespace Mapify.Utils
             foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift, preserveTypes);
         }
 
-        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null)
+        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null, Vector3 rotation = default)
         {
-            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, keepChildren);
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, keepChildren, rotation);
         }
 
         #endregion

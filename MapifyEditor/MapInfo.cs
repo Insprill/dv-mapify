@@ -64,6 +64,9 @@ namespace Mapify.Editor
             }
         };
 
+        [Tooltip("Show the names of stations on the map instead of the station IDs")]
+        public bool showStationNamesOnMap = false;
+
         [Header("Terrain Streaming")]
         [Tooltip("How many terrain chunks to keep loaded around the player")]
         public byte terrainLoadingRingSize = 2;

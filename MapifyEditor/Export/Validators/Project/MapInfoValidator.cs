@@ -42,6 +42,18 @@ namespace MapifyEditor.Export.Validators.Project
                 yield return Result.Error($"The spawn position's Y value must be above the terrain ({worldHeight})", mapInfo);
             if (spawnPos.y < mapInfo.waterLevel)
                 yield return Result.Error($"The spawn position must be above the water level ({mapInfo.waterLevel}", mapInfo);
+
+            if (mapInfo.useFixedMapImage)
+            {
+                if (mapInfo.fixedMapImage == null)
+                {
+                    yield return Result.Error("Mapinfo 'fixedMapImage' must be set when 'useFixedMapImage' is true", mapInfo);
+                }
+                else if(mapInfo.fixedMapImage.width != mapInfo.fixedMapImage.height)
+                {
+                    yield return Result.Warning($"Mapinfo 'fixedMapImage' should be square or it will be stretched. Current dimensions: {mapInfo.fixedMapImage.width}x{mapInfo.fixedMapImage.height}", mapInfo);
+                }
+            }
         }
     }
 }

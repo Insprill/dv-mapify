@@ -47,11 +47,11 @@ namespace MapifyEditor.Export.Validators.Project
             {
                 if (mapInfo.fixedMapImage == null)
                 {
-                    yield return Result.Error("Mapinfo 'fixedMapImage' must be set when 'useFixedMapImage' is true", mapInfo);
+                    yield return Result.Error($"MapInfo: '{nameof(MapInfo.fixedMapImage)}' must be set when '{nameof(MapInfo.useFixedMapImage)}' is true", mapInfo);
                 }
                 else if(mapInfo.fixedMapImage.width != mapInfo.fixedMapImage.height)
                 {
-                    yield return Result.Warning($"Mapinfo 'fixedMapImage' should be square or it will be stretched. Current dimensions: {mapInfo.fixedMapImage.width}x{mapInfo.fixedMapImage.height}", mapInfo);
+                    yield return Result.Warning($"MapInfo: '{nameof(MapInfo.fixedMapImage)}' should be square or it will be stretched. Current dimensions: {mapInfo.fixedMapImage.width}x{mapInfo.fixedMapImage.height}", mapInfo);
                 }
             }
         }

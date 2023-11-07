@@ -22,15 +22,15 @@
 
     <ItemGroup>
         <Reference Include="BezierCurves" />
-        <Reference Include="UnityEngine"/>
-        <Reference Include="UnityEngine.AssetBundleModule"/>
-        <Reference Include="UnityEngine.AudioModule"/>
-        <Reference Include="UnityEngine.CoreModule"/>
-        <Reference Include="UnityEngine.ImageConversionModule"/>
-        <Reference Include="UnityEngine.IMGUIModule"/>
-        <Reference Include="UnityEngine.JSONSerializeModule"/>
-        <Reference Include="UnityEngine.PhysicsModule"/>
-        <Reference Include="UnityEngine.TerrainModule"/>
+        <Reference Include="UnityEngine" />
+        <Reference Include="UnityEngine.AssetBundleModule" />
+        <Reference Include="UnityEngine.AudioModule" />
+        <Reference Include="UnityEngine.CoreModule" />
+        <Reference Include="UnityEngine.ImageConversionModule" />
+        <Reference Include="UnityEngine.IMGUIModule" />
+        <Reference Include="UnityEngine.JSONSerializeModule" />
+        <Reference Include="UnityEngine.PhysicsModule" />
+        <Reference Include="UnityEngine.TerrainModule" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

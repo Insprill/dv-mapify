@@ -126,5 +126,11 @@ namespace Mapify.Map
         {
             return Path.Combine(mapDir ?? availableMaps[LoadedMap.name].Item3, fileName);
         }
+
+        public static string[] GetMapAssets(string searchPattern, string mapDir = null)
+        {
+            string path = mapDir ?? availableMaps[LoadedMap.name].Item3;
+            return Directory.GetFiles(path, searchPattern);
+        }
     }
 }

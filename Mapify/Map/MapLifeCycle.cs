@@ -53,7 +53,7 @@ namespace Mapify.Map
             // Load asset bundles
             string mapDir = Maps.GetDirectory(basicMapInfo);
             string[] assets_assetBundlePaths = Maps.GetMapAssets(Names.ASSETS_ASSET_BUNDLES_PREFIX+"*", mapDir);
-            assets_assetBundles = new List<AssetBundle>();
+            assets_assetBundles = new List<AssetBundle>(assets_assetBundlePaths.Length);
 
             foreach (var ass in assets_assetBundlePaths)
             {
@@ -96,8 +96,11 @@ namespace Mapify.Map
             var mapInfo = mapInfoRequest.assetBundle.LoadAllAssets<MapInfo>()[0];
             if (mapInfo is null)
             {
-                Debug.LogError("Failed to load mapinfo");
+                Debug.LogError($"Failed to find {nameof(MapInfo)}!");
+                SceneSwitcher.SwitchToScene(DVScenes.MainMenu);
+                yield break;
             }
+
             Maps.RegisterLoadedMap(mapInfo);
 
             // Load scenes for us to steal assets from
@@ -247,15 +250,15 @@ namespace Mapify.Map
             originalGameContentScenePath = null;
             scenesToLoad = 0;
 
-            for (var i = 0; i < assets_assetBundles.Count; i++)
+            foreach (AssetBundle bundle in assets_assetBundles)
             {
-                if (assets_assetBundles[i] != null)
+                if (bundle != null)
                 {
-                    assets_assetBundles[i].Unload(true);
-                    assets_assetBundles[i] = null;
+                    bundle.Unload(true);
                 }
             }
-            assets_assetBundles = new List<AssetBundle>();
+
+            assets_assetBundles = null;
 
             if (scenes != null)
             {

@@ -6,6 +6,13 @@ All prefabs mentioned are located in the `Mapify/Prefabs/Trackage` folder.
 
 ![Track Pieces](../assets/track-pieces.png)
 
+## Track Tools
+
+Thanks to Wiz, we now have a set of tools to make creating trackage easier.
+
+To access the tools, go to `Mapify` > `Track Tools`.
+You can then dock that window wherever you see fit.
+
 
 ## Basic Track
 

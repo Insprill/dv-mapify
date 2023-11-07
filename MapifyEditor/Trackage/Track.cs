@@ -11,6 +11,7 @@ namespace Mapify.Editor
     {
         public const float SNAP_RANGE = 1.0f;
         public const float SNAP_UPDATE_RANGE_SQR = 250000;
+        public const float SNAP_RANGE_SQR = SNAP_RANGE * SNAP_RANGE;
 
         // ReSharper disable MemberCanBePrivate.Global
         public static readonly Color32 COLOR_ROAD = new Color32(255, 255, 255, 255);

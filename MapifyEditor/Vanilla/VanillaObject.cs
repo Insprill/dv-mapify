@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Mapify.Editor
 {
@@ -6,6 +7,6 @@ namespace Mapify.Editor
     {
         public VanillaAsset asset;
         public bool keepChildren = true;
-        public Vector3 rotation = Vector3.zero;
+        [FormerlySerializedAs("rotation")] public Vector3 rotationOffset = Vector3.zero;
     }
 }

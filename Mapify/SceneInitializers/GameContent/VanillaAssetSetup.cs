@@ -12,7 +12,7 @@ namespace Mapify.SceneInitializers.GameContent
         {
             foreach (VanillaObject vanillaObject in Object.FindObjectsOfType<VanillaObject>())
             {
-                GameObject go = vanillaObject.Replace(keepChildren: vanillaObject.keepChildren, rotation: vanillaObject.rotation);
+                GameObject go = vanillaObject.Replace(keepChildren: vanillaObject.keepChildren, rotationOffset: vanillaObject.rotationOffset);
 
                 switch (vanillaObject.asset)
                 {

@@ -50,14 +50,14 @@ namespace Mapify.Utils
             return comp ? comp : gameObject.AddComponent<T>();
         }
 
-        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true, Vector3 rotation = default)
+        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true, Vector3 rotationOffset = default)
         {
             if (gameObject == other) throw new ArgumentException("Cannot replace self with self");
             Transform thisTransform = gameObject.transform;
             Transform otherTransform = other.transform;
             otherTransform.SetParent(thisTransform.parent);
             otherTransform.SetPositionAndRotation(thisTransform.position, thisTransform.rotation);
-            otherTransform.Rotate(rotation);
+            otherTransform.Rotate(rotationOffset);
             otherTransform.SetSiblingIndex(thisTransform.GetSiblingIndex());
             if (preserveTypes != null)
                 foreach (Type type in preserveTypes)
@@ -235,9 +235,9 @@ namespace Mapify.Utils
             foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift, preserveTypes);
         }
 
-        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null, Vector3 rotation = default)
+        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null, Vector3 rotationOffset = default)
         {
-            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, keepChildren, rotation);
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, keepChildren, rotationOffset);
         }
 
         #endregion

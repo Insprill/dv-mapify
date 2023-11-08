@@ -16,7 +16,7 @@ namespace Mapify.SceneInitializers.GameContent
     {
         private static bool modifiedMaterial;
         private static Texture defaultTexture;
-        public static bool showStationNamesOnMap = false;
+        public static bool showStationNamesOnMap;
 
         public override void Run()
         {
@@ -109,14 +109,7 @@ namespace Mapify.SceneInitializers.GameContent
                 TMP_Text tmp = name.GetComponent<TMP_Text>();
                 tmp.rectTransform.localPosition = station.YardCenter.position.ToXZ().Scale(0, Maps.LoadedMap.worldSize, -0.175f, 0.175f);
 
-                if (showStationNamesOnMap)
-                {
-                    tmp.text = station.stationName;
-                }
-                else
-                {
-                    tmp.text = station.stationID;
-                }
+                tmp.text = showStationNamesOnMap ? station.stationName : station.stationID;
             }
 
             Object.Destroy(namePrefab);

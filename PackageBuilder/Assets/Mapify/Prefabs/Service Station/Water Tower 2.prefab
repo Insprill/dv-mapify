@@ -25,7 +25,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3543013568023383394, guid: 0f09051f0758f351bb1b1f1602ec5b51,
         type: 3}
-      propertyPath: rotation.y
+      propertyPath: rotationOffset.y
       value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 3543013568023383394, guid: 0f09051f0758f351bb1b1f1602ec5b51,

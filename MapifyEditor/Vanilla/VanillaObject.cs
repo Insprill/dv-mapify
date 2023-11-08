@@ -7,6 +7,6 @@ namespace Mapify.Editor
     {
         public VanillaAsset asset;
         public bool keepChildren = true;
-        [FormerlySerializedAs("rotation")] public Vector3 rotationOffset = Vector3.zero;
+        public Vector3 rotationOffset = Vector3.zero;
     }
 }

@@ -129,7 +129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   asset: 52
   keepChildren: 0
-  rotation: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &3957153289511670403
 MonoBehaviour:
   m_ObjectHideFlags: 0

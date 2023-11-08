@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   asset: 13
   keepChildren: 1
-  rotation: {x: 0, y: 90, z: 0}
+  rotationOffset: {x: 0, y: 90, z: 0}
 --- !u!33 &1285410329932861900
 MeshFilter:
   m_ObjectHideFlags: 0

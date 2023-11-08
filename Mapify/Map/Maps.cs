@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using DV;
 using Mapify.Editor;
+using Mapify.SceneInitializers.GameContent;
 using UnityEngine;
 using UnityModManagerNet;
 
@@ -112,6 +113,7 @@ namespace Mapify.Map
 
         public static void RegisterLoadedMap(MapInfo mapInfo)
         {
+            WorldMapSetup.showStationNamesOnMap = mapInfo.showStationNamesOnMap;
             IsDefaultMap = mapInfo.name == DEFAULT_MAP_INFO.name;
             LoadedMap = mapInfo;
         }

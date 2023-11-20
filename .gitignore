@@ -293,22 +293,10 @@ TestMap/
 DerailValley/
 
 ### Package Builder
-# What kind of git nonsense is this...
-# Required Assets
-!PackageBuilder/
-PackageBuilder/*
-!PackageBuilder/Assets/
-PackageBuilder/Assets/*
-!PackageBuilder/Assets/Mapify/
-!PackageBuilder/Assets/Mapify.meta
-PackageBuilder/Assets/Mapify/Scripts/*
-!PackageBuilder/Assets/Mapify/Scripts/*meta
+PackageBuilder/Assets/Mapify/Scripts/*.dll
 # Project Settings
-!PackageBuilder/ProjectSettings/
 PackageBuilder/ProjectSettings/*
 !PackageBuilder/ProjectSettings/ProjectSettings.asset
 !PackageBuilder/ProjectSettings/EditorSettings.asset
 !PackageBuilder/ProjectSettings/PackageManagerSettings.asset
 !PackageBuilder/ProjectSettings/ProjectVersion.txt
-# Packages
-!PackageBuilder/Packages

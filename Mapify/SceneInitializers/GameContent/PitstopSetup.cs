@@ -57,7 +57,7 @@ namespace Mapify.SceneInitializers.GameContent
                     }
                     else if (asset == VanillaAsset.CashRegister)
                     {
-                        GameObject cashRegisterObj = vanillaObject.Replace(keepChildren: false);
+                        GameObject cashRegisterObj = vanillaObject.Replace();
                         CashRegisterWithModules cashRegister = cashRegisterObj.GetComponentInChildren<CashRegisterWithModules>();
                         cashRegister.registerModules = resourceModules.Cast<CashRegisterModule>().ToArray();
                     }

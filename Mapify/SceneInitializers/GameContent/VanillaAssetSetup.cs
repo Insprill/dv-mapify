@@ -14,34 +14,29 @@ namespace Mapify.SceneInitializers.GameContent
             foreach (VanillaObject vanillaObject in Object.FindObjectsOfType<VanillaObject>())
             {
                 //only these belong in the gamecontent scene
-                var yes = new List<VanillaAsset>
+                switch (vanillaObject.asset)
                 {
-                    VanillaAsset.CareerManager,
-                    VanillaAsset.JobValidator,
-                    VanillaAsset.TrashCan,
-                    VanillaAsset.Dumpster,
-                    VanillaAsset.LostAndFoundShed,
-                    VanillaAsset.WarehouseMachine,
-                    VanillaAsset.PlayerHouse,
-                    VanillaAsset.PitStopStationCoal1,
-                    VanillaAsset.PitStopStationCoal2,
-                    VanillaAsset.PitStopStationWater1,
-                    VanillaAsset.PitStopStationWater2,
-                    VanillaAsset.StationOffice1,
-                    VanillaAsset.StationOffice2,
-                    VanillaAsset.StationOffice3,
-                    VanillaAsset.StationOffice4,
-                    VanillaAsset.StationOffice5,
-                    VanillaAsset.StationOffice6,
-                    VanillaAsset.StationOffice7
-                };
-
-                if (!yes.Contains(vanillaObject.asset))
-                {
-                    continue;
+                    case VanillaAsset.CareerManager:
+                    case VanillaAsset.JobValidator:
+                    case VanillaAsset.TrashCan:
+                    case VanillaAsset.Dumpster:
+                    case VanillaAsset.LostAndFoundShed:
+                    case VanillaAsset.WarehouseMachine:
+                    case VanillaAsset.PlayerHouse:
+                    case VanillaAsset.PitStopStationCoal1:
+                    case VanillaAsset.PitStopStationCoal2:
+                    case VanillaAsset.PitStopStationWater1:
+                    case VanillaAsset.PitStopStationWater2:
+                    case VanillaAsset.StationOffice1:
+                    case VanillaAsset.StationOffice2:
+                    case VanillaAsset.StationOffice3:
+                    case VanillaAsset.StationOffice4:
+                    case VanillaAsset.StationOffice5:
+                    case VanillaAsset.StationOffice6:
+                    case VanillaAsset.StationOffice7:
+                        vanillaObject.Replace();
+                        break;
                 }
-
-                vanillaObject.Replace();
             }
         }
     }

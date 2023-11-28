@@ -52,13 +52,16 @@ namespace Mapify.SceneInitializers.GameContent
         private static void SetupJobBookletSpawnSurface(Station station, StationController stationController)
         {
             PointOnPlane jobBookletSpawnSurface = station.transform.parent.GetComponentInChildren<PointOnPlane>();
-            if (jobBookletSpawnSurface != null)
-                return;
-            GameObject jobBookletSpawnSurfaceObject = station.gameObject.NewChildWithPosition("JobSpawnerAnchor", station.transform.TransformPoint(station.bookletSpawnArea.center));
-            jobBookletSpawnSurface = jobBookletSpawnSurfaceObject.AddComponent<PointOnPlane>();
-            Vector3 size = station.bookletSpawnArea.size;
-            jobBookletSpawnSurface.xSize = size.x;
-            jobBookletSpawnSurface.xSize = size.z;
+
+            if (jobBookletSpawnSurface == null)
+            {
+                GameObject jobBookletSpawnSurfaceObject = station.gameObject.NewChildWithPosition("JobSpawnerAnchor", station.transform.TransformPoint(station.bookletSpawnArea.center));
+                jobBookletSpawnSurface = jobBookletSpawnSurfaceObject.AddComponent<PointOnPlane>();
+                Vector3 size = station.bookletSpawnArea.size;
+                jobBookletSpawnSurface.xSize = size.x;
+                jobBookletSpawnSurface.xSize = size.z;
+            }
+
             StationController_Field_jobBookletSpawnSurface.SetValue(stationController, jobBookletSpawnSurface);
         }
 

@@ -59,7 +59,7 @@ namespace Mapify.SceneInitializers.GameContent
                 jobBookletSpawnSurface = jobBookletSpawnSurfaceObject.AddComponent<PointOnPlane>();
                 Vector3 size = station.bookletSpawnArea.size;
                 jobBookletSpawnSurface.xSize = size.x;
-                jobBookletSpawnSurface.xSize = size.z;
+                jobBookletSpawnSurface.zSize = size.z;
             }
 
             StationController_Field_jobBookletSpawnSurface.SetValue(stationController, jobBookletSpawnSurface);

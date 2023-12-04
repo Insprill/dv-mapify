@@ -30,7 +30,7 @@ namespace Mapify.SceneInitializers.GameContent
                 StationController stationController = stationObject.GetComponent<StationController>();
 
                 // Station info
-                stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color);
+                stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color, Locale.STATION_PREFIX+station.stationName);
 
                 // Station tracks
                 stationController.storageRailtracksGONames = station.storageTrackNames;

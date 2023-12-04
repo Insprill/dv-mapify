@@ -11,7 +11,8 @@ namespace Mapify
     {
         private const string DEFAULT_LANGUAGE = "English";
         private const string MISSING_TRANSLATION = "[ MISSING TRANSLATION ]";
-        private const string PREFIX = "mapify/";
+        public const string PREFIX = "mapify/";
+        public const string STATION_PREFIX = PREFIX + "station/";
         public const string SESSION__MAP_SELECTOR = PREFIX + "session/map_selector";
         public const string LAUNCHER__SESSION_MAP = PREFIX + "launcher/session_map";
         public const string LAUNCHER__SESSION_MAP_NOT_INSTALLED = PREFIX + "launcher/session_map_not_installed";
@@ -52,7 +53,17 @@ namespace Mapify
             }
 
             Dictionary<string, string> localeDict = csv[locale];
-            return localeDict.TryGetValue(key.TrimStart(PREFIX_CHARS), out string value) ? value : MISSING_TRANSLATION;
+
+            if (localeDict.TryGetValue(key.TrimStart(PREFIX_CHARS), out string value)) {
+                return value;
+            }
+
+            // If there is no translation for this station's name, don't translate it.
+            if (key.StartsWith(STATION_PREFIX)) {
+                return key.TrimStart(STATION_PREFIX.ToCharArray());
+            }
+
+            return MISSING_TRANSLATION;
         }
 
         public static string Get(string key, params object[] placeholders)

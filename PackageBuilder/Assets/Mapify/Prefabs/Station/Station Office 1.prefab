@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   asset: 16
+  keepChildren: 1
+  rotationOffset: {x: 0, y: 0, z: 0}
 --- !u!33 &8688684374492490991
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -170,25 +172,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stationName: 
   stationID: 
-  color: {r: 0, g: 0, b: 0, a: 0}
+  color: {r: 0, g: 0, b: 0, a: 1}
   teleportLocation: {fileID: 5087403294541507478}
-  storageTrackNames: []
-  transferInTrackNames: []
-  transferOutTrackNames: []
+  warehouseMachines: []
   bookletSpawnArea: {fileID: 0}
   yardCenter: {fileID: 0}
   bookletGenerationDistance: 150
   jobGenerationDistance: 500
   jobDestroyDistance: 600
   jobsCapacity: 30
-  maxShuntingStorageTracks: 3
   minCarsPerJob: 3
   maxCarsPerJob: 20
-  warehouseMachines: []
-  inputCargoGroupsCount: 0
+  maxShuntingStorageTracks: 3
+  generateFreightHaul: 1
+  generateLogisticalHaul: 1
+  generateShuntingLoad: 1
+  generateShuntingUnload: 1
   inputCargoGroups: []
   outputCargoGroups: []
-  loadStartingJobSupported: 1
-  haulStartingJobSupported: 1
-  unloadStartingJobSupported: 1
-  emptyHaulStartingJobSupported: 1
+  inputCargoGroupsCount: 0
+  storageTrackNames: []
+  transferInTrackNames: []
+  transferOutTrackNames: []
+  visualizeJobGenerationRange: 0
+  visualizeBookletGenerationDistance: 0
+  visualizeJobDestroyDistance: 0

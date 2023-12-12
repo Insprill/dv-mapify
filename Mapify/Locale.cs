@@ -60,7 +60,7 @@ namespace Mapify
 
             // If there is no translation for this station's name, don't translate it.
             if (key.StartsWith(STATION_PREFIX)) {
-                return key.TrimStart(STATION_PREFIX.ToCharArray());
+                return key.Replace(STATION_PREFIX, "");;
             }
 
             return MISSING_TRANSLATION;

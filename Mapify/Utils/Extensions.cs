@@ -17,6 +17,8 @@ namespace Mapify.Utils
 {
     public static class Extensions
     {
+        private const string jObjectName = "mapify";
+
         #region GameObjects & Components
 
         public static GameObject NewChild(this WorldMover worldMover, string name)
@@ -200,30 +202,30 @@ namespace Mapify.Utils
 
         public static BasicMapInfo GetBasicMapInfo(this SaveGameManager saveGameManager)
         {
-            JObject mapify = saveGameManager.data.GetJObject("mapify");
+            JObject mapify = saveGameManager.data.GetJObject(jObjectName);
             return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
         }
 
         public static BasicMapInfo GetBasicMapInfo(this JObject jObject)
         {
-            JObject mapify = jObject.GetJObject("mapify");
+            JObject mapify = jObject.GetJObject(jObjectName);
             return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
         }
 
         public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo basicMapInfo)
         {
             if (basicMapInfo.IsDefault())
-                jObject.Remove("mapify");
+                jObject.Remove(jObjectName);
             else
-                jObject.SetJObject("mapify", JObject.FromObject(basicMapInfo));
+                jObject.SetJObject(jObjectName, JObject.FromObject(basicMapInfo));
         }
 
         public static void SetBasicMapInfo(this SaveGameData saveGameData, BasicMapInfo basicMapInfo)
         {
             if (basicMapInfo.IsDefault())
-                saveGameData.RemoveData("mapify");
+                saveGameData.RemoveData(jObjectName);
             else
-                saveGameData.SetJObject("mapify", JObject.FromObject(basicMapInfo));
+                saveGameData.SetJObject(jObjectName, JObject.FromObject(basicMapInfo));
         }
 
         #endregion

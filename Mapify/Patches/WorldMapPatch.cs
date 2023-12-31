@@ -10,7 +10,7 @@ namespace Mapify.Patches
         private static void Postfix(WorldMap __instance)
         {
             if (!Maps.IsDefaultMap) {
-                WorldMapSetup.UpdateMap(__instance.transform);
+                WorldMapSetup.UpdateMap(__instance.transform, false);
             }
         }
     }

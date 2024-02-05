@@ -230,14 +230,14 @@ namespace Mapify.Utils
 
         #region Mapify
 
-        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null)
+        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift, preserveTypes);
+            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, originShift, preserveTypes);
         }
 
-        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null, Vector3 rotationOffset = default)
+        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, keepChildren, rotationOffset);
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, vanillaObject.keepChildren, vanillaObject.rotationOffset);
         }
 
         #endregion

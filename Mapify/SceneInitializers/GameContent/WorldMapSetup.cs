@@ -16,14 +16,14 @@ namespace Mapify.SceneInitializers.GameContent
     {
         private static bool modifiedMaterial;
         private static Texture defaultTexture;
-        public static bool showStationNamesOnMap;
+        public static bool ShowStationNamesOnMap;
 
         public override void Run()
         {
             MapLifeCycle.OnCleanup += () => modifiedMaterial = false;
             Transform originShiftParent = WorldMover.Instance.originShiftParent;
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapPaperOffice"))
-                UpdateMap(transform, true);
+                UpdateMap(transform);
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapLocationOverview"))
                 UpdateMapOverview(transform);
         }
@@ -62,7 +62,7 @@ namespace Mapify.SceneInitializers.GameContent
             Object.Destroy(listItemPrefab.gameObject);
         }
 
-        public static void UpdateMap(Transform mapTransform, bool isStationOfficeMap)
+        public static void UpdateMap(Transform mapTransform)
         {
             if (!modifiedMaterial)
             {
@@ -80,10 +80,10 @@ namespace Mapify.SceneInitializers.GameContent
                 modifiedMaterial = true;
             }
 
-            ShowNamesOnMap(mapTransform, isStationOfficeMap);
+            ShowNamesOnMap(mapTransform);
         }
 
-        private static void ShowNamesOnMap(Transform mapTransform, bool isStationOfficeMap)
+        private static void ShowNamesOnMap(Transform mapTransform)
         {
             const string namesString = "Names";
             Transform namesTransform = mapTransform.FindChildByName(namesString);
@@ -117,7 +117,7 @@ namespace Mapify.SceneInitializers.GameContent
                 TMP_Text tmp = name.GetComponent<TMP_Text>();
                 tmp.rectTransform.localPosition = station.YardCenter.position.ToXZ().Scale(0, Maps.LoadedMap.worldSize, -0.175f, 0.175f);
 
-                tmp.text = showStationNamesOnMap || isStationOfficeMap ? station.stationName : station.stationID;
+                tmp.text = ShowStationNamesOnMap ? station.stationName : station.stationID;
             }
 
             Object.Destroy(namePrefab);

@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Mapify.Map;
 using Mapify.SceneInitializers.GameContent;
 
 namespace Mapify.Patches
@@ -8,7 +9,9 @@ namespace Mapify.Patches
     {
         private static void Postfix(WorldMap __instance)
         {
-            WorldMapSetup.UpdateMap(__instance.transform);
+            if (!Maps.IsDefaultMap) {
+                WorldMapSetup.UpdateMap(__instance.transform);
+            }
         }
     }
 }

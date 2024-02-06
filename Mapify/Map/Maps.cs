@@ -113,7 +113,7 @@ namespace Mapify.Map
 
         public static void RegisterLoadedMap(MapInfo mapInfo)
         {
-            WorldMapSetup.showStationNamesOnMap = mapInfo.showStationNamesOnMap;
+            WorldMapSetup.ShowStationNamesOnMap = mapInfo.showStationNamesOnMap;
             IsDefaultMap = mapInfo.name == DEFAULT_MAP_INFO.name;
             LoadedMap = mapInfo;
         }

@@ -109,8 +109,8 @@ namespace Mapify
                 return;
             }
 
-            bool status = !controller.cheatModeOverride;
-            controller.cheatModeOverride = status;
+            bool status = !Globals.G.GameParams.CommsRadioCheatMode;
+            Globals.G.GameParams.CommsRadioCheatMode = status;
             controller.UpdateModesAvailability();
             Debug.Log($"{(status ? "Enabled" : "Disabled")} car spawning");
         }

@@ -21,7 +21,7 @@ namespace Mapify.SceneInitializers.GameContent
         public override void Run()
         {
             MapLifeCycle.OnCleanup += () => modifiedMaterial = false;
-            Transform originShiftParent = WorldMover.Instance.originShiftParent;
+            Transform originShiftParent = WorldMover.OriginShiftParent;
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapPaperOffice"))
                 UpdateMap(transform);
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapLocationOverview"))

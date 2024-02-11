@@ -6,7 +6,7 @@ using Mapify.Editor;
 
 namespace Mapify.Patches
 {
-    [HarmonyPatch(typeof(RailTrack), "ConnectToClosestBranch")]
+    [HarmonyPatch(typeof(RailTrack), nameof(RailTrack.ConnectToClosestBranch))]
     public static class RailTrack_ConnectToClosestBranch_Patch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -15,7 +15,7 @@ namespace Mapify.Patches
         }
     }
 
-    [HarmonyPatch(typeof(RailTrack), "ConnectInToClosestJunction")]
+    [HarmonyPatch(typeof(RailTrack), nameof(RailTrack.ConnectInToClosestJunction))]
     public static class RailTrack_ConnectInToClosestJunction_Patch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -24,7 +24,7 @@ namespace Mapify.Patches
         }
     }
 
-    [HarmonyPatch(typeof(RailTrack), "ConnectOutToClosestJunction")]
+    [HarmonyPatch(typeof(RailTrack), nameof(RailTrack.ConnectOutToClosestJunction))]
     public static class RailTrack_ConnectOutToClosestJunction_Patch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

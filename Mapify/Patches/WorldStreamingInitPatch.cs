@@ -14,7 +14,7 @@ namespace Mapify.Patches
     /// </summary>
     /// <seealso cref="DisplayLoadingInfo_Start_Patch" />
     /// <seealso cref="MapLifeCycle.LoadMap" />
-    [HarmonyPatch(typeof(WorldStreamingInit), "Awake")]
+    [HarmonyPatch(typeof(WorldStreamingInit), nameof(WorldStreamingInit.Awake))]
     public static class WorldStreamingInit_Awake_Patch
     {
         public static bool CanLoad = false;

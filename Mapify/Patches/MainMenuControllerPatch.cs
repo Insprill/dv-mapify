@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
-    [HarmonyPatch(typeof(MainMenuController), "Awake")]
+    [HarmonyPatch(typeof(MainMenuController), nameof(MainMenuController.Awake))]
     public static class MainMenuController_Awake_Patch
     {
         private static void Postfix(MainMenuController __instance)

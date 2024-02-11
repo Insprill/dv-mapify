@@ -11,7 +11,7 @@ namespace Mapify.SceneInitializers.Terrain
     {
         public override void Run()
         {
-            GameObject gridObject = WorldMover.Instance.NewChildWithPosition("TerrainGrid", new Vector3(0, Maps.LoadedMap.terrainHeight, 0));
+            GameObject gridObject = WorldMover.OriginShiftParent.gameObject.NewChildWithPosition("TerrainGrid", new Vector3(0, Maps.LoadedMap.terrainHeight, 0));
             gridObject.SetActive(false);
             TerrainGrid grid = gridObject.AddComponent<TerrainGrid>();
             grid.loadingRingSize = Maps.LoadedMap.terrainLoadingRingSize;

@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using AwesomeTechnologies.VegetationSystem;
-using DV.Utils;
 using HarmonyLib;
 using Mapify.Components;
 using Mapify.Editor;
@@ -23,7 +22,7 @@ namespace Mapify.Patches
 
         private static bool Prefix(WorldStreamingInit __instance)
         {
-            SaveGameManager saveGameManager = SingletonBehaviour<SaveGameManager>.Instance;
+            SaveGameManager saveGameManager = SaveGameManager.Instance;
             saveGameManager.FindStartGameData();
             BasicMapInfo basicMapInfo = saveGameManager.GetBasicMapInfo();
             if (basicMapInfo.IsDefault())
@@ -44,7 +43,7 @@ namespace Mapify.Patches
 
         private static IEnumerator WaitForLoadingScreen(BasicMapInfo basicMapInfo)
         {
-            WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
+            WorldStreamingInit wsi = WorldStreamingInit.Instance;
             yield return new WaitUntil(() => CanLoad);
             wsi.StartCoroutine(MapLifeCycle.LoadMap(basicMapInfo));
             yield return new WaitUntil(() => CanInitialize);

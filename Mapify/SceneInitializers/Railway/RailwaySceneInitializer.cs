@@ -12,7 +12,7 @@ namespace Mapify.SceneInitializers.Railway
 
         public override void Run()
         {
-            Transform railwayParent = WorldMover.Instance.NewChild("[railway]").transform;
+            Transform railwayParent = WorldMover.OriginShiftParent.gameObject.NewChild("[railway]").transform;
             foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
                 transform.SetParent(railwayParent);
             base.Run();

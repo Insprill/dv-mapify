@@ -1,5 +1,4 @@
 using System.Reflection;
-using DV.Utils;
 using HarmonyLib;
 using TMPro;
 
@@ -57,7 +56,7 @@ namespace Mapify.Patches
 
             if (!Bootstrap.bootstrapped)
                 return false;
-            SingletonBehaviour<LoadingScreenManager>.Instance.UpdateProgress(percentageLoaded / 100f);
+            LoadingScreenManager.Instance.UpdateProgress(percentageLoaded / 100f);
             return false;
         }
     }

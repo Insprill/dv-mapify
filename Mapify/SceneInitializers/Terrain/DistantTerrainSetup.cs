@@ -9,7 +9,7 @@ namespace Mapify.SceneInitializers.Terrain
         public override void Run()
         {
             GameObject distantTerrainObject = new GameObject("[distant terrain]");
-            distantTerrainObject.transform.SetParent(WorldMover.Instance.originShiftParent);
+            distantTerrainObject.transform.SetParent(WorldMover.OriginShiftParent);
 
             LevelInfo levelInfo = SingletonBehaviour<LevelInfo>.Instance;
             DistantTerrain distantTerrain = distantTerrainObject.gameObject.AddComponent<DistantTerrain>();

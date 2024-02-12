@@ -12,7 +12,7 @@ namespace Mapify.SceneInitializers.GameContent
         public override void Run()
         {
             foreach (Transform transform in scene.GetRootGameObjects().Select(go => go.transform))
-                transform.SetParent(WorldMover.Instance.originShiftParent);
+                transform.SetParent(WorldMover.OriginShiftParent);
             base.Run();
         }
     }

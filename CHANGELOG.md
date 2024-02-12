@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for build 98 ([#64] by [@Tostiman]).
  
 #### Fixed
-- Job booklets spawning under the station.
+- Job booklets spawning under the station ([#45] by [@Tostiman]).
 - The world map getting modified when loading the default map ([#61] by [@Tostiman]).
 
 ### Map Creation Package:
@@ -154,6 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#33]: https://github.com/Insprill/dv-mapify/pull/33
 [#34]: https://github.com/Insprill/dv-mapify/pull/34
 [#36]: https://github.com/Insprill/dv-mapify/pull/36
+[#45]: https://github.com/Insprill/dv-mapify/pull/45
 [#49]: https://github.com/Insprill/dv-mapify/pull/49
 [#61]: https://github.com/Insprill/dv-mapify/pull/61
 [#64]: https://github.com/Insprill/dv-mapify/pull/64

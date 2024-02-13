@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  
 #### Fixed
 - Job booklets spawning under the station ([#45] by [@Tostiman]).
+- Stations showing missing translation text instead of the station name ([#48] by [@Tostiman]).
 - The world map getting modified when loading the default map ([#61] by [@Tostiman]).
 
 ### Map Creation Package:
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Maps not exporting if they're over 4GB ([#30] by [@Tostiman]).
 - Dumpsters and water towers being rotated incorrectly ([#33] by [@Tostiman]).
 - Station colors being transparent by default ([#49] by [@Tostiman]).
+- Overwriting a release zip not working ([#63] by [@Tostiman]).
 
 #### Changed
 - Clarified the error message when warehouse machine validation failed ([#36] by [@Tostiman]).
@@ -155,8 +157,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#34]: https://github.com/Insprill/dv-mapify/pull/34
 [#36]: https://github.com/Insprill/dv-mapify/pull/36
 [#45]: https://github.com/Insprill/dv-mapify/pull/45
+[#48]: https://github.com/Insprill/dv-mapify/pull/48
 [#49]: https://github.com/Insprill/dv-mapify/pull/49
 [#61]: https://github.com/Insprill/dv-mapify/pull/61
+[#63]: https://github.com/Insprill/dv-mapify/pull/63
 [#64]: https://github.com/Insprill/dv-mapify/pull/64
 
 <!-- Diffs -->

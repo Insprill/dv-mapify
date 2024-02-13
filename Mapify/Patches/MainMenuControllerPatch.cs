@@ -1,7 +1,6 @@
 using System.Collections;
 using DV.UI;
 using DV.UI.PresetEditors;
-using DV.Utils;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Utils;
@@ -9,7 +8,7 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
-    [HarmonyPatch(typeof(MainMenuController), "Awake")]
+    [HarmonyPatch(typeof(MainMenuController), nameof(MainMenuController.Awake))]
     public static class MainMenuController_Awake_Patch
     {
         private static void Postfix(MainMenuController __instance)
@@ -19,7 +18,7 @@ namespace Mapify.Patches
 
         private static void OnStartNewGameRequested(UIStartGameData data)
         {
-            SingletonBehaviour<CoroutineManager>.Instance.StartCoroutine(DataWaiter());
+            CoroutineManager.Instance.StartCoroutine(DataWaiter());
         }
 
         private static IEnumerator DataWaiter()

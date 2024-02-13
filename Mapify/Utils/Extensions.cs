@@ -17,17 +17,9 @@ namespace Mapify.Utils
 {
     public static class Extensions
     {
+        private const string SAVE_KEY_NAME = "mapify";
+
         #region GameObjects & Components
-
-        public static GameObject NewChild(this WorldMover worldMover, string name)
-        {
-            return worldMover.originShiftParent.gameObject.NewChild(name);
-        }
-
-        public static GameObject NewChildWithPosition(this WorldMover worldMover, string name, Vector3 position)
-        {
-            return worldMover.originShiftParent.gameObject.NewChildWithPosition(name, position);
-        }
 
         public static GameObject NewChild(this GameObject parent, string name)
         {
@@ -200,44 +192,44 @@ namespace Mapify.Utils
 
         public static BasicMapInfo GetBasicMapInfo(this SaveGameManager saveGameManager)
         {
-            JObject mapify = saveGameManager.data.GetJObject("mapify");
+            JObject mapify = saveGameManager.data.GetJObject(SAVE_KEY_NAME);
             return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
         }
 
         public static BasicMapInfo GetBasicMapInfo(this JObject jObject)
         {
-            JObject mapify = jObject.GetJObject("mapify");
+            JObject mapify = jObject.GetJObject(SAVE_KEY_NAME);
             return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
         }
 
         public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo basicMapInfo)
         {
             if (basicMapInfo.IsDefault())
-                jObject.Remove("mapify");
+                jObject.Remove(SAVE_KEY_NAME);
             else
-                jObject.SetJObject("mapify", JObject.FromObject(basicMapInfo));
+                jObject.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
         }
 
         public static void SetBasicMapInfo(this SaveGameData saveGameData, BasicMapInfo basicMapInfo)
         {
             if (basicMapInfo.IsDefault())
-                saveGameData.RemoveData("mapify");
+                saveGameData.RemoveData(SAVE_KEY_NAME);
             else
-                saveGameData.SetJObject("mapify", JObject.FromObject(basicMapInfo));
+                saveGameData.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
         }
 
         #endregion
 
         #region Mapify
 
-        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null)
+        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift, preserveTypes);
+            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, originShift, preserveTypes);
         }
 
-        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null, Vector3 rotationOffset = default)
+        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, keepChildren, rotationOffset);
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, vanillaObject.keepChildren, vanillaObject.rotationOffset);
         }
 
         #endregion

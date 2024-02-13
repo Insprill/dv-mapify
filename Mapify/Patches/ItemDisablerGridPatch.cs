@@ -1,6 +1,5 @@
 using DV;
 using DV.TerrainSystem;
-using DV.Utils;
 using HarmonyLib;
 using Mapify.Map;
 using UnityEngine;
@@ -31,7 +30,7 @@ namespace Mapify.Patches
                 return false;
             }
 
-            __result = SingletonBehaviour<TerrainGrid>.Instance.IsInLoadedRegion(worldPos);
+            __result = TerrainGrid.Instance.IsInLoadedRegion(worldPos);
             return false;
         }
     }

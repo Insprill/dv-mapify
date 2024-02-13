@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
-    [HarmonyPatch(typeof(RailwayMeshGenerator), "ScheduleGenerateBaseAndRail")]
+    [HarmonyPatch(typeof(RailwayMeshGenerator), nameof(RailwayMeshGenerator.ScheduleGenerateBaseAndRail))]
     public class RailwayMeshGenerator_ScheduleGenerateBaseAndRail_Patch
     {
         private static bool Prefix(RailwayMeshGenerator __instance, TrackChunk chunk, List<(MeshSweeperJob, JobHandle, Mesh)> ___activeJobs, Vector2[] ___gravelShapePoints, Vector2[] ___leftRailShapePoints,
@@ -49,7 +49,7 @@ namespace Mapify.Patches
         }
     }
 
-    [HarmonyPatch(typeof(RailwayMeshGenerator), "UpdateSleepersData")]
+    [HarmonyPatch(typeof(RailwayMeshGenerator), nameof(RailwayMeshGenerator.UpdateSleepersData))]
     public class RailwayMeshGenerator_UpdateSleepersData_Patch
     {
         private static bool Prefix(TrackChunk chunk, ref JobHandle ___sleepersHandle, NativeList<Vector3> ___sleepersAnchorsPositions, NativeList<float> ___sleepersAnchorsTransformBufferData)

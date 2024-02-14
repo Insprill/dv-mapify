@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using DV.Common;
 using DV.UI;
 using DV.UI.PresetEditors;
@@ -17,22 +16,16 @@ namespace Mapify.Patches
     public static class LauncherControllerAccess
     {
         private static readonly Type type = typeof(LauncherController);
-        private static readonly MethodInfo Method_RefreshInterface = AccessTools.DeclaredMethod(type, "RefreshInterface");
 
         [HarmonyReversePatch]
-        [HarmonyPatch(typeof(LauncherController), "KeyValueFormat")]
+        [HarmonyPatch(typeof(LauncherController), nameof(LauncherController.KeyValueFormat))]
         public static string KeyValueFormat(string locKey, string value)
         {
             throw new NotImplementedException();
         }
-
-        public static void RefreshInterface(this LauncherController launcherController)
-        {
-            Method_RefreshInterface.Invoke(launcherController, null);
-        }
     }
 
-    [HarmonyPatch(typeof(LauncherController), "GetSaveGameDetails")]
+    [HarmonyPatch(typeof(LauncherController), nameof(LauncherController.GetSaveGameDetails))]
     public static class LauncherController_GetSaveGameDetails_Patch
     {
         private static void Postfix(ISaveGame saveGame, ref string __result)
@@ -43,7 +36,7 @@ namespace Mapify.Patches
         }
     }
 
-    [HarmonyPatch(typeof(LauncherController), "GetStartGameDetails")]
+    [HarmonyPatch(typeof(LauncherController), nameof(LauncherController.GetStartGameDetails))]
     public static class LauncherController_GetStartGameDetails_Patch
     {
         private static void Postfix(UIStartGameData data, ref string __result)
@@ -54,7 +47,7 @@ namespace Mapify.Patches
         }
     }
 
-    [HarmonyPatch(typeof(LauncherController), "OnRunClicked")]
+    [HarmonyPatch(typeof(LauncherController), nameof(LauncherController.OnRunClicked))]
     public static class LauncherController_OnRunClicked_Patch
     {
         private static bool Prefix(LauncherController __instance, ISaveGame ___saveGame)

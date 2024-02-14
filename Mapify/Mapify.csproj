@@ -4,10 +4,17 @@
         <TargetFramework>net48</TargetFramework>
         <LangVersion>7.3</LangVersion>
         <RootNamespace>Mapify</RootNamespace>
+        <PublicizerClearCacheOnClean>true</PublicizerClearCacheOnClean>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="../MapifyEditor/MapifyEditor.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Publicize Include="Assembly-CSharp" />
+        <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
     </ItemGroup>
 
     <!-- Derail Valley -->
@@ -31,6 +38,7 @@
 
     <!-- Mod Loader -->
     <ItemGroup>
+        <PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
         <PackageReference Include="UnityModManager" Version="0.27.2" />
     </ItemGroup>
 

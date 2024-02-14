@@ -3,7 +3,7 @@ using Mapify.Map;
 
 namespace Mapify.Patches
 {
-    [HarmonyPatch(typeof(TutorialHelper), "InitializationRoutine")]
+    [HarmonyPatch(typeof(TutorialHelper), nameof(TutorialHelper.InitializationRoutine))]
     public static class TutorialHelperPatch
     {
         private static bool Prefix()

@@ -13,8 +13,6 @@ namespace Mapify.SceneInitializers.GameContent
 {
     public class StationSetup : SceneSetup
     {
-        private static readonly FieldInfo StationController_Field_jobBookletSpawnSurface = AccessTools.DeclaredField(typeof(StationController), "jobBookletSpawnSurface");
-
         public override void Run()
         {
             Station[] stations = Object.FindObjectsOfType<Station>();
@@ -30,7 +28,7 @@ namespace Mapify.SceneInitializers.GameContent
                 StationController stationController = stationObject.GetComponent<StationController>();
 
                 // Station info
-                stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color);
+                stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color, Locale.STATION_PREFIX+station.stationName);
 
                 // Station tracks
                 stationController.storageRailtracksGONames = station.storageTrackNames;
@@ -62,7 +60,7 @@ namespace Mapify.SceneInitializers.GameContent
                 jobBookletSpawnSurface.zSize = size.z;
             }
 
-            StationController_Field_jobBookletSpawnSurface.SetValue(stationController, jobBookletSpawnSurface);
+            stationController.jobBookletSpawnSurface = jobBookletSpawnSurface;
         }
 
         private static void SetupJobGenerationRange(Station station)

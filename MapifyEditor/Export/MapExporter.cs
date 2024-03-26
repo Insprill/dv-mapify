@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -321,7 +321,7 @@ namespace Mapify.Editor
                 Id = mapInfo.name,
                 Version = mapInfo.version,
                 DisplayName = mapInfo.name,
-                ManagerVersion = "0.27.3",
+                ManagerVersion = "0.27.13",
                 Requirements = new[] { "Mapify" },
                 HomePage = mapInfo.homePage
             };

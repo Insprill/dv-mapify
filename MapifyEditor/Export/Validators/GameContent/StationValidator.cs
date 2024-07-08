@@ -25,9 +25,25 @@ namespace Mapify.Editor.Validators
                 #region Station Info
 
                 if (string.IsNullOrWhiteSpace(station.stationName))
-                    yield return Result.Error($"Station '{station.name}' must have a name", station);
+                    yield return Result.Error($"Station '{station.name}' must have a name [{station.stationName}] ", station);
+
                 if (string.IsNullOrWhiteSpace(station.stationID))
                     yield return Result.Error($"Station '{station.name}' must have an ID", station);
+
+                var invalidCharacters = "";
+                foreach (var character in station.stationID)
+                {
+                    if (!character.IsAsciiLetterOrDigit())
+                    {
+                        invalidCharacters += $"'{character}', ";
+                    }
+                }
+
+                if (invalidCharacters != "")
+                {
+                    yield return Result.Error($"Station IDs can only contain letters and numbers. The ID '{station.stationID}' of station '{station.name}' is invalid. Invalid characters: {invalidCharacters}", station);
+                }
+
                 if (station.color.a < 0.001)
                     yield return Result.Error($"Station '{station.name}' must have a color with an alpha value greater than 0", station);
 
@@ -79,4 +95,5 @@ namespace Mapify.Editor.Validators
         }
     }
 }
+
 #endif

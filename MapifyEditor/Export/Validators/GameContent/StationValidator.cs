@@ -25,7 +25,7 @@ namespace Mapify.Editor.Validators
                 #region Station Info
 
                 if (string.IsNullOrWhiteSpace(station.stationName))
-                    yield return Result.Error($"Station '{station.name}' must have a name [{station.stationName}] ", station);
+                    yield return Result.Error($"Station '{station.name}' must have a name", station);
 
                 if (string.IsNullOrWhiteSpace(station.stationID))
                     yield return Result.Error($"Station '{station.name}' must have an ID", station);

@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Mapify.Editor.Utils;
 
 namespace Mapify.Editor.Validators
@@ -30,18 +31,10 @@ namespace Mapify.Editor.Validators
                 if (string.IsNullOrWhiteSpace(station.stationID))
                     yield return Result.Error($"Station '{station.name}' must have an ID", station);
 
-                var invalidCharacters = "";
-                foreach (var character in station.stationID)
+                var alphaNumericRegex = new Regex(@"^[a-zA-Z0-9]*$");
+                if (!alphaNumericRegex.IsMatch(station.stationID))
                 {
-                    if (!character.IsAsciiLetterOrDigit())
-                    {
-                        invalidCharacters += $"'{character}', ";
-                    }
-                }
-
-                if (invalidCharacters != "")
-                {
-                    yield return Result.Error($"Station IDs can only contain letters and numbers. The ID '{station.stationID}' of station '{station.name}' is invalid. Invalid characters: {invalidCharacters}", station);
+                    yield return Result.Error($"Station IDs can only contain letters and numbers. The ID '{station.stationID}' of station '{station.name}' is invalid.", station);
                 }
 
                 if (station.color.a < 0.001)

@@ -61,26 +61,9 @@ namespace Mapify.Editor
         private Vector3 previousPositionLastPoint;
 
         //the track connected to the first point in our curve
-        private SnappedTrack? snappedTrackBefore;
+        private SnappedTrack snappedTrackBefore;
         //the track connected to the last point in our curve
-        private SnappedTrack? snappedTrackAfter;
-
-
-        private struct SnappedTrack
-        {
-            public SnappedTrack(Track aTrack, BezierPoint aPoint)
-            {
-                track = aTrack;
-                point = aPoint;
-            }
-            private Track track;
-            private BezierPoint point;
-
-            public void UnSnapped()
-            {
-                track.UnSnapped(point);
-            }
-        }
+        private SnappedTrack snappedTrackAfter;
 #endif
 
         public BezierCurve Curve {
@@ -161,6 +144,7 @@ namespace Mapify.Editor
                     break;
             }
         }
+
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
@@ -276,8 +260,8 @@ namespace Mapify.Editor
                     //don't snap to itself
                     if (otherSnapPoint.Curve() == mySnapPoint.Curve()) continue;
 
-                    Vector3 otherPos = otherSnapPoint.transform.position;
-                    float distance = Mathf.Abs(Vector3.Distance(otherPos, pos));
+                    Vector3 otherPosition = otherSnapPoint.transform.position;
+                    float distance = Mathf.Abs(Vector3.Distance(otherPosition, pos));
 
                     // too far away
                     if (distance > SNAP_RANGE || distance >= closestDistance) continue;
@@ -287,7 +271,7 @@ namespace Mapify.Editor
                     // don't snap a switch to another switch
                     if (IsSwitch && otherTrack.IsSwitch) continue;
 
-                    closestPosition = otherPos;
+                    closestPosition = otherPosition;
                     closestDistance = distance;
 
                     otherTrack.Snapped(otherSnapPoint);
@@ -338,7 +322,7 @@ namespace Mapify.Editor
                 isOutSnapped = true;
         }
 
-        private void UnSnapped(BezierPoint point)
+        internal void UnSnapped(BezierPoint point)
         {
             if (point == Curve[0])
                 isInSnapped = false;

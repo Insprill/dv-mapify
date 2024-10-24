@@ -31,8 +31,7 @@ namespace Mapify.Editor.Validators
                 if (string.IsNullOrWhiteSpace(station.stationID))
                     yield return Result.Error($"Station '{station.name}' must have an ID", station);
 
-                var alphaNumericRegex = new Regex(@"^[a-zA-Z0-9]*$");
-                if (!alphaNumericRegex.IsMatch(station.stationID))
+                if (!Regex.IsMatch(station.stationID, @"^[a-zA-Z0-9]*$"))
                 {
                     yield return Result.Error($"Station IDs can only contain letters and numbers. The ID '{station.stationID}' of station '{station.name}' is invalid.", station);
                 }

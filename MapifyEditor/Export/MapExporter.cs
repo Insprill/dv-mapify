@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -60,16 +60,26 @@ namespace Mapify.Editor
             LastReleaseExportPath = exportFilePath;
 
             string tmpFolder = Path.Combine(Path.GetTempPath(), $"dv-mapify-{Path.GetRandomFileName()}");
-            if (Directory.Exists(tmpFolder))
+            if (Directory.Exists(tmpFolder)) {
                 Directory.Delete(tmpFolder, true);
+            }
             Directory.CreateDirectory(tmpFolder);
 
-            bool success = Export(tmpFolder, false);
+            string mapExportFolder = Path.Combine(tmpFolder, mapName);
+            Directory.CreateDirectory(mapExportFolder);
+
+            bool success = Export(mapExportFolder, false);
 
             if (success)
             {
                 EditorUtility.DisplayProgressBar("Mapify", "Creating zip file", 0);
-                ZipFile.CreateFromDirectory(tmpFolder, exportFilePath, CompressionLevel.Fastest, true);
+
+                if (File.Exists(exportFilePath))
+                {
+                    EditorFileUtil.MoveToTrash(exportFilePath);
+                }
+
+                ZipFile.CreateFromDirectory(mapExportFolder, exportFilePath, CompressionLevel.Fastest, true);
                 EditorUtility.ClearProgressBar();
                 if (EditorUtility.DisplayDialog("Mapify", "Export complete!", "Open Folder", "Ok"))
                     EditorUtility.RevealInFinder(exportFilePath);
@@ -311,7 +321,7 @@ namespace Mapify.Editor
                 Id = mapInfo.name,
                 Version = mapInfo.version,
                 DisplayName = mapInfo.name,
-                ManagerVersion = "0.27.3",
+                ManagerVersion = "0.27.13",
                 Requirements = new[] { "Mapify" },
                 HomePage = mapInfo.homePage
             };

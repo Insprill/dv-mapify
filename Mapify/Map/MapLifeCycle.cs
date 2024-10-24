@@ -160,6 +160,9 @@ namespace Mapify.Map
 
             foreach (VanillaAsset nonInstantiatableAsset in Enum.GetValues(typeof(VanillaAsset)).Cast<VanillaAsset>().Where(e => !AssetCopier.InstantiatableAssets.Contains(e)))
                 Mapify.LogError($"VanillaAsset {nonInstantiatableAsset} wasn't set in the AssetCopier! You MUST fix this!");
+
+            // Auto-save won't work without this line.
+            SaveGameManager.Instance.disableAutosave = false;
         }
 
         private static void SetupStreamer(GameObject parent, MapInfo mapInfo)

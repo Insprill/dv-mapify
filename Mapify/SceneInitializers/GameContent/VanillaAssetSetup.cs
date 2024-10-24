@@ -1,4 +1,5 @@
-﻿using Mapify.Editor;
+﻿using System.Collections.Generic;
+using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Utils;
 using UnityEngine;
@@ -11,6 +12,8 @@ namespace Mapify.SceneInitializers.GameContent
         public override void Run()
         {
             foreach (VanillaObject vanillaObject in Object.FindObjectsOfType<VanillaObject>())
+            {
+                //only these belong in the gamecontent scene
                 switch (vanillaObject.asset)
                 {
                     case VanillaAsset.CareerManager:
@@ -20,14 +23,10 @@ namespace Mapify.SceneInitializers.GameContent
                     case VanillaAsset.LostAndFoundShed:
                     case VanillaAsset.WarehouseMachine:
                     case VanillaAsset.PlayerHouse:
-                        vanillaObject.Replace();
-                        break;
                     case VanillaAsset.PitStopStationCoal1:
                     case VanillaAsset.PitStopStationCoal2:
                     case VanillaAsset.PitStopStationWater1:
                     case VanillaAsset.PitStopStationWater2:
-                        vanillaObject.Replace(keepChildren: false);
-                        break;
                     case VanillaAsset.StationOffice1:
                     case VanillaAsset.StationOffice2:
                     case VanillaAsset.StationOffice3:
@@ -35,13 +34,10 @@ namespace Mapify.SceneInitializers.GameContent
                     case VanillaAsset.StationOffice5:
                     case VanillaAsset.StationOffice6:
                     case VanillaAsset.StationOffice7:
-                        GameObject go = vanillaObject.Replace();
-                        // todo: make this show in the correct location instead of removing it
-                        Transform youAreHereFlag = go.transform.FindChildByName("PinRed");
-                        if (youAreHereFlag != null)
-                            Object.Destroy(youAreHereFlag.gameObject);
+                        vanillaObject.Replace();
                         break;
                 }
+            }
         }
     }
 }

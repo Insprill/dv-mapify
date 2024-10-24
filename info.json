@@ -4,7 +4,7 @@
   "DisplayName": "Mapify",
   "Author": "Insprill",
   "EntryMethod": "Mapify.Mapify.Load",
-  "ManagerVersion": "0.27.3",
+  "ManagerVersion": "0.27.13",
   "HomePage": "https://www.nexusmods.com/derailvalley/mods/593",
   "Repository": "https://raw.githubusercontent.com/Insprill/dv-mapify/master/repository.json"
 }

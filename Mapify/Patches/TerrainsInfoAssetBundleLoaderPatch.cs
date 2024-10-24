@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using DV.TerrainSystem;
 using HarmonyLib;
@@ -43,8 +42,6 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), MethodType.Constructor, typeof(string), typeof(Func<IEnumerator, Coroutine>))]
     public static class TerrainsInfoAssetBundleLoader_Constructor_Patch
     {
-        private static readonly FieldInfo Field_assBunInfo = AccessTools.DeclaredField(typeof(TerrainsInfoAssetBundleLoader), "assBunInfo");
-
         private static void Postfix(TerrainsInfoAssetBundleLoader __instance, string worldName)
         {
             TerrainsInfoFromAssetBundle bundle;
@@ -61,14 +58,14 @@ namespace Mapify.Patches
                 bundle.numberOfTerrains = Maps.LoadedMap.terrainCount;
             }
 
-            Field_assBunInfo.SetValue(__instance, bundle);
+            __instance.assBunInfo = bundle;
         }
     }
 
     /// <summary>
     ///     Redirects requests to load new terrain to our map installation location.
     /// </summary>
-    [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), "GetAssetBundleFilePath")]
+    [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), nameof(TerrainsInfoAssetBundleLoader.GetAssetBundleFilePath))]
     public static class TerrainsInfoAssetBundleLoader_GetAssetBundleFilePath_Patch
     {
         private static bool Prefix(TerrainsInfoAssetBundleLoader __instance, Vector2Int coord, ref string __result)

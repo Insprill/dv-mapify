@@ -17,17 +17,9 @@ namespace Mapify.Utils
 {
     public static class Extensions
     {
+        private const string SAVE_KEY_NAME = "mapify";
+
         #region GameObjects & Components
-
-        public static GameObject NewChild(this WorldMover worldMover, string name)
-        {
-            return worldMover.originShiftParent.gameObject.NewChild(name);
-        }
-
-        public static GameObject NewChildWithPosition(this WorldMover worldMover, string name, Vector3 position)
-        {
-            return worldMover.originShiftParent.gameObject.NewChildWithPosition(name, position);
-        }
 
         public static GameObject NewChild(this GameObject parent, string name)
         {
@@ -50,14 +42,15 @@ namespace Mapify.Utils
             return comp ? comp : gameObject.AddComponent<T>();
         }
 
-        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true)
+        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true, Vector3 rotationOffset = default)
         {
             if (gameObject == other) throw new ArgumentException("Cannot replace self with self");
-            Transform t = gameObject.transform;
-            Transform ot = other.transform;
-            ot.SetParent(t.parent);
-            ot.SetPositionAndRotation(t.position, t.rotation);
-            ot.SetSiblingIndex(t.GetSiblingIndex());
+            Transform thisTransform = gameObject.transform;
+            Transform otherTransform = other.transform;
+            otherTransform.SetParent(thisTransform.parent);
+            otherTransform.SetPositionAndRotation(thisTransform.position, thisTransform.rotation);
+            otherTransform.Rotate(rotationOffset);
+            otherTransform.SetSiblingIndex(thisTransform.GetSiblingIndex());
             if (preserveTypes != null)
                 foreach (Type type in preserveTypes)
                 {
@@ -73,8 +66,8 @@ namespace Mapify.Utils
                 }
 
             if (keepChildren)
-                foreach (Transform child in t.GetChildren())
-                    child.SetParent(ot);
+                foreach (Transform child in thisTransform.GetChildren())
+                    child.SetParent(otherTransform);
 
             GameObject.DestroyImmediate(gameObject);
             return other;
@@ -199,44 +192,44 @@ namespace Mapify.Utils
 
         public static BasicMapInfo GetBasicMapInfo(this SaveGameManager saveGameManager)
         {
-            JObject mapify = saveGameManager.data.GetJObject("mapify");
+            JObject mapify = saveGameManager.data.GetJObject(SAVE_KEY_NAME);
             return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
         }
 
         public static BasicMapInfo GetBasicMapInfo(this JObject jObject)
         {
-            JObject mapify = jObject.GetJObject("mapify");
+            JObject mapify = jObject.GetJObject(SAVE_KEY_NAME);
             return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
         }
 
         public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo basicMapInfo)
         {
             if (basicMapInfo.IsDefault())
-                jObject.Remove("mapify");
+                jObject.Remove(SAVE_KEY_NAME);
             else
-                jObject.SetJObject("mapify", JObject.FromObject(basicMapInfo));
+                jObject.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
         }
 
         public static void SetBasicMapInfo(this SaveGameData saveGameData, BasicMapInfo basicMapInfo)
         {
             if (basicMapInfo.IsDefault())
-                saveGameData.RemoveData("mapify");
+                saveGameData.RemoveData(SAVE_KEY_NAME);
             else
-                saveGameData.SetJObject("mapify", JObject.FromObject(basicMapInfo));
+                saveGameData.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
         }
 
         #endregion
 
         #region Mapify
 
-        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null)
+        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift, preserveTypes);
+            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, originShift, preserveTypes);
         }
 
-        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true, Type[] preserveTypes = null)
+        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, keepChildren);
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, vanillaObject.keepChildren, vanillaObject.rotationOffset);
         }
 
         #endregion

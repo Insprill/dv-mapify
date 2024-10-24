@@ -31,6 +31,10 @@ namespace Mapify.Editor
         public float worldBoundaryMargin = 5.0f;
 
         [Header("Procedural Maps")]
+        [Tooltip("Use an image as map instead of rendering the terrain on the map")]
+        public bool useFixedMapImage = false;
+        [Tooltip("If useFixedMapImage is true, this image will be the map")]
+        public Texture2D fixedMapImage = null;
         [Tooltip("How large tracks should be on the map")]
         public float trackWidth = 5;
         [Tooltip("The color of tracks on the map")]
@@ -63,6 +67,9 @@ namespace Mapify.Editor
                 new GradientAlphaKey(1.0f, 1.0f)
             }
         };
+
+        [Tooltip("Show the names of stations on the map instead of the station IDs")]
+        public bool showStationNamesOnMap;
 
         [Header("Terrain Streaming")]
         [Tooltip("How many terrain chunks to keep loaded around the player")]

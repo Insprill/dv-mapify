@@ -16,11 +16,12 @@ namespace Mapify.SceneInitializers.GameContent
     {
         private static bool modifiedMaterial;
         private static Texture defaultTexture;
+        public static bool ShowStationNamesOnMap;
 
         public override void Run()
         {
             MapLifeCycle.OnCleanup += () => modifiedMaterial = false;
-            Transform originShiftParent = WorldMover.Instance.originShiftParent;
+            Transform originShiftParent = WorldMover.OriginShiftParent;
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapPaperOffice"))
                 UpdateMap(transform);
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapLocationOverview"))
@@ -61,14 +62,14 @@ namespace Mapify.SceneInitializers.GameContent
             Object.Destroy(listItemPrefab.gameObject);
         }
 
-        public static void UpdateMap(Transform transform)
+        public static void UpdateMap(Transform mapTransform)
         {
             if (!modifiedMaterial)
             {
-                Transform mapObject = transform.FindChildByName("Map_LOD0");
+                Transform mapObject = mapTransform.FindChildByName("Map_LOD0");
                 if (mapObject == null)
                 {
-                    Mapify.LogError($"Failed to find 'Map_LOD0' under '{transform.name}'!");
+                    Mapify.LogError($"Failed to find 'Map_LOD0' under '{mapTransform.name}'!");
                     return;
                 }
 
@@ -79,35 +80,44 @@ namespace Mapify.SceneInitializers.GameContent
                 modifiedMaterial = true;
             }
 
-            Transform names = transform.FindChildByName("Names");
-            if (names == null)
+            ShowNamesOnMap(mapTransform);
+        }
+
+        private static void ShowNamesOnMap(Transform mapTransform)
+        {
+            const string namesString = "Names";
+            Transform namesTransform = mapTransform.FindChildByName(namesString);
+            if (namesTransform == null)
             {
-                Mapify.LogError($"Failed to find 'Names' under '{transform.name}'!");
+                Mapify.LogError($"Failed to find '{namesString}' under '{mapTransform.name}'!");
                 return;
             }
 
-            Transform[] children = names.GetChildren();
+            Transform[] children = namesTransform.GetChildren();
             if (children.Length == 0)
             {
-                Mapify.LogError($"Map 'Names' under '{transform.name}' has no children!");
+                Mapify.LogError($"Map '{namesString}' under '{mapTransform.name}' has no children!");
                 return;
             }
 
             GameObject namePrefab = children[0].gameObject;
 
             if (children.Length > 1)
+            {
                 for (int i = 1; i < children.Length; i++)
                 {
                     if (children[i].name == "Legend") continue;
                     Object.Destroy(children[i].gameObject);
                 }
+            }
 
             foreach (Station station in Object.FindObjectsOfType<Station>())
             {
-                GameObject name = Object.Instantiate(namePrefab, names);
+                GameObject name = Object.Instantiate(namePrefab, namesTransform);
                 TMP_Text tmp = name.GetComponent<TMP_Text>();
                 tmp.rectTransform.localPosition = station.YardCenter.position.ToXZ().Scale(0, Maps.LoadedMap.worldSize, -0.175f, 0.175f);
-                tmp.text = station.stationID;
+
+                tmp.text = ShowStationNamesOnMap ? station.stationName : station.stationID;
             }
 
             Object.Destroy(namePrefab);
@@ -132,7 +142,7 @@ namespace Mapify.SceneInitializers.GameContent
                     )
             ).ToArray();
 
-            // The borders must be draw first, otherwise you'll see it dividing each segment of the rail
+            // The borders must be drawn first, otherwise you'll see it dividing each segment of the rail
             if (Maps.LoadedMap.trackBackgroundWidth > 0)
                 foreach ((Vector2 startPoint, Vector2 endPoint) in pairs)
                     drawer.DrawLineOnTexture(

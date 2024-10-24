@@ -9,9 +9,8 @@ namespace Mapify.Editor
     {
         private const int TEXTURE_SIZE = 2048;
 
-        public static void RenderMap(Terrain[] terrains)
+        public static void RenderMapFromTerrain(Terrain[] terrains, MapInfo mapInfo)
         {
-            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
             Texture2D combinedHeightmap = CreateHeightmap(terrains, mapInfo);
             Texture2D scaledHeightmap = Resize(combinedHeightmap, TEXTURE_SIZE, TEXTURE_SIZE);
             mapInfo.mapTextureSerialized = scaledHeightmap.EncodeToJPG();
@@ -79,6 +78,13 @@ namespace Mapify.Editor
 
             RenderTexture.ReleaseTemporary(rt);
             return result;
+        }
+
+        public static void RenderMapFromImage(MapInfo mapInfo)
+        {
+            Texture2D scaledMapImage = Resize(mapInfo.fixedMapImage, TEXTURE_SIZE, TEXTURE_SIZE);
+            mapInfo.mapTextureSerialized = scaledMapImage.EncodeToJPG();
+            mapInfo.mapTextureSize = new[] { scaledMapImage.width, scaledMapImage.height };
         }
     }
 }

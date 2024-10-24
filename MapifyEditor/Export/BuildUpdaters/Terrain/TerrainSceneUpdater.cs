@@ -9,11 +9,20 @@ namespace Mapify.Editor.StateUpdaters
     {
         protected override void Update(Scenes scenes)
         {
-            Terrain[] sortedTerrain = scenes.terrainScene.GetAllComponents<Terrain>()
-                .Where(terrain => terrain.gameObject.activeInHierarchy)
-                .ToArray()
-                .Sort();
-            MapRenderer.RenderMap(sortedTerrain);
+            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
+
+            if (mapInfo.useFixedMapImage)
+            {
+                MapRenderer.RenderMapFromImage(mapInfo);
+            }
+            else
+            {
+                Terrain[] sortedTerrain = scenes.terrainScene.GetAllComponents<Terrain>()
+                    .Where(terrain => terrain.gameObject.activeInHierarchy)
+                    .ToArray()
+                    .Sort();
+                MapRenderer.RenderMapFromTerrain(sortedTerrain, mapInfo);
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Mapify.Patches
 {
-    [HarmonyPatch(typeof(TurntableController), "GetPushingInput")]
+    [HarmonyPatch(typeof(TurntableController), nameof(TurntableController.GetPushingInput))]
     public class TurntableController_GetPushingInput_Patch
     {
         private static readonly FieldInfo TurntableController_Field_PUSH_HANDLE_HALF_EXTENTS = AccessTools.DeclaredField(typeof(TurntableController), "PUSH_HANDLE_HALF_EXTENTS");

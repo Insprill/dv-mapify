@@ -1,12 +1,10 @@
 # Lighting & Post Processing
 
 ## Lighting
-To light your scene, you must add a single Directional Light to the `GameContent` scene.
+Lighting your scene is now controlled by Derail Valley's weather system.
+For an approximate representation of how your scene will look in-game, you can add the `Directional Light` prefab in the `Mapify/Prefabs/Misc` folder to your `GameContent` scene.
 
-The light *must* be set to Realtime mode, but the rest of the settings are up to you to customize.
-
-If you want to use the default directional light so that it aligns with the skybox, you can use the `Directional Light` prefab in the `Mapify/Prefabs/Misc` folder.
-Once you've added it to the scene, ensure it's position is at 0, 0, 0 and leave the rotation as set by the prefab.
+**Note:** When Mapify builds your map, ^^all^^ Directional Lights will be ^^disabled^^.
 
 
 ## Post Processing

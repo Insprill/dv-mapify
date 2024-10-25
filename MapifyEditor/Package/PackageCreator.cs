@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if UNITY_EDITOR
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,6 +22,9 @@ namespace Mapify.Editor
                 if (string.IsNullOrWhiteSpace(path)) return;
                 EditorPrefs.SetString(LAST_EXPORTED_KEY, path);
             }
+
+            if (File.Exists(EXPORT_ASSET_PATH))
+                File.Delete(EXPORT_ASSET_PATH);
 
             AssetDatabase.ExportPackage(EXPORT_ASSET_PATH, path, ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies);
             Debug.Log($"Package exported to '{path}'!");
@@ -50,3 +54,4 @@ namespace Mapify.Editor
         }
     }
 }
+#endif

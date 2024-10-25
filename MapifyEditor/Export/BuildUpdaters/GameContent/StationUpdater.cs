@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor.Utils;
 using UnityEngine;
@@ -9,7 +10,6 @@ namespace Mapify.Editor.StateUpdaters
     {
         protected override void Update(Scenes scenes)
         {
-            Dictionary<Station, List<WarehouseMachine>> warehouses = scenes.gameContentScene.GetAllComponents<WarehouseMachine>().MapToClosestStation();
             Track[] nonRoadTracks = scenes.railwayScene.GetAllComponents<Track>().Where(t => t.trackType != TrackType.Road).ToArray();
 
             foreach (Station station in scenes.gameContentScene.GetAllComponents<Station>())
@@ -26,13 +26,13 @@ namespace Mapify.Editor.StateUpdaters
                     switch (track.trackType)
                     {
                         case TrackType.Storage:
-                            station.storageTrackNames.Add(track.name);
+                            station.storageTrackNames.Add(track.LogicName);
                             break;
                         case TrackType.In:
-                            station.transferInTrackNames.Add(track.name);
+                            station.transferInTrackNames.Add(track.LogicName);
                             break;
                         case TrackType.Out:
-                            station.transferOutTrackNames.Add(track.name);
+                            station.transferOutTrackNames.Add(track.LogicName);
                             break;
                     }
                 }
@@ -46,13 +46,6 @@ namespace Mapify.Editor.StateUpdaters
                 station.outputCargoGroups.ForEach(set => set.ToMonoBehaviour(station.gameObject));
 
                 #endregion
-
-                #region Warehouse Machines
-
-                if (warehouses.TryGetValue(station, out List<WarehouseMachine> machines))
-                    station.warehouseMachines = machines;
-
-                #endregion
             }
         }
 
@@ -63,3 +56,4 @@ namespace Mapify.Editor.StateUpdaters
         }
     }
 }
+#endif

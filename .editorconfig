@@ -14,3 +14,6 @@ trim_trailing_whitespace = false
 
 [*.json]
 indent_size = 2
+
+[*.csproj]
+ij_xml_space_inside_empty_tag = true

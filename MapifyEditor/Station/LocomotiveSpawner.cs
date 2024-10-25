@@ -3,21 +3,34 @@ using UnityEngine;
 
 namespace Mapify.Editor
 {
-    [RequireComponent(typeof(Track))]
-    public class LocomotiveSpawner : MonoBehaviour
+    public abstract class LocomotiveSpawner : MonoBehaviour
     {
-#pragma warning disable CS0649
         [SerializeField]
-        [Tooltip("What all locomotives to spawn. Each element is a group to spawn together (e.g. the steamer and it's tender)")]
-        internal List<RollingStockTypes> locomotiveTypesToSpawn;
-
+        [HideInInspector]
+        [Tooltip("The Station ID of the track this LocomotiveSpawner should spawn on")]
+        public string loadingTrackStationId;
+        [SerializeField]
+        [HideInInspector]
+        [Tooltip("The Yard ID of the track this LocomotiveSpawner should spawn on")]
+        public char loadingTrackYardId;
+        [SerializeField]
+        [HideInInspector]
+        [Tooltip("The Track ID of the track this LocomotiveSpawner should spawn on")]
+        public byte loadingTrackId;
         [SerializeField]
         [Tooltip("Whether to flip the orientation of the spawned locomotive(s)")]
         public bool flipOrientation;
-#pragma warning restore CS0649
 
         [HideInInspector] // You can't edit the property drawer of collections themselves :|
-        public List<string> condensedLocomotiveTypes; // Workaround for Unity being stupid as always
-        public Track Track => GetComponent<Track>();
+        public string[] condensedLocomotiveTypes; // Workaround for Unity being stupid as always
+
+        public Track Track {
+            get {
+                Track selfTrack = GetComponent<Track>();
+                return selfTrack ? selfTrack : Track.Find(loadingTrackStationId, loadingTrackYardId, loadingTrackId, TrackType.Parking);
+            }
+        }
+
+        public abstract IEnumerable<string> CondenseLocomotiveTypes();
     }
 }

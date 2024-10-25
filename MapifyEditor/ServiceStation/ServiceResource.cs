@@ -1,44 +1,16 @@
-using System;
-
 namespace Mapify.Editor
 {
     public enum ServiceResource
     {
-        Fuel,
-        Sand,
-        Oil,
-        Water,
-        Coal,
-        CarDamage,
-        WheelDamage,
-        EngineDamage
-    }
-
-    public static class ServiceResourceExtensions
-    {
-        public static VanillaAsset ToVanillaAsset(this ServiceResource resource)
-        {
-            switch (resource)
-            {
-                case ServiceResource.Fuel:
-                    return VanillaAsset.RefillMachineFuel;
-                case ServiceResource.Sand:
-                    return VanillaAsset.RefillMachineSand;
-                case ServiceResource.Oil:
-                    return VanillaAsset.RefillMachineOil;
-                case ServiceResource.Water:
-                    return VanillaAsset.RefillMachineWater;
-                case ServiceResource.Coal:
-                    return VanillaAsset.RefillMachineCoal;
-                case ServiceResource.CarDamage:
-                    return VanillaAsset.RefillMachineCarDamage;
-                case ServiceResource.WheelDamage:
-                    return VanillaAsset.RefillMachineWheelDamage;
-                case ServiceResource.EngineDamage:
-                    return VanillaAsset.RefillMachineEngineDamage;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(resource), resource, null);
-            }
-        }
+        // Values must stay synced with VanillaAsset
+        Diesel = 41,
+        Sand = 42,
+        Oil = 43,
+        Water = 44,
+        Coal = 45,
+        BodyDamage = 46,
+        WheelDamage = 47,
+        MechanicalPowertrainDamage = 48,
+        ElectricalPowertrainDamage = 49
     }
 }

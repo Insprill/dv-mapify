@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -38,7 +39,12 @@ namespace Mapify.Editor
                 validationPassed = MapValidationGui.OpenAndValidate();
             }
 
-            if (validationRun) GUILayout.Label(validationPassed ? "<color=green>Your map is ready to export!</color>" : "<color=maroon>Validation failed! Please fix all errors before exporting.</color>", style);
+            if (validationRun)
+                GUILayout.Label(
+                    validationPassed
+                        ? $"<color={MapValidationGui.SUCCESS_COLOR}>Your map is ready to export!</color>"
+                        : $"<color={MapValidationGui.ERROR_COLOR}>Validation failed! Please fix all errors before exporting.</color>", style
+                );
 
             GUI.enabled = validationPassed;
             EditorStyles.label.wordWrap = true;
@@ -69,3 +75,4 @@ namespace Mapify.Editor
         }
     }
 }
+#endif

@@ -109,7 +109,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   visualPrefab: {fileID: 5536209503347960931, guid: 49d01553f32197ce484bc6554f0a5ae7,
     type: 3}
-  itemTypes: 210000001d0000001e0000001f000000
+  itemTypes: 6f000000730000007500000074000000
   isCustom: 0
   moduleReference: {fileID: 3253326061405677832}
   flipModuleDirection: 0

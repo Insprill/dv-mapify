@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Mapify.Editor.Utils;
 using UnityEngine;
 
@@ -6,10 +7,8 @@ namespace Mapify.Editor
     [ExecuteInEditMode]
     public class SplitVisualizer : MonoBehaviour
     {
-#pragma warning disable CS0649
         [SerializeField]
         private float drawHeight;
-#pragma warning restore CS0649
 
         internal Renderer[] renderers;
 
@@ -41,3 +40,4 @@ namespace Mapify.Editor
         }
     }
 }
+#endif

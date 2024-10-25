@@ -1,8 +1,11 @@
 using System;
-using System.Reflection;
 using CommandTerminal;
-using DV.Logic.Job;
-using HarmonyLib;
+using DV;
+using DV.InventorySystem;
+using DV.ThingTypes;
+using DV.ThingTypes.TransitionHelpers;
+using DV.Utils;
+using DV.WeatherSystem;
 using Mapify.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -11,36 +14,23 @@ namespace Mapify
 {
     public static class DebugCommands
     {
-        public static void RegisterCommands()
+        private static WeatherEditorGUI weatherEditorGui;
+
+        public static void SetWeatherEditorGUI(WeatherEditorGUI gui)
         {
-            try
-            {
-                MethodInfo[] methods = typeof(DebugCommands).GetMethods(BindingFlags.Static | BindingFlags.NonPublic);
-                foreach (MethodInfo method in methods)
-                {
-                    if (!(Attribute.GetCustomAttribute(method, typeof(RegisterCommandAttribute)) is RegisterCommandAttribute commandAttribute))
-                        return;
-                    Action<CommandArg[]> proc = (Action<CommandArg[]>)Delegate.CreateDelegate(typeof(Action<CommandArg[]>), method);
-                    Terminal.Shell.AddCommand(commandAttribute.Name, proc, commandAttribute.MinArgCount, commandAttribute.MaxArgCount, commandAttribute.Help, commandAttribute.Hint, commandAttribute.Secret);
-                    Terminal.Autocomplete.Register(commandAttribute.Name);
-                    Main.Log($"Registered command {commandAttribute.Name}");
-                }
-            }
-            catch (Exception e)
-            {
-                Main.LogException("Failed to register debug commands", e);
-            }
+            weatherEditorGui = gui;
         }
 
         [RegisterCommand("mapify.license", Help = "Modifies a licenses", MinArgCount = 0, MaxArgCount = 2)]
         private static void ModifyLicense(CommandArg[] args)
         {
+            LicenseManager lm = LicenseManager.Instance;
             if (args.Length == 0)
             {
                 foreach (GeneralLicenseType gl in Enum.GetValues(typeof(GeneralLicenseType)))
-                    LicenseManager.AcquireGeneralLicense(gl);
+                    lm.AcquireGeneralLicense(gl.ToV2());
                 foreach (JobLicenses jl in Enum.GetValues(typeof(JobLicenses)))
-                    LicenseManager.AcquireJobLicense(jl);
+                    lm.AcquireJobLicense(jl.ToV2());
                 Debug.Log("Granted all licenses");
                 return;
             }
@@ -56,23 +46,23 @@ namespace Mapify
 
             bool addLicense = args.Length == 2
                 ? args[1].Bool
-                : (isGeneral && !LicenseManager.IsGeneralLicenseAcquired(generalLicense)) || (isJob && !LicenseManager.IsJobLicenseAcquired(jobLicense));
+                : (isGeneral && !lm.IsGeneralLicenseAcquired(generalLicense.ToV2())) || (isJob && !lm.IsJobLicenseAcquired(jobLicense.ToV2()));
             if (isGeneral)
             {
                 if (addLicense)
-                    LicenseManager.AcquireGeneralLicense(generalLicense);
+                    lm.AcquireGeneralLicense(generalLicense.ToV2());
                 else
-                    LicenseManager.RemoveGeneralLicense(generalLicense);
+                    lm.RemoveGeneralLicense(generalLicense.ToV2());
             }
             else
             {
                 if (addLicense)
-                    LicenseManager.AcquireJobLicense(jobLicense);
+                    lm.AcquireJobLicense(jobLicense.ToV2());
                 else
-                    LicenseManager.RemoveJobLicense(jobLicense);
+                    lm.RemoveJobLicense(new[] { jobLicense.ToV2() });
             }
 
-            LicenseManager.SaveData();
+            lm.SaveData(SaveGameManager.Instance.data);
             Debug.Log($"{(addLicense ? "Granted" : "Revoked")} {(isGeneral ? "general" : "job")} license {licenseName}");
         }
 
@@ -91,14 +81,15 @@ namespace Mapify
             if (go == null)
             {
                 Debug.LogError($"Failed to find item {args[0].String}");
+                Debug.Log("Available items are as follows:");
+                foreach (GameObject prefab in Resources.LoadAll<GameObject>(""))
+                    Debug.Log(prefab.name);
                 return;
             }
 
             GameObject instantiated = GameObject.Instantiate(go);
             instantiated.transform.position = PlayerManager.PlayerTransform.position;
         }
-
-        #region we do a little trolling
 
         [RegisterCommand("mapify.toggleSaving", Help = "Toggles saving", MaxArgCount = 1)]
         private static void ToggleSaving(CommandArg[] args)
@@ -108,76 +99,32 @@ namespace Mapify
             Debug.Log($"{(on ? "Enabled" : "Disabled")} saving");
         }
 
-        [RegisterCommand("mapify.damageCar", Help = "Damages a car", MaxArgCount = 1)]
-        private static void DamageCar(CommandArg[] args)
+        [RegisterCommand("mapify.spawner", Help = "Toggles the ability to spawn cars with the comms radio. Only works in career sessions.", MaxArgCount = 0)]
+        private static void EnableSpawner(CommandArg[] args)
         {
-            TrainCar trainCar = PlayerManager.Car;
-            if (trainCar == null)
+            CommsRadioController controller = Object.FindObjectOfType<CommsRadioController>();
+            if (controller == null)
             {
-                Debug.LogError("You must be on a car to damage it!");
+                Debug.LogError("Failed to find CommsRadioController");
                 return;
             }
 
-            float amount = args.Length == 0 ? float.MaxValue : args[0].Float;
-            if (amount < 0)
-                trainCar.CarDamage.RepairCar(amount);
-            else
-                trainCar.CarDamage.DamageCar(amount);
+            bool status = !Globals.G.GameParams.CommsRadioCheatMode;
+            Globals.G.GameParams.CommsRadioCheatMode = status;
+            controller.UpdateModesAvailability();
+            Debug.Log($"{(status ? "Enabled" : "Disabled")} car spawning");
         }
 
-        private static readonly MethodInfo CargoDamageModel_Method_ApplyDamageToCargo = AccessTools.DeclaredMethod(typeof(CargoDamageModel), "ApplyDamageToCargo", new[] { typeof(float) });
-
-        [RegisterCommand("mapify.damageCargo", Help = "Damages a car's cargo", MaxArgCount = 1)]
-        private static void DamageCargo(CommandArg[] args)
+        [RegisterCommand("mapify.weather", Help = "Toggles the weather editor GUI", MaxArgCount = 0)]
+        private static void Weather(CommandArg[] args)
         {
-            TrainCar trainCar = PlayerManager.Car;
-            if (trainCar == null)
+            if (weatherEditorGui == null)
             {
-                Debug.LogError("You must be on a car to damage it's cargo!");
+                Debug.LogError("WeatherEditorGUI not initialized!");
                 return;
             }
 
-            CargoDamageModel_Method_ApplyDamageToCargo.Invoke(trainCar.CargoDamage, new object[] { args.Length == 0 ? float.MaxValue : args[0].Float });
+            weatherEditorGui.enabled = !weatherEditorGui.enabled;
         }
-
-        [RegisterCommand("mapify.loadCar", Help = "Loads a car with the specified cargo", MinArgCount = 1, MaxArgCount = 2)]
-        private static void LoadCar(CommandArg[] args)
-        {
-            TrainCar trainCar = PlayerManager.Car;
-            if (trainCar == null)
-            {
-                Debug.LogError("You must be on a car to load it!");
-                return;
-            }
-
-            if (!Enum.TryParse(args[0].String, out CargoType cargoType))
-            {
-                Debug.LogError($"Failed to find cargo type {args[0].String}, Please choose from the following list: {string.Join(", ", Enum.GetNames(typeof(CargoType)))}");
-                return;
-            }
-
-            trainCar.logicCar.LoadCargo(args.Length == 1 ? trainCar.logicCar.capacity : args[1].Float, cargoType);
-        }
-
-        [RegisterCommand("mapify.unloadCar", Help = "Unloads a car", MinArgCount = 1, MaxArgCount = 2)]
-        private static void UnloadCar(CommandArg[] args)
-        {
-            TrainCar trainCar = PlayerManager.Car;
-            if (trainCar == null)
-            {
-                Debug.LogError("You must be on a car to unload it!");
-                return;
-            }
-
-            if (!Enum.TryParse(args[0].String, out CargoType cargoType))
-            {
-                Debug.LogError($"Failed to find cargo type {args[0].String}, Please choose from the following list: {string.Join(", ", Enum.GetNames(typeof(CargoType)))}");
-                return;
-            }
-
-            trainCar.logicCar.UnloadCargo(args.Length == 1 ? trainCar.logicCar.capacity : args[1].Float, cargoType);
-        }
-
-        #endregion
     }
 }

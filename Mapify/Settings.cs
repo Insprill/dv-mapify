@@ -4,28 +4,15 @@ using UnityModManagerNet;
 
 namespace Mapify
 {
+    [Serializable]
     public class Settings : UnityModManager.ModSettings
     {
-        // ReSharper disable MemberCanBePrivate.Global
-        public string MapName = Main.DEFAULT_MAP_NAME;
         public bool ShowHiddenSettings;
-        public bool verboseLogging;
-        // ReSharper restore MemberCanBePrivate.Global
-        public bool VerboseLogging => verboseLogging && ShowHiddenSettings;
+        public bool VerboseLogging;
+        public bool ExtremelyVerboseLogging;
 
         public void Draw(UnityModManager.ModEntry modEntry)
         {
-            #region Map
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Map");
-            int idx = Array.IndexOf(Main.AllMapNames, MapName);
-            UnityModManager.UI.PopupToggleGroup(ref idx, Main.AllMapNames);
-            MapName = Main.AllMapNames[idx];
-            GUILayout.EndHorizontal();
-
-            #endregion
-
             #region Hidden Settings
 
             ShowHiddenSettings = GUILayout.Toggle(ShowHiddenSettings, "Show Hidden Settings");
@@ -33,7 +20,10 @@ namespace Mapify
             #region Verbose Logging
 
             if (ShowHiddenSettings)
-                verboseLogging = GUILayout.Toggle(verboseLogging, "Verbose Logging");
+            {
+                VerboseLogging = GUILayout.Toggle(VerboseLogging, "Verbose Logging");
+                ExtremelyVerboseLogging = GUILayout.Toggle(VerboseLogging, "Extremely Verbose Logging");
+            }
 
             #endregion
 

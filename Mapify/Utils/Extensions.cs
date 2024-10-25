@@ -2,30 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using CommandTerminal;
-using DV.Logic.Job;
+using DV.JObjectExtstensions;
 using DV.PointSet;
+using DV.ThingTypes;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
+using Mapify.Map;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace Mapify.Utils
 {
     public static class Extensions
     {
+        private const string SAVE_KEY_NAME = "mapify";
+
         #region GameObjects & Components
-
-        public static GameObject NewChild(this WorldMover worldMover, string name)
-        {
-            return worldMover.originShiftParent.gameObject.NewChild(name);
-        }
-
-        public static GameObject NewChildWithPosition(this WorldMover worldMover, string name, Vector3 position)
-        {
-            return worldMover.originShiftParent.gameObject.NewChildWithPosition(name, position);
-        }
 
         public static GameObject NewChild(this GameObject parent, string name)
         {
@@ -48,14 +42,15 @@ namespace Mapify.Utils
             return comp ? comp : gameObject.AddComponent<T>();
         }
 
-        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true)
+        public static GameObject Replace(this GameObject gameObject, GameObject other, Type[] preserveTypes = null, bool keepChildren = true, Vector3 rotationOffset = default)
         {
             if (gameObject == other) throw new ArgumentException("Cannot replace self with self");
-            Transform t = gameObject.transform;
-            Transform ot = other.transform;
-            ot.SetParent(t.parent);
-            ot.SetPositionAndRotation(t.position, t.rotation);
-            ot.SetSiblingIndex(t.GetSiblingIndex());
+            Transform thisTransform = gameObject.transform;
+            Transform otherTransform = other.transform;
+            otherTransform.SetParent(thisTransform.parent);
+            otherTransform.SetPositionAndRotation(thisTransform.position, thisTransform.rotation);
+            otherTransform.Rotate(rotationOffset);
+            otherTransform.SetSiblingIndex(thisTransform.GetSiblingIndex());
             if (preserveTypes != null)
                 foreach (Type type in preserveTypes)
                 {
@@ -71,18 +66,24 @@ namespace Mapify.Utils
                 }
 
             if (keepChildren)
-                foreach (Transform child in t.GetChildren())
-                    child.SetParent(ot);
+                foreach (Transform child in thisTransform.GetChildren())
+                    child.SetParent(otherTransform);
 
             GameObject.DestroyImmediate(gameObject);
             return other;
         }
 
+        public static void SetActive(this IEnumerable<Component> components, bool active)
+        {
+            foreach (Component component in components)
+                component.gameObject.SetActive(active);
+        }
+
         public static void PrintHierarchy(this GameObject gameObject, string indent = "")
         {
             Transform t = gameObject.transform;
-            Main.Log($"{indent}+-- {t.name}");
-            foreach (Component component in t.GetComponents<Component>()) Main.Log($"{indent}|   +-- {component.GetType().Name}");
+            Mapify.Log($"{indent}+-- {t.name}");
+            foreach (Component component in t.GetComponents<Component>()) Mapify.Log($"{indent}|   +-- {component.GetType().Name}");
             foreach (Transform child in t) PrintHierarchy(child.gameObject, $"{indent}|   ");
         }
 
@@ -137,6 +138,11 @@ namespace Mapify.Utils
 
         #region C# Utils
 
+        public static bool Eq(this float f1, float f2, float tolerance = 0.001f)
+        {
+            return Math.Abs(f1 - f2) < tolerance;
+        }
+
         public static To ConvertByName<From, To>(this From value) where From : Enum where To : Enum
         {
             return (To)Enum.Parse(typeof(To), value.ToString());
@@ -145,24 +151,6 @@ namespace Mapify.Utils
         public static List<To> ConvertByName<From, To>(this IEnumerable<From> values) where From : Enum where To : Enum
         {
             return values.Select(c => c.ConvertByName<From, To>()).ToList();
-        }
-
-        public static string ToSpacedString<TEnum>(this TEnum value) where TEnum : Enum
-        {
-            string stringValue = value.ToString();
-            StringBuilder spacedStringBuilder = new StringBuilder(stringValue.Length);
-            char lastChar = char.MinValue;
-
-            foreach (char c in stringValue)
-            {
-                if (lastChar != char.MinValue && ((char.IsUpper(c) && !char.IsUpper(lastChar)) || (char.IsNumber(c) && !char.IsNumber(lastChar))))
-                    spacedStringBuilder.Append(' ');
-
-                spacedStringBuilder.Append(c);
-                lastChar = c;
-            }
-
-            return spacedStringBuilder.ToString();
         }
 
         public static float ScaleNumber(this float value, float minValue, float maxValue, float newMinValue, float newMaxValue)
@@ -177,7 +165,8 @@ namespace Mapify.Utils
         #region DV
 
         private static readonly MethodInfo CommandArg_Method_TypeError = AccessTools.DeclaredMethod(typeof(CommandArg), "TypeError", new[] { typeof(string) });
-        private static readonly MethodInfo WorldStreamingInit_Method_Info = AccessTools.DeclaredMethod(typeof(WorldStreamingInit), "Info", new[] { typeof(string), typeof(float) });
+        private static readonly MethodInfo DisplayLoadingInfo_Method_OnLoadingStatusChanged =
+            AccessTools.DeclaredMethod(typeof(DisplayLoadingInfo), "OnLoadingStatusChanged", new[] { typeof(string), typeof(bool), typeof(float) });
 
         public static double Double(this CommandArg arg)
         {
@@ -187,9 +176,9 @@ namespace Mapify.Utils
             return 0;
         }
 
-        public static void Log(this WorldStreamingInit wsi, string message, float percentLoaded)
+        public static void UpdateLoadingStatus(this DisplayLoadingInfo loadingInfo, string message, float percentLoaded)
         {
-            WorldStreamingInit_Method_Info.Invoke(wsi, new object[] { message, percentLoaded });
+            DisplayLoadingInfo_Method_OnLoadingStatusChanged.Invoke(loadingInfo, new object[] { message, false, percentLoaded });
         }
 
         public static IEnumerable<Vector2> GetCurvePositions(this RailTrack track, float resolution)
@@ -201,18 +190,46 @@ namespace Mapify.Utils
                 yield return new Vector2((float)point.position.x, (float)point.position.z);
         }
 
+        public static BasicMapInfo GetBasicMapInfo(this SaveGameManager saveGameManager)
+        {
+            JObject mapify = saveGameManager.data.GetJObject(SAVE_KEY_NAME);
+            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
+        }
+
+        public static BasicMapInfo GetBasicMapInfo(this JObject jObject)
+        {
+            JObject mapify = jObject.GetJObject(SAVE_KEY_NAME);
+            return mapify != null ? mapify.ToObject<JObject>().ToObject<BasicMapInfo>() : Maps.DEFAULT_MAP_INFO;
+        }
+
+        public static void SetBasicMapInfo(this JObject jObject, BasicMapInfo basicMapInfo)
+        {
+            if (basicMapInfo.IsDefault())
+                jObject.Remove(SAVE_KEY_NAME);
+            else
+                jObject.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
+        }
+
+        public static void SetBasicMapInfo(this SaveGameData saveGameData, BasicMapInfo basicMapInfo)
+        {
+            if (basicMapInfo.IsDefault())
+                saveGameData.RemoveData(SAVE_KEY_NAME);
+            else
+                saveGameData.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
+        }
+
         #endregion
 
         #region Mapify
 
-        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool keepChildren = true, bool originShift = true)
+        public static void Replace(this IEnumerable<VanillaObject> vanillaObjects, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, keepChildren, originShift);
+            foreach (VanillaObject vanillaObject in vanillaObjects) vanillaObject.Replace(active, originShift, preserveTypes);
         }
 
-        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool keepChildren = true, bool originShift = true)
+        public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
-            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, originShift, active), keepChildren: keepChildren);
+            return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, vanillaObject.keepChildren, vanillaObject.rotationOffset);
         }
 
         #endregion

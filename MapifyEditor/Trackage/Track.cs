@@ -10,7 +10,19 @@ namespace Mapify.Editor
     public class Track : MonoBehaviour
     {
         public const float SNAP_RANGE = 1.0f;
-        public const float SNAP_UPDATE_RANGE = 500f;
+        public const float SNAP_UPDATE_RANGE_SQR = 250000;
+        public const float SNAP_RANGE_SQR = SNAP_RANGE * SNAP_RANGE;
+
+        // ReSharper disable MemberCanBePrivate.Global
+        public static readonly Color32 COLOR_ROAD = new Color32(255, 255, 255, 255);
+        public static readonly Color32 COLOR_STORAGE = new Color32(172, 134, 101, 255);
+        public static readonly Color32 COLOR_LOADING = new Color32(0, 0, 128, 255);
+        public static readonly Color32 COLOR_IN = new Color32(50, 240, 50, 255);
+        public static readonly Color32 COLOR_OUT = new Color32(106, 90, 205, 255);
+        public static readonly Color32 COLOR_PARKING = new Color32(200, 235, 0, 255);
+        public static readonly Color32 COLOR_PASSENGER_STORAGE = new Color32(0, 100, 100, 255);
+        public static readonly Color32 COLOR_PASSENGER_LOADING = new Color32(0, 255, 255, 255);
+        // ReSharper restore MemberCanBePrivate.Global
 
         [Header("Visuals")]
         [Tooltip("The age of the track. Older tracks are rougher and more rusted, newer tracks are smoother and cleaner")]
@@ -32,7 +44,11 @@ namespace Mapify.Editor
         [Tooltip("The purpose of this track")]
         public TrackType trackType;
 
-        internal bool showLoadingGauge;
+#if UNITY_EDITOR
+        [Header("Editor Visualization")]
+        [SerializeField]
+        private bool showLoadingGauge;
+#endif
 
         public bool isInSnapped { get; private set; }
         public bool isOutSnapped { get; private set; }
@@ -57,6 +73,13 @@ namespace Mapify.Editor
         public bool IsSwitch => ParentSwitch != null;
         public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
+        public string LogicName =>
+            trackType == TrackType.Road
+                ? !generateSigns
+                    ? $"[#] {name}"
+                    : name
+                : $"[Y]_[{stationId}]_[{yardId}-{trackId:D2}-{trackType.LetterId()}]";
+
         private void OnValidate()
         {
             if (!isActiveAndEnabled || IsSwitch || IsTurntable)
@@ -64,37 +87,37 @@ namespace Mapify.Editor
             switch (trackType)
             {
                 case TrackType.Road:
-                    Curve.drawColor = new Color32(255, 255, 255, 255);
+                    Curve.drawColor = COLOR_ROAD;
                     break;
                 case TrackType.Storage:
-                    Curve.drawColor = new Color32(172, 134, 101, 255);
+                    Curve.drawColor = COLOR_STORAGE;
                     break;
                 case TrackType.Loading:
-                    Curve.drawColor = new Color32(0, 0, 128, 255);
+                    Curve.drawColor = COLOR_LOADING;
                     break;
                 case TrackType.In:
-                    Curve.drawColor = new Color32(50, 240, 50, 255);
+                    Curve.drawColor = COLOR_IN;
                     break;
                 case TrackType.Out:
-                    Curve.drawColor = new Color32(106, 90, 205, 255);
+                    Curve.drawColor = COLOR_OUT;
                     break;
                 case TrackType.Parking:
-                    Curve.drawColor = new Color32(200, 235, 0, 255);
+                    Curve.drawColor = COLOR_PARKING;
                     break;
                 case TrackType.PassengerStorage:
-                    Curve.drawColor = new Color32(0, 100, 100, 255);
+                    Curve.drawColor = COLOR_PASSENGER_STORAGE;
                     break;
                 case TrackType.PassengerLoading:
-                    Curve.drawColor = new Color32(0, 255, 255, 255);
+                    Curve.drawColor = COLOR_PASSENGER_LOADING;
                     break;
             }
         }
-
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (showLoadingGauge)
                 DrawLoadingGauge();
-            if ((transform.position - Camera.current.transform.position).sqrMagnitude >= SNAP_UPDATE_RANGE * SNAP_UPDATE_RANGE)
+            if (Curve[0].transform.DistToSceneCamera() >= SNAP_UPDATE_RANGE_SQR && Curve.Last().transform.DistToSceneCamera() >= SNAP_UPDATE_RANGE_SQR)
                 return;
             if (!isInSnapped)
                 DrawDisconnectedIcon(Curve[0].position);
@@ -187,13 +210,14 @@ namespace Mapify.Editor
                     closestDist = dist;
                 }
 
-            if (closestDist >= float.MaxValue) return;
+            if (closestDist >= float.MaxValue)
+                return;
 
             if (first) isInSnapped = true;
             else isOutSnapped = true;
             if (move) point.transform.position = closestPos;
         }
-
+#endif
         internal void Snapped(BezierPoint point)
         {
             if (point == Curve[0])

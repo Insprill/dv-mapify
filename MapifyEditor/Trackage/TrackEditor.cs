@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,20 +9,27 @@ namespace Mapify.Editor
     [CustomEditor(typeof(Track))]
     public class TrackEditor : UnityEditor.Editor
     {
-        private Track track;
+        private Track[] tracks;
 
         private void OnEnable()
         {
-            track = (Track)target;
+            tracks = target ? new[] { (Track)target } : targets.Cast<Track>().ToArray();
         }
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            if (targets?.Length != 1) return;
+
             GUILayout.Space(10);
-            GUILayout.Label("Editor Visualization", EditorStyles.boldLabel);
-            track.showLoadingGauge = GUILayout.Toggle(track.showLoadingGauge, "Show Loading Gauge");
+            if (!GUILayout.Button("Generate Track Name"))
+                return;
+
+            foreach (Track track in tracks)
+            {
+                Undo.RecordObject(track.gameObject, "Generate Track Name");
+                track.name = track.LogicName;
+            }
         }
     }
 }
+#endif

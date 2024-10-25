@@ -1,13 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using DV;
-using DV.CabControls;
-using DV.CabControls.Spec;
-using DV.CashRegister;
-using DV.RenderTextureSystem;
-using DV.Shops;
+using DV.Booklets.Testing;
 using HarmonyLib;
 using UnityEngine;
 
@@ -17,39 +11,8 @@ namespace Mapify.Patches
     ///     A utility for disabling MonoBehaviours with setup logic in the GameContent scene.
     ///     This allows us to load it to copy assets from, without worrying about invalid states being created.
     /// </summary>
-    public static class MonoBehaviourPatch
+    public static class MonoBehaviourDisablerPatch
     {
-        private static readonly Type[] disableTypes = {
-            typeof(RenderTextureSystem),
-            typeof(CarSpawner),
-            typeof(CarSpawnerOriginShiftHandler),
-            typeof(SaveLoadController),
-            typeof(LogicController),
-            typeof(StorageController),
-            typeof(StorageBase),
-            typeof(ItemBase),
-            typeof(ItemDisablerGrid),
-            typeof(GlobalShopController),
-            typeof(DerailAndDamageObserver),
-            typeof(TutorialEnabler),
-            typeof(StationController),
-            typeof(StationLocoSpawner),
-            typeof(WarehouseMachineController),
-            typeof(PitStop),
-            typeof(StorageAccessPoint),
-            typeof(Shop),
-            typeof(CashRegisterBase),
-            typeof(ResourceModule),
-            typeof(LocoResourceModule),
-            typeof(ScanItemResourceModule),
-            typeof(CashRegisterResourceModules),
-            typeof(GarageLogic),
-            typeof(GarageCarSpawner),
-            typeof(ControlSpec),
-            typeof(PlayerDistanceMultipleGameObjectsOptimizer),
-            typeof(PlayerDistanceGameObjectsDisabler),
-            typeof(TurntableRailTrack)
-        };
         private static HashSet<MethodInfo> patchedMethods;
         private static readonly string[] methodNames = {
             "Awake",
@@ -61,40 +24,46 @@ namespace Mapify.Patches
             "OnDisable",
             "OnDestroy"
         };
-        private static readonly MethodInfo prefix = AccessTools.DeclaredMethod(typeof(MonoBehaviourPatch), nameof(Prefix));
+        private static readonly MethodInfo prefix = AccessTools.DeclaredMethod(typeof(MonoBehaviourDisablerPatch), nameof(Prefix));
         private static readonly HarmonyMethod harmonyPrefix = new HarmonyMethod(prefix);
 
         public static void DisableAll()
         {
+            Mapify.LogDebug(() => "Disabling MonoBehaviours");
+
             patchedMethods = new HashSet<MethodInfo>();
-            foreach (Type type in disableTypes)
+            foreach (Type type in Assembly.GetAssembly(typeof(TrainCar)).GetTypes())
             {
-                if (!type.IsSubclassOf(typeof(MonoBehaviour)))
-                {
-                    Main.LogError($"Tried to patch non-MonoBehaviour type {type}");
+                if (!type.IsSubclassOf(typeof(MonoBehaviour)) || (type.Namespace != null && !type.Namespace.StartsWith("DV.")))
                     continue;
-                }
+                if (type == typeof(ALicenseSpawner<>))
+                    continue; // Causes an error while trying to patch
+
+                Mapify.LogDebugExtreme(() => $"Disabling {type.FullName}");
 
                 foreach (string methodName in methodNames)
                 {
-                    MethodInfo method = AccessTools.DeclaredMethod(type, methodName);
+                    // AccessTools#DeclaredMethod logs a warning if the method isn't found :|
+                    MethodInfo method = type.GetMethod(methodName, AccessTools.allDeclared);
                     if (method == null) continue;
-                    Main.Harmony.Patch(method, harmonyPrefix);
-                    patchedMethods.Add(method);
+                    try
+                    {
+                        Mapify.Harmony.Patch(method, harmonyPrefix);
+                        patchedMethods.Add(method);
+                    }
+                    catch (Exception e)
+                    {
+                        Mapify.LogException($"Failed to patch {type.FullName}#{methodName}", e);
+                    }
                 }
             }
         }
 
-        public static void EnableAllLater()
+        public static void EnableAll()
         {
-            SingletonBehaviour<CoroutineManager>.Instance.StartCoroutine(EnableLater());
-        }
-
-        private static IEnumerator EnableLater()
-        {
-            yield return null;
+            Mapify.LogDebug(() => "Enabling disabled MonoBehaviours");
             foreach (MethodInfo method in patchedMethods)
-                Main.Harmony.Unpatch(method, prefix);
+                Mapify.Harmony.Unpatch(method, prefix);
             patchedMethods = null;
         }
 

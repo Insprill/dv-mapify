@@ -1,43 +1,54 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="../UserProperties.props" Condition="Exists('../UserProperties.props')" />
     <PropertyGroup>
-        <TargetFramework>netframework4.8</TargetFramework>
-        <LangVersion>7.3</LangVersion>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>8.0</LangVersion>
         <RootNamespace>MapifyEditor</RootNamespace>
+        <MSBuildWarningsAsMessages>CS0649</MSBuildWarningsAsMessages>
+        <OutDir>bin/$(Configuration)/Runtime</OutDir>
+        <IsEditor>true</IsEditor>
+        <PackageBuilderDir>../PackageBuilder/Assets/Mapify/Scripts/</PackageBuilderDir>
+        <TestMapDir>../TestMap/Assets/Mapify/Scripts</TestMapDir>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
+    <PropertyGroup Condition="'$(IsEditor)' == 'true'">
+        <DefineConstants>$(DefineConstants);UNITY_EDITOR</DefineConstants>
+        <OutDir>bin/$(Configuration)/Editor</OutDir>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(IsEditor)' == 'true'">
+        <Reference Include="UnityEditor" />
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="BezierCurves"/>
-        <Reference Include="System.IO.Compression"/>
-        <Reference Include="Unity.TextMeshPro"/>
-        <Reference Include="UnityEditor"/>
-        <Reference Include="UnityEngine"/>
-        <Reference Include="UnityEngine.AnimationModule"/>
-        <Reference Include="UnityEngine.AudioModule"/>
-        <Reference Include="UnityEngine.AssetBundleModule"/>
-        <Reference Include="UnityEngine.CoreModule"/>
-        <Reference Include="UnityEngine.ImageConversionModule"/>
-        <Reference Include="UnityEngine.IMGUIModule"/>
-        <Reference Include="UnityEngine.JSONSerializeModule"/>
-        <Reference Include="UnityEngine.PhysicsModule"/>
-        <Reference Include="UnityEngine.TerrainModule"/>
-        <Reference Include="UnityEngine.UI"/>
+        <Reference Include="BezierCurves" />
+        <Reference Include="UnityEngine" />
+        <Reference Include="UnityEngine.AssetBundleModule" />
+        <Reference Include="UnityEngine.AudioModule" />
+        <Reference Include="UnityEngine.CoreModule" />
+        <Reference Include="UnityEngine.ImageConversionModule" />
+        <Reference Include="UnityEngine.IMGUIModule" />
+        <Reference Include="UnityEngine.JSONSerializeModule" />
+        <Reference Include="UnityEngine.PhysicsModule" />
+        <Reference Include="UnityEngine.TerrainModule" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p ../build &amp;&amp; cp &quot;$(TargetPath)&quot; ../build/"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="jq -r '.Version' ../info.json &gt; ../PackageBuilder/Assets/Mapify/version.txt"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="cp &quot;$(TargetPath)&quot; &quot;$(OutDir)BezierCurves.dll&quot; ../PackageBuilder/Assets/Mapify/Scripts/"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="export DEST=&quot;../TestMap/Assets/Mapify/Scripts&quot; &amp;&amp; [ -d &quot;${DEST}&quot; ] &amp;&amp; cp -pfu &quot;$(TargetPath)&quot; &quot;${DEST}&quot;"/>
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="export DEST=&quot;$HOME/.local/share/Steam/steamapps/common/Derail Valley/Mods/Mapify&quot; &amp;&amp; [ -d &quot;${DEST}&quot; ] &amp;&amp; cp -pfu &quot;$(TargetPath)&quot; &quot;${DEST}&quot;"/>
+        <!-- Build the runtime version, without any UnityEditor references. This is super sketchy, but I couldn't find a better way to do it. -->
+        <Exec Condition="'$(IsEditor)' == 'true'" Command="dotnet build -c $(Configuration) -p:IsEditor='false'" />
 
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="xcopy /d /y &quot;$(TargetPath)&quot; ..\build\"/>
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell -Command &quot;(Get-Content ../info.json | ConvertFrom-Json).Version | Set-Content ..\PackageBuilder\Assets\Mapify\version.txt&quot;"/>
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="for %%I in (&quot;$(TargetPath)&quot; &quot;$(ProjectDir)$(OutDir)BezierCurves.dll&quot;) do xcopy /d /y %%I &quot;$(ProjectDir)..\PackageBuilder\Assets\Mapify\Scripts\&quot;"/>
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="setlocal enabledelayedexpansion &amp;&amp; set DEST=../TestMap/Assets/Mapify/Scripts &amp;&amp; if exist !DEST! xcopy /d /y &quot;$(TargetPath)&quot; &quot;!DEST!&quot;"/>
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="setlocal enabledelayedexpansion &amp;&amp; set DEST=C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\Mods\Mapify &amp;&amp; if exist !DEST! xcopy /d /y &quot;$(TargetPath)&quot; &quot;!DEST!&quot;"/>
+        <!-- Copy to build folder -->
+        <Copy Condition="'$(IsEditor)' == 'true'" SourceFiles="$(TargetPath)" DestinationFolder="../build/editor" />
+        <Copy Condition="'$(IsEditor)' != 'true'" SourceFiles="$(TargetPath)" DestinationFolder="../build/runtime" />
+
+        <!-- Copy to package build and test map -->
+        <Copy Condition="'$(IsEditor)' == 'true'" SourceFiles="$(TargetPath);$(OutDir)BezierCurves.dll" DestinationFolder="$(PackageBuilderDir);" />
+        <Copy Condition="'$(IsEditor)' == 'true' And Exists('$(TestMapDir)')" SourceFiles="$(TargetPath)" DestinationFolder="$(TestMapDir)" />
+
+        <!-- Copy to game install folder -->
+        <Exec Condition="Exists('$(DvInstallDir)') And '$(IsEditor)' != 'true'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)/Mods')&quot;" />
+
+        <!-- Update package version number -->
+        <Exec Condition="'$(IsEditor)' == 'true'" Command="pwsh -Command &quot;((Get-Content -Raw -Path '../info.json' | ConvertFrom-Json).Version | Set-Content -NoNewline -Encoding utf8NoBOM -Path '../PackageBuilder/Assets/Mapify/version.txt')&quot;" />
     </Target>
 </Project>

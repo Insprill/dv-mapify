@@ -1,4 +1,5 @@
-﻿using System;
+#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -17,7 +18,7 @@ namespace Mapify.Editor
 {
     public static class MapExporter
     {
-        private const string DEFAULT_MAPS_FOLDER_PATH = "/Steam/steamapps/common/Derail Valley/Mods/Mapify/Maps";
+        private const string MODS_PATH = "steamapps/common/Derail Valley/Mods";
 
         private static string LastReleaseExportPath {
             get => EditorPrefs.GetString("Mapify.Export.Release.LastExportPath");
@@ -31,7 +32,7 @@ namespace Mapify.Editor
 
         public static void OpenExportPrompt(bool releaseMode)
         {
-            string mapName = EditorAssets.FindAsset<MapInfo>()?.mapName;
+            string mapName = EditorAssets.FindAsset<MapInfo>()?.name;
             if (releaseMode)
                 ExportRelease(mapName);
             else
@@ -58,17 +59,27 @@ namespace Mapify.Editor
                 return;
             LastReleaseExportPath = exportFilePath;
 
-            string tmpFolder = Path.Combine(Path.GetTempPath(), mapName);
-            if (Directory.Exists(tmpFolder))
+            string tmpFolder = Path.Combine(Path.GetTempPath(), $"dv-mapify-{Path.GetRandomFileName()}");
+            if (Directory.Exists(tmpFolder)) {
                 Directory.Delete(tmpFolder, true);
+            }
             Directory.CreateDirectory(tmpFolder);
 
-            bool success = Export(tmpFolder, false);
+            string mapExportFolder = Path.Combine(tmpFolder, mapName);
+            Directory.CreateDirectory(mapExportFolder);
+
+            bool success = Export(mapExportFolder, false);
 
             if (success)
             {
                 EditorUtility.DisplayProgressBar("Mapify", "Creating zip file", 0);
-                ZipFile.CreateFromDirectory(tmpFolder, exportFilePath, CompressionLevel.NoCompression, true);
+
+                if (File.Exists(exportFilePath))
+                {
+                    EditorFileUtil.MoveToTrash(exportFilePath);
+                }
+
+                ZipFile.CreateFromDirectory(mapExportFolder, exportFilePath, CompressionLevel.Fastest, true);
                 EditorUtility.ClearProgressBar();
                 if (EditorUtility.DisplayDialog("Mapify", "Export complete!", "Open Folder", "Ok"))
                     EditorUtility.RevealInFinder(exportFilePath);
@@ -89,7 +100,7 @@ namespace Mapify.Editor
             }
             else
             {
-                startingPath = GetMapsFolder();
+                startingPath = GetDefaultMapsFolder();
                 name = mapName;
             }
 
@@ -104,106 +115,220 @@ namespace Mapify.Editor
                 EditorUtility.RevealInFinder(exportFolderPath);
         }
 
-        private static bool Export(string exportFolderPath, bool uncompressed)
+        private static bool Export(string rootExportDir, bool uncompressed)
         {
-            DirectoryInfo directory = new DirectoryInfo(exportFolderPath);
+            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
+            mapInfo.mapifyVersion = File.ReadLines("Assets/Mapify/version.txt").First().Trim();
 
-            if (directory.GetFiles().Length > 0 || directory.GetDirectories().Length > 0)
+            string mapExportDir = Path.Combine(rootExportDir, mapInfo.name);
+
+            DirectoryInfo mapExportDirInfo = new DirectoryInfo(mapExportDir);
+
+            if (mapExportDirInfo.Exists && (mapExportDirInfo.GetFiles().Length > 0 || mapExportDirInfo.GetDirectories().Length > 0))
             {
                 int result = EditorUtility.DisplayDialogComplex("Clear Folder",
-                    "The directory you selected isn't empty, would you like to clear the files from the folder before proceeding? \n \n WARNING: THIS WILL DELETE ALL FILES (EXCLUDING DIRECTORIES) IN THE FOLDER.",
-                    "Clear Folder",
+                    "The map's export directory isn't empty. " +
+                    "If you've exported this map before, you may skip this to improve export speed. " +
+                    "If you've made significant changes to your map, or the files are from something else, " +
+                    "you should either move the files to trash or cancel and see what they are.",
+                    "Move to Trash",
                     "Cancel",
                     "Skip");
                 switch (result)
                 {
                     case 0:
-                        foreach (FileInfo file in directory.GetFiles())
-                            file.Delete();
+                        EditorFileUtil.MoveToTrash(mapExportDir);
                         break;
                     case 1:
                         return false;
                 }
             }
 
+            mapExportDirInfo.Create();
+
             BuildUpdater.Update();
 
-            AssetBundleBuild[] builds = CreateBuilds(EditorSceneManager.GetSceneByPath(Scenes.TERRAIN));
+            AssetBundleBuild[] builds = CreateBuilds();
 
-            AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(
-                exportFolderPath,
+            bool success = BuildPipeline.BuildAssetBundles(
+                mapExportDir,
                 builds,
                 uncompressed ? BuildAssetBundleOptions.UncompressedAssetBundle : BuildAssetBundleOptions.None,
                 BuildTarget.StandaloneWindows64
             );
-            bool success = manifest != null;
 
             BuildUpdater.Cleanup();
 
-            string mapInfoPath = Path.Combine(exportFolderPath, "mapInfo.json");
+            string mapInfoPath = Path.Combine(mapExportDir, Names.MAP_INFO_FILE);
+            string modInfoPath = Path.Combine(rootExportDir, Names.MOD_INFO_FILE);
             if (!success)
             {
-                Debug.LogWarning("Build was canceled or failed!");
+                Debug.LogError("Build was canceled or failed!");
                 File.Delete(mapInfoPath); // Prevents the mod from loading an incomplete asset bundle
             }
             else
             {
-                using (StreamWriter writer = File.CreateText(mapInfoPath))
-                {
-                    MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
-                    string version = File.ReadLines("Assets/Mapify/version.txt").First().Trim();
-                    writer.Write(JsonUtility.ToJson(new BasicMapInfo(mapInfo.mapName, version)));
-                }
+                CreateMapInfo(mapInfoPath, mapInfo);
+                CreateModInfo(modInfoPath, mapInfo);
             }
 
             return success;
         }
 
-        private static AssetBundleBuild[] CreateBuilds(Scene terrainScene)
+        private static AssetBundleBuild[] CreateBuilds()
         {
-            Terrain[] sortedTerrain = terrainScene.GetAllComponents<Terrain>()
-                .Where(terrain => terrain.gameObject.activeInHierarchy)
-                .ToArray()
-                .Sort();
-
-            List<AssetBundleBuild> builds = new List<AssetBundleBuild>(sortedTerrain.Length + 2);
-            for (int i = 0; i < sortedTerrain.Length; i++)
-                builds.Add(new AssetBundleBuild {
-                    assetBundleName = $"terraindata_{i}",
-                    assetNames = new[] { AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData) }
-                });
+            var builds = CreateTerrainBuilds();
 
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            List<string> assetPaths = new List<string>(allAssetPaths.Length - sortedTerrain.Length);
+            List<string> assetPaths = new List<string>(allAssetPaths.Length - builds.Count);
             List<string> scenePaths = new List<string>();
-            for (int i = 0; i < allAssetPaths.Length; i++)
+
+            var mapInfoPath = AssetDatabase.GetAssetPath(EditorAssets.FindAsset<MapInfo>());
+
+            for (var i = 0; i < allAssetPaths.Length; i++)
             {
-                string assetPath = allAssetPaths[i];
+                var assetPath = allAssetPaths[i];
+
                 if (!assetPath.StartsWith("Assets/")) continue;
                 AssetImporter importer = AssetImporter.GetAtPath(assetPath);
-                if (importer == null || importer.GetType() == typeof(MonoImporter)) continue;
+                if (importer is null || importer is MonoImporter || importer is PluginImporter) continue;
+
                 Object obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
                 if (obj is TerrainData) continue;
-                (obj is SceneAsset ? scenePaths : assetPaths).Add(assetPath);
+
+                if (obj is SceneAsset)
+                {
+                    scenePaths.Add(assetPath);
+                }
+                else if (assetPath == mapInfoPath)
+                {
+                    CreateMapInfoBuild(assetPath, ref builds);
+                }
+                else
+                {
+                    assetPaths.Add(assetPath);
+                }
 
                 EditorUtility.DisplayProgressBar("Gathering assets", assetPath, i / (float)allAssetPaths.Length);
             }
 
             EditorUtility.ClearProgressBar();
 
-            builds.Add(new AssetBundleBuild {
-                assetBundleName = "assets",
-                assetNames = assetPaths.ToArray()
-            });
-            builds.Add(new AssetBundleBuild {
-                assetBundleName = "scenes",
-                assetNames = scenePaths.ToArray()
-            });
+            CreateSceneBuilds(scenePaths, ref builds);
+            CreateAssetsBuilds(assetPaths, ref builds);
 
             return builds.ToArray();
         }
 
-        private static string GetMapsFolder()
+        private static List<AssetBundleBuild> CreateTerrainBuilds()
+        {
+            var terrainScene = EditorSceneManager.GetSceneByPath(Scenes.TERRAIN);
+
+            Terrain[] sortedTerrain = terrainScene.GetAllComponents<Terrain>()
+                .Where(terrain => terrain.gameObject.activeInHierarchy)
+                .ToArray()
+                .Sort();
+
+            var builds = new List<AssetBundleBuild>(sortedTerrain.Length);
+
+            for (int i = 0; i < sortedTerrain.Length; i++)
+            {
+                builds.Add(new AssetBundleBuild
+                {
+                    assetBundleName = $"terraindata_{i}",
+                    assetNames = new[] { AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData) }
+                });
+            }
+
+            return builds;
+        }
+
+        private static void CreateMapInfoBuild(string mapInfoPath, ref List<AssetBundleBuild> builds)
+        {
+            builds.Add(new AssetBundleBuild
+            {
+                assetBundleName = Names.MAP_INFO_ASSET_BUNDLE,
+                assetNames = new[] { mapInfoPath }
+            });
+        }
+
+        private static void CreateSceneBuilds(List<string> scenePaths, ref List<AssetBundleBuild> builds)
+        {
+            builds.Add(new AssetBundleBuild {
+                assetBundleName = Names.SCENES_ASSET_BUNDLE,
+                assetNames = scenePaths.ToArray()
+            });
+        }
+
+        private static void CreateAssetsBuilds(List<string> assetPaths, ref List<AssetBundleBuild> builds)
+        {
+            //put big assets in their own assetbundle to avoid the combined assetbundle getting too big.
+            //Unity cannot load assetbundles larger then 4GB.
+            long assetBundleSize = 0;
+            long assetBundleNumber = 1;
+            var asssetBundleFiles = new List<string>();
+
+            for (var i = 0; i < assetPaths.Count; i++)
+            {
+                string absolutePath = Path.GetFullPath(assetPaths[i]);
+
+                //skip directories
+                if ((File.GetAttributes(absolutePath) & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    continue;
+                }
+
+                long fileSize = new FileInfo(absolutePath).Length;
+
+                // if the asset would get too big, create a new assetbundle
+                const long maxBundleSize = 500 * 1000000; //500MB
+                if (assetBundleSize > 0 && assetBundleSize + fileSize > maxBundleSize)
+                {
+                    builds.Add(new AssetBundleBuild {
+                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+'_'+assetBundleNumber,
+                        assetNames = asssetBundleFiles.ToArray()
+                    });
+
+                    assetBundleSize = 0;
+                    assetBundleNumber++;
+                    asssetBundleFiles = new List<string>();
+                }
+
+                asssetBundleFiles.Add(assetPaths[i]);
+                assetBundleSize += fileSize;
+
+                //if this is the last asset, create a new assetbundle
+                if(assetBundleSize > 0 && i >= assetPaths.Count-1)
+                {
+                    builds.Add(new AssetBundleBuild {
+                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+'_'+assetBundleNumber,
+                        assetNames = asssetBundleFiles.ToArray()
+                    });
+                }
+            }
+        }
+
+
+
+        private static void CreateMapInfo(string filePath, MapInfo mapInfo)
+        {
+            File.WriteAllText(filePath, JsonUtility.ToJson(BasicMapInfo.FromMapInfo(mapInfo)));
+        }
+
+        private static void CreateModInfo(string filePath, MapInfo mapInfo)
+        {
+            UnityModManagerInfo modInfo = new UnityModManagerInfo {
+                Id = mapInfo.name,
+                Version = mapInfo.version,
+                DisplayName = mapInfo.name,
+                ManagerVersion = "0.27.13",
+                Requirements = new[] { "Mapify" },
+                HomePage = mapInfo.homePage
+            };
+            File.WriteAllText(filePath, JsonUtility.ToJson(modInfo));
+        }
+
+        private static string GetDefaultMapsFolder()
         {
             // search for the user's DV install
             try
@@ -227,11 +352,12 @@ namespace Mapify.Editor
             foreach (DriveInfo drive in DriveInfo.GetDrives())
             {
                 string driveRoot = drive.RootDirectory.FullName;
-                string potentialPath = Path.Combine(driveRoot, "Program Files", DEFAULT_MAPS_FOLDER_PATH);
-                if (Directory.Exists(potentialPath)) return potentialPath;
-
-                potentialPath = Path.Combine(driveRoot, "Program Files (x86)", DEFAULT_MAPS_FOLDER_PATH);
-                if (Directory.Exists(potentialPath)) return potentialPath;
+                foreach (string s in new[] { "Program Files", "Program Files (x86)" })
+                {
+                    string potentialPath = Path.Combine(driveRoot, s, "Steam", MODS_PATH);
+                    if (Directory.Exists(potentialPath))
+                        return potentialPath;
+                }
             }
 
             return null;
@@ -240,8 +366,9 @@ namespace Mapify.Editor
         private static string GetLinuxMapsFolder()
         {
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string potentialPath = Path.Combine(homePath, ".local", "share", DEFAULT_MAPS_FOLDER_PATH);
+            string potentialPath = Path.Combine(homePath, ".steam", "steam", MODS_PATH);
             return Directory.Exists(potentialPath) ? potentialPath : null;
         }
     }
 }
+#endif

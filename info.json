@@ -1,13 +1,10 @@
 {
   "Id": "Mapify",
-  "Version": "0.2.0",
+  "Version": "0.4.1",
   "DisplayName": "Mapify",
   "Author": "Insprill",
-  "EntryMethod": "Mapify.Main.Load",
-  "LoadAfter": [
-    "PassengerJobs"
-  ],
-  "ManagerVersion": "0.24.6",
+  "EntryMethod": "Mapify.Mapify.Load",
+  "ManagerVersion": "0.27.13",
   "HomePage": "https://www.nexusmods.com/derailvalley/mods/593",
   "Repository": "https://raw.githubusercontent.com/Insprill/dv-mapify/master/repository.json"
 }

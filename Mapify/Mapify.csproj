@@ -1,49 +1,78 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="../UserProperties.props" Condition="Exists('../UserProperties.props')" />
     <PropertyGroup>
-        <TargetFramework>netframework4.8</TargetFramework>
+        <TargetFramework>net48</TargetFramework>
         <LangVersion>7.3</LangVersion>
         <RootNamespace>Mapify</RootNamespace>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <PublicizerClearCacheOnClean>true</PublicizerClearCacheOnClean>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="../MapifyEditor/MapifyEditor.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="0Harmony" />
+        <Publicize Include="Assembly-CSharp" />
+        <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
+    </ItemGroup>
+
+    <!-- Derail Valley -->
+    <ItemGroup>
         <Reference Include="Assembly-CSharp" />
+        <Reference Include="CommandTerminal" />
+        <Reference Include="DV.Common" />
         <Reference Include="DV.Interaction" />
+        <Reference Include="DV.Inventory" />
+        <Reference Include="DV.Localization" />
         <Reference Include="DV.PointSet" />
         <Reference Include="DV.TerrainSystem" />
         <Reference Include="DV.TerrainTools" />
+        <Reference Include="DV.ThingTypes" />
+        <Reference Include="DV.UI" />
+        <Reference Include="DV.UIFramework" />
+        <Reference Include="DV.UserManagement" />
         <Reference Include="DV.Utils" />
+        <Reference Include="DV.WeatherSystem" />
+    </ItemGroup>
+
+    <!-- Mod Loader -->
+    <ItemGroup>
+        <PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
+        <PackageReference Include="UnityModManager" Version="0.27.2" />
+    </ItemGroup>
+
+    <!-- Third-party -->
+    <ItemGroup>
+        <Reference Include="AwesomeTechnologies.VegetationStudioPro.Runtime" />
         <Reference Include="BezierCurves" />
+        <Reference Include="I2.Localization" />
         <Reference Include="net.smkd.vector3d" />
-        <Reference Include="PassengerJobs" />
+        <Reference Include="Newtonsoft.Json" />
+        <Reference Include="sc.posteffects.runtime" />
+    </ItemGroup>
+
+    <!-- Unity -->
+    <ItemGroup>
         <Reference Include="Unity.Collections" />
         <Reference Include="Unity.Postprocessing.Runtime" />
         <Reference Include="Unity.TextMeshPro" />
-        <Reference Include="UnityEngine" />
-        <Reference Include="UnityEngine.AssetBundleModule" />
-        <Reference Include="UnityEngine.CoreModule" />
-        <Reference Include="UnityEngine.ImageConversionModule" />
-        <Reference Include="UnityEngine.IMGUIModule" />
-        <Reference Include="UnityEngine.JSONSerializeModule" />
-        <Reference Include="UnityEngine.PhysicsModule" />
-        <Reference Include="UnityEngine.TerrainModule" />
-        <Reference Include="UnityModManager" />
+        <Reference Include="UnityEngine"/>
+        <Reference Include="UnityEngine.AssetBundleModule"/>
+        <Reference Include="UnityEngine.CoreModule"/>
+        <Reference Include="UnityEngine.ImageConversionModule"/>
+        <Reference Include="UnityEngine.IMGUIModule"/>
+        <Reference Include="UnityEngine.JSONSerializeModule"/>
+        <Reference Include="UnityEngine.PhysicsModule"/>
+        <Reference Include="UnityEngine.TerrainModule"/>
+        <Reference Include="UnityEngine.UI" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="mkdir -p ../build &amp;&amp; cp &quot;$(TargetPath)&quot; ../build/" />
-        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="export DEST=&quot;$HOME/.local/share/Steam/steamapps/common/Derail Valley/Mods/Mapify&quot; &amp;&amp; [ -d &quot;${DEST}&quot; ] &amp;&amp; cp -pfu &quot;$(TargetPath)&quot; &quot;${DEST}&quot;" />
+        <!-- Copy to build folder -->
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="../build/runtime" />
 
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="xcopy /d /y &quot;$(TargetPath)&quot; ..\build\" />
-        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="setlocal enabledelayedexpansion &amp;&amp; set DEST=C:\Program Files (x86)\Steam\steamapps\common\Derail Valley\Mods\Mapify &amp;&amp; if exist !DEST! xcopy /d /y &quot;$(TargetPath)&quot; &quot;!DEST!&quot;" />
+        <!-- Copy to game install folder -->
+        <Exec Condition="Exists('$(DvInstallDir)')" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)/Mods')&quot;" />
     </Target>
 </Project>

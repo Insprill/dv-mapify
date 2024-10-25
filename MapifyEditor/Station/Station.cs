@@ -1,6 +1,8 @@
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Mapify.Editor
 {
@@ -17,13 +19,13 @@ namespace Mapify.Editor
         public Transform teleportLocation;
 
         [Header("Job Generation")]
+        [Tooltip("All warehouse machines associated with this station")]
+        public WarehouseMachine[] warehouseMachines;
         [Tooltip("The area where job booklets should spawn. Not required when using a vanilla station")]
         public BoxCollider bookletSpawnArea;
-#pragma warning disable CS0649
         [SerializeField]
         [Tooltip("The rough center of the yard. Used at the reference point for generating jobs. Will use the station if unset")]
         private Transform yardCenter;
-#pragma warning restore CS0649
         public Transform YardCenter => yardCenter != null ? yardCenter : transform;
         [Tooltip("The distance, in meters, the player has to be relative to the station for job overview booklets to generate")]
         public float bookletGenerationDistance = 150;
@@ -50,30 +52,31 @@ namespace Mapify.Editor
         public bool generateShuntingUnload = true;
 
         [Header("Cargo")]
-        // Another workaround for Unity's excuse of a game engine
-        [HideInNormalInspector]
-        public int inputCargoGroupsCount;
-#pragma warning disable CS0649
         [SerializeField]
         internal List<CargoSet> inputCargoGroups;
         [SerializeField]
         internal List<CargoSet> outputCargoGroups;
-#pragma warning restore CS0649
-
+        // Another workaround for Unity's excuse of a game engine
+        [HideInNormalInspector]
+        public int inputCargoGroupsCount;
         [HideInInspector]
         public List<string> storageTrackNames;
         [HideInInspector]
         public List<string> transferInTrackNames;
         [HideInInspector]
         public List<string> transferOutTrackNames;
-        [HideInInspector]
-        public List<WarehouseMachine> warehouseMachines;
 
         #region Editor Visualization
 
-        internal bool visualizeJobGenerationRange;
-        internal bool visualizeBookletGenerationDistance;
-        internal bool visualizeJobDestroyDistance;
+#if UNITY_EDITOR
+
+        [Header("Editor Visualization")]
+        [SerializeField]
+        private bool visualizeJobGenerationRange;
+        [SerializeField]
+        private bool visualizeBookletGenerationDistance;
+        [SerializeField]
+        private bool visualizeJobDestroyDistance;
 
         private void OnDrawGizmos()
         {
@@ -95,6 +98,8 @@ namespace Mapify.Editor
                 Handles.DrawSolidDisc(YardCenter.position, Vector3.up, bookletGenerationDistance);
             }
         }
+
+#endif
 
         #endregion
     }

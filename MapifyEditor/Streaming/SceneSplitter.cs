@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -101,6 +102,7 @@ namespace Mapify.Editor
             return new SceneSplitData {
                 names = sceneNames.ToArray(),
                 xSize = chunkSize,
+                ySize = 0, // We don't support vertical chunks
                 zSize = chunkSize
             };
         }
@@ -131,3 +133,4 @@ namespace Mapify.Editor
         }
     }
 }
+#endif

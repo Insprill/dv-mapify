@@ -30,7 +30,7 @@ namespace Mapify.Editor
 
         #region Trackage
 
-        BufferStop = 30,
+        BufferStopModel = 30,
         SwitchLeft = 31,
         SwitchRight = 32,
         SwitchLeftOuterSign = 33,
@@ -42,29 +42,21 @@ namespace Mapify.Editor
         #region Service Stations
 
         PitStopStation = 40,
-        RefillMachineFuel = 41,
+        RefillMachineDiesel = 41,
         RefillMachineSand = 42,
         RefillMachineOil = 43,
         RefillMachineWater = 44,
         RefillMachineCoal = 45,
-        RefillMachineCarDamage = 46,
+        RefillMachineBodyDamage = 46,
         RefillMachineWheelDamage = 47,
-        RefillMachineEngineDamage = 48,
-        ServiceStationMarkerOpen = 49,
-        ServiceStationMarkerClosed = 50,
-
-        #endregion
-
-        #region Required Scene Components
-
-        RenderTextureSystem = 60,
-        CarSpawner = 61,
-        LicensesAndGarages = 62,
-        ItemDisablerGrid = 63,
-        JobLogicController = 64,
-        StorageLogic = 65,
-        ShopLogic = 66,
-        DerailAndDamageObserver = 67,
+        RefillMachineMechanicalPowertrain = 48,
+        RefillMachineElectricalPowertrain = 49,
+        ServiceStationMarkerOpen = 50,
+        ServiceStationMarkerClosed = 51,
+        PitStopStationCoal1 = 52,
+        PitStopStationCoal2 = 53,
+        PitStopStationWater1 = 54,
+        PitStopStationWater2 = 55,
 
         #endregion
 
@@ -113,11 +105,14 @@ namespace Mapify.Editor
         StoreItemExpertShovel = 109,
         StoreItemGoldenShovel = 110,
         StoreItemLighter = 111,
-        StoreItemManualShunterBooklet = 112,
-        StoreItemManualSteamBooklet = 113,
+        // StoreItemManualShunterBooklet = 112,
+        // StoreItemManualSteamBooklet = 113,
         StoreItemRemoteController = 114,
         StoreItemShovel = 115,
-        StoreItemStopwatch = 116
+        StoreItemStopwatch = 116,
+        StoreItemLantern = 117,
+        StoreItemFlashlight = 118,
+        StoreItemEOTLantern = 119,
 
         #endregion
     }

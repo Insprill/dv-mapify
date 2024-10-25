@@ -8,10 +8,16 @@ namespace Mapify.Utils
     public class TextureDrawer
     {
         public readonly Texture2D texture;
+        private readonly int textureWidth;
+        private readonly int textureHeight;
+        private readonly Color[] pixelBuffer;
 
         public TextureDrawer(Texture2D texture)
         {
             this.texture = texture;
+            textureWidth = texture.width;
+            textureHeight = texture.height;
+            pixelBuffer = texture.GetPixels();
         }
 
         public void DrawLineOnTexture(Vector2 startPoint, Vector2 endPoint, float lineWidth, Color lineColor)
@@ -23,11 +29,11 @@ namespace Mapify.Utils
             for (int i = 0; i < distance; i++)
             {
                 Vector2 point = startPoint + direction * i;
-                DrawPixelOnTexture(point, lineWidth, lineColor);
+                DrawPixelOnBuffer(point, lineWidth, lineColor);
             }
         }
 
-        private void DrawPixelOnTexture(Vector2 point, float size, Color color)
+        private void DrawPixelOnBuffer(Vector2 point, float size, Color color)
         {
             int halfSize = Mathf.CeilToInt(size / 2f);
             for (int x = -halfSize; x <= halfSize; x++)
@@ -36,13 +42,14 @@ namespace Mapify.Utils
                 int pixelX = Mathf.RoundToInt(point.x + x);
                 int pixelY = Mathf.RoundToInt(point.y + y);
 
-                if (pixelX >= 0 && pixelX < texture.width && pixelY >= 0 && pixelY < texture.height)
-                    texture.SetPixel(pixelX, pixelY, color);
+                if (pixelX >= 0 && pixelX < textureWidth && pixelY >= 0 && pixelY < textureHeight)
+                    pixelBuffer[pixelY * textureWidth + pixelX] = color;
             }
         }
 
         public void Apply()
         {
+            texture.SetPixels(pixelBuffer);
             texture.Apply();
         }
     }

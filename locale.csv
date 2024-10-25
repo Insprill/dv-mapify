@@ -1,0 +1,8 @@
+Keys,Description,English
+launcher/session_map,,Map:
+session/map_selector,,Map
+session/map_selector__tooltip,,Select a Map
+launcher/map_selector__tooltip_disabled,,
+loading/please_wait,,"loading{0}, please wait... {1}%"
+loading/loading_map,,Loading map {0}
+launcher/session_map_not_installed,,The map {0} isn't installed! Please install it before loading this save.

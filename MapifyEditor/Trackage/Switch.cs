@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mapify.Editor.Utils;
-using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Mapify.Editor
 {
@@ -18,25 +20,30 @@ namespace Mapify.Editor
 
         [Tooltip("Which side of the switch the stand will appear on")]
         public StandSide standSide;
+        [Tooltip("Which way the switch should be flipped by default")]
+        public StandSide defaultState;
 
         public Track ThroughTrack => transform.Find("[track through]").GetComponent<Track>();
         public Track DivergingTrack => transform.Find("[track diverging]").GetComponent<Track>();
+        public bool IsLeft => DivergingTrack.Curve.Last().localPosition.x < 0;
 
         private void OnDrawGizmos()
         {
-            if ((transform.position - Camera.current.transform.position).sqrMagnitude >= Track.SNAP_UPDATE_RANGE * Track.SNAP_UPDATE_RANGE)
+            if (transform.DistToSceneCamera() >= Track.SNAP_UPDATE_RANGE_SQR)
                 return;
             Snap();
         }
 
         public void Snap()
         {
+#if UNITY_EDITOR
             BezierPoint[] bezierPoints = FindObjectsOfType<BezierPoint>();
             GameObject[] selectedObjects = Selection.gameObjects;
             bool isSelected = selectedObjects.Contains(gameObject);
             TrySnap(bezierPoints, isSelected, 0);
             TrySnap(bezierPoints, isSelected, 1);
             TrySnap(bezierPoints, isSelected, 2);
+#endif
         }
 
         private void TrySnap(IEnumerable<BezierPoint> points, bool move, byte which)

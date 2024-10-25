@@ -1,6 +1,7 @@
 ﻿using Mapify.Editor.Utils;
 using UnityEngine;
 
+#if UNITY_EDITOR
 namespace Mapify.Editor.StateUpdaters
 {
     public class StreamingUpdater : BuildUpdater
@@ -18,3 +19,4 @@ namespace Mapify.Editor.StateUpdaters
         }
     }
 }
+#endif

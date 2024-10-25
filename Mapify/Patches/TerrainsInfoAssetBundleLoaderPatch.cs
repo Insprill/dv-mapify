@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using DV.TerrainSystem;
 using HarmonyLib;
+using Mapify.Map;
 using UnityEngine;
 
 namespace Mapify.Patches
@@ -41,29 +42,37 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), MethodType.Constructor, typeof(string), typeof(Func<IEnumerator, Coroutine>))]
     public static class TerrainsInfoAssetBundleLoader_Constructor_Patch
     {
-        private static readonly FieldInfo Field_assBunInfo = AccessTools.DeclaredField(typeof(TerrainsInfoAssetBundleLoader), "assBunInfo");
-
-        private static void Postfix(TerrainsInfoAssetBundleLoader __instance)
+        private static void Postfix(TerrainsInfoAssetBundleLoader __instance, string worldName)
         {
-            // Set our own terrain info
-            TerrainsInfoFromAssetBundle bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
-            bundle.terrainSizeInWorld = Main.LoadedMap.terrainSize;
-            bundle.numberOfTerrains = Main.LoadedMap.terrainCount;
-            bundle.hasMicroSplatDiffuse = false;
-            bundle.hasMicroSplatNormal = false;
-            Field_assBunInfo.SetValue(__instance, bundle);
+            TerrainsInfoFromAssetBundle bundle;
+            if (Maps.IsDefaultMap)
+            {
+                // The line we removed in the transpiler
+                bundle = (TerrainsInfoFromAssetBundle)AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, worldName, "info")).LoadAllAssets()[0];
+            }
+            else
+            {
+                // Set our own terrain info
+                bundle = ScriptableObject.CreateInstance<TerrainsInfoFromAssetBundle>();
+                bundle.terrainSizeInWorld = Maps.LoadedMap.terrainSize;
+                bundle.numberOfTerrains = Maps.LoadedMap.terrainCount;
+            }
+
+            __instance.assBunInfo = bundle;
         }
     }
 
     /// <summary>
     ///     Redirects requests to load new terrain to our map installation location.
     /// </summary>
-    [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), "GetAssetBundleFilePath")]
+    [HarmonyPatch(typeof(TerrainsInfoAssetBundleLoader), nameof(TerrainsInfoAssetBundleLoader.GetAssetBundleFilePath))]
     public static class TerrainsInfoAssetBundleLoader_GetAssetBundleFilePath_Patch
     {
         private static bool Prefix(TerrainsInfoAssetBundleLoader __instance, Vector2Int coord, ref string __result)
         {
-            __result = Main.GetLoadedMapAssetPath($"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}");
+            if (Maps.IsDefaultMap)
+                return true;
+            __result = Maps.GetMapAsset($"terraindata_{coord.y * __instance.TerrainsPerAxis + coord.x}");
             return false;
         }
     }

@@ -28,6 +28,7 @@ theme:
     - toc.follow
 
 markdown_extensions:
+  - pymdownx.caret
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
@@ -36,6 +37,8 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Using Maps:
+        - usage/index.md
   - Creating Maps:
         - Project Setup: creatingmaps/project-setup.md
         - Terrain: creatingmaps/terrain.md

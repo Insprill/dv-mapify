@@ -12,6 +12,12 @@ namespace Mapify.Editor
         public string version = "0.1.0";
         [Tooltip("The home page of your mod, most likely being the Nexus Mods page")]
         public string homePage = "https://www.nexusmods.com/derailvalley/mods/MOD-ID-HERE";
+        [Tooltip("Link to your repository.json file (for updates)")]
+        public string repository = "";
+
+        [Header("Loading Screen")]
+        public Texture2D[] LoadingScreenImages;
+        public AudioClip LoadingScreenMusic;
 
         [Header("Loading Gauge")]
         [Tooltip("The height of the loading gauge, in meters")]

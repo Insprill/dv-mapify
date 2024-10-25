@@ -59,6 +59,7 @@
         <Reference Include="Unity.TextMeshPro" />
         <Reference Include="UnityEngine"/>
         <Reference Include="UnityEngine.AssetBundleModule"/>
+        <Reference Include="UnityEngine.AudioModule"/>
         <Reference Include="UnityEngine.CoreModule"/>
         <Reference Include="UnityEngine.ImageConversionModule"/>
         <Reference Include="UnityEngine.IMGUIModule"/>
@@ -66,6 +67,7 @@
         <Reference Include="UnityEngine.PhysicsModule"/>
         <Reference Include="UnityEngine.TerrainModule"/>
         <Reference Include="UnityEngine.UI" />
+        <Reference Include="UnityEngine.UIModule" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

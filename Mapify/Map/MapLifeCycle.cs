@@ -84,11 +84,13 @@ namespace Mapify.Map
 
                 if (mapInfo is null)
                 {
-                    Debug.LogError($"Failed to find {nameof(MapInfo)}!");
+                    Mapify.LogError($"Failed to find {nameof(MapInfo)}!");
                     SceneSwitcher.SwitchToScene(DVScenes.MainMenu);
                     yield break;
                 }
-                if (mapInfo.LoadingScreenImages.Length > 0)
+
+                //LoadingScreenImages will be null if the map was built with an older version of Mapify
+                if (mapInfo.LoadingScreenImages != null && mapInfo.LoadingScreenImages.Length > 0)
                 {
                     ShowLoadingScreenImage(mapInfo);
                 }

@@ -8,7 +8,7 @@ namespace Mapify.SceneInitializers.Railway
     {
         public override void Run()
         {
-            WorldMover.OriginShiftParent.gameObject.NewChild("Signs").AddComponent<SignPlacer>();
+            WorldMover.OriginShiftParent.NewChild("Signs").AddComponent<SignPlacer>();
         }
     }
 }

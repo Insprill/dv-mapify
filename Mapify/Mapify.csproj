@@ -15,6 +15,7 @@
         <Publicize Include="Assembly-CSharp" />
         <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="BezierCurves" />
     </ItemGroup>
 
     <!-- Derail Valley -->

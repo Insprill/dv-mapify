@@ -23,14 +23,19 @@ namespace Mapify.Utils
 
         public static GameObject NewChild(this GameObject parent, string name)
         {
+            return NewChildWithPosition(parent.transform, name, Vector3.zero);
+        }
+
+        public static GameObject NewChild(this Transform parent, string name)
+        {
             return NewChildWithPosition(parent, name, Vector3.zero);
         }
 
-        public static GameObject NewChildWithPosition(this GameObject parent, string name, Vector3 position)
+        public static GameObject NewChildWithPosition(this Transform parent, string name, Vector3 position)
         {
             return new GameObject(name) {
                 transform = {
-                    parent = parent.transform,
+                    parent = parent,
                     position = position
                 }
             };
@@ -233,5 +238,11 @@ namespace Mapify.Utils
         }
 
         #endregion
+
+        public static bool IsFirstOrLastInCurve(this BezierPoint point)
+        {
+            var pointIndex = point.curve.GetPointIndex(point);
+            return pointIndex == 0 || pointIndex == point.curve.pointCount - 1;
+        }
     }
 }

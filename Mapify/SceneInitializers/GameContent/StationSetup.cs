@@ -53,7 +53,7 @@ namespace Mapify.SceneInitializers.GameContent
 
             if (jobBookletSpawnSurface == null)
             {
-                GameObject jobBookletSpawnSurfaceObject = station.gameObject.NewChildWithPosition("JobSpawnerAnchor", station.transform.TransformPoint(station.bookletSpawnArea.center));
+                GameObject jobBookletSpawnSurfaceObject = station.transform.NewChildWithPosition("JobSpawnerAnchor", station.transform.TransformPoint(station.bookletSpawnArea.center));
                 jobBookletSpawnSurface = jobBookletSpawnSurfaceObject.AddComponent<PointOnPlane>();
                 Vector3 size = station.bookletSpawnArea.size;
                 jobBookletSpawnSurface.xSize = size.x;

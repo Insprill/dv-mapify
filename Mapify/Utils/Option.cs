@@ -10,7 +10,7 @@
             return new Option<T>(value);
         }
 
-        private T value;
+        public T value { get; private set; }
         private bool hasValue;
 
         private Option(T value)

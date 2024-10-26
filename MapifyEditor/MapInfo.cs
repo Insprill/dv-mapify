@@ -68,9 +68,6 @@ namespace Mapify.Editor
             }
         };
 
-        [Header("Gameplay")]
-        public bool allowTrackBuilding;
-
         [Tooltip("Show the names of stations on the map instead of the station IDs")]
         public bool showStationNamesOnMap;
 

@@ -1,6 +1,5 @@
-using System.Reflection;
+using System.Linq;
 using DV;
-using HarmonyLib;
 using Mapify.Editor.Utils;
 using Mapify.Patches;
 using Mapify.Utils;
@@ -8,6 +7,7 @@ using UnityEngine;
 
 namespace Mapify.Components
 {
+    //TODO should we use the comms radio API? https://github.com/fauxnik/dv-comms-radio-api/
     public class CommsRadioTrackBuilder : MonoBehaviour, ICommsRadioMode
     {
         private const string MODE_NAME = "Build Track";
@@ -17,7 +17,6 @@ namespace Mapify.Components
         private const float SNAP_DIST = 2.0f;
 
         private static readonly Color LASER_COLOR = new Color32(255, 255, 255, 255);
-        private static readonly FieldInfo RailTrack_Field_pointSet = AccessTools.DeclaredField(typeof(RailTrack), "pointSet");
 
         private State state;
         private CommsRadioDisplay display;
@@ -26,10 +25,15 @@ namespace Mapify.Components
         private Option<Vector3> targetPosition;
         private Option<RailTrack> placingTrack;
 
+        private GameObject previewObj;
+        private MeshRenderer previewObjMesh;
+
         public void Awake()
         {
-            CommsRadioController controller = CommsRadioController_Awake_Patch.controller;
+            var controller = CommsRadioController_Awake_Patch.Controller;
             display = controller.carSpawnerControl.display;
+
+            ButtonBehaviour = ButtonBehaviourType.Regular;
         }
 
         public void Enable()
@@ -39,7 +43,11 @@ namespace Mapify.Components
 
         public void Disable()
         {
-            ClearFlags();
+            SetState(State.MainMenu);
+            targetPosition = Vector3.zero;
+            if (placingTrack.TakeIfSome(out RailTrack track))
+                Destroy(track.gameObject);
+            Destroy(previewObj);
         }
 
         public void OverrideSignalOrigin(Transform origin)
@@ -82,7 +90,8 @@ namespace Mapify.Components
                     track.curve.Last().position = pos;
                     RailTrack.pointSets.Remove(track);
                     RailTrack.pointSets.Add(track, track.GetPointSet());
-                    RailTrack_Field_pointSet.SetValue(track, null);
+                    track.pointSet = null;
+                    Destroy(previewObj); //TODO this doesn't seem to work, the previewObj stays
                     RailwayMeshUpdater.UpdateTrack(track);
                     break;
                 }
@@ -111,7 +120,7 @@ namespace Mapify.Components
             return LASER_COLOR;
         }
 
-        public ButtonBehaviourType ButtonBehaviour { get; }
+        public ButtonBehaviourType ButtonBehaviour { get; private set; }
 
         private void SetState(State newState)
         {
@@ -119,12 +128,15 @@ namespace Mapify.Components
             switch (state)
             {
                 case State.MainMenu:
+                    ButtonBehaviour = ButtonBehaviourType.Regular;
                     display.SetDisplay(MODE_NAME);
                     break;
                 case State.PlaceTrack:
+                    ButtonBehaviour = ButtonBehaviourType.Override;
                     display.SetContentAndAction("Place track?");
                     break;
                 case State.FinishTrack:
+                    ButtonBehaviour = ButtonBehaviourType.Override;
                     display.SetContentAndAction("Finish placing track?");
                     break;
             }
@@ -138,7 +150,7 @@ namespace Mapify.Components
                     switch (action)
                     {
                         case CommsRadioAction.Use:
-                            display.SetContentAndAction("Track"); //todo
+                            display.SetContentAndAction("Straight track");
                             return State.SelectObject;
                     }
 
@@ -163,16 +175,24 @@ namespace Mapify.Components
                         case CommsRadioAction.Use: {
                             if (!targetPosition.IsSome(out Vector3 pos))
                                 return state;
-                            GameObject go = WorldMover.Instance.NewChild("track");
+
+                            var go = WorldData.Instance.TrackRootParent.NewChild("track");
                             go.SetActive(false);
-                            BezierCurve curve = go.AddComponent<BezierCurve>();
-                            curve.resolution = 0.5f;
+
+                            var curve = go.AddComponent<BezierCurve>();
+                            curve.resolution = 0.5f; //TODO make this a constant or get it from the base game
                             curve.AddPointAt(pos);
+
+                            //without this, BezierCurveUpgrade will increase the resolution and RailTrack will decrease it again.
+                            curve.version = 2;
+
                             curve.AddPointAt(pos + signalOrigin.forward.AddY(-signalOrigin.forward.y).normalized * 2.0f);
-                            RailTrack track = go.AddComponent<RailTrack>();
+
+                            var track = go.AddComponent<RailTrack>();
                             track.dontChange = false;
                             track.ApplyRailType();
                             placingTrack = track;
+
                             go.SetActive(true);
                             return State.FinishTrack;
                         }
@@ -224,33 +244,52 @@ namespace Mapify.Components
             return state;
         }
 
-        private void ClearFlags()
-        {
-            SetState(State.MainMenu);
-            targetPosition = Vector3.zero;
-            if (placingTrack.TakeIfSome(out RailTrack track))
-                Destroy(track.gameObject);
-        }
-
         private void UpdateTargetPos()
         {
-            Ray ray = new Ray(signalOrigin.position, signalOrigin.forward);
+            var ray = new Ray(signalOrigin.position, signalOrigin.forward);
             if (!Physics.Raycast(ray, out RaycastHit hit, MAX_RANGE))
             {
+                Destroy(previewObj);
                 targetPosition = Option<Vector3>.None;
                 return;
             }
 
-            BezierPoint point = hit.point.GetClosestComponent<BezierPoint>();
-            if (point != null && Vector3.Distance(point.transform.position, hit.point) < SNAP_DIST)
+            if (previewObj == null)
             {
-                int idx = point.curve.GetPointIndex(point);
-                targetPosition = idx != 0 && idx != point.curve.pointCount - 1 ? point.position : hit.point.AddY(Y_OFFSET);
+                previewObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                previewObj.name = "previewObj";
+                Destroy(previewObj.GetComponent<SphereCollider>());
+                previewObjMesh = previewObj.GetComponent<MeshRenderer>();
+                var standardShader = new Material(Shader.Find("Standard"));
+                previewObjMesh.material = standardShader;
+            }
+
+            // snap to an existing track
+            BezierPoint closestExistingPoint;
+            if (placingTrack.IsSome(out RailTrack track))
+            {
+                closestExistingPoint = FindObjectsOfType<BezierPoint>()
+                    .Where(point => !track._curve.points.Contains(point))
+                    .OrderBy(point => (hit.point - point.transform.position).sqrMagnitude)
+                    .FirstOrDefault();
+            }
+            else
+            {
+                closestExistingPoint = hit.point.GetClosestComponent<BezierPoint>();
+            }
+
+            if (closestExistingPoint != null && Vector3.Distance(closestExistingPoint.transform.position, hit.point) < SNAP_DIST)
+            {
+                targetPosition = closestExistingPoint.position;
+                previewObjMesh.material.color = Color.green;
             }
             else
             {
                 targetPosition = hit.point.AddY(Y_OFFSET);
+                previewObjMesh.material.color = Color.red;
             }
+
+            previewObj.transform.position = targetPosition.value;
         }
 
         private enum State

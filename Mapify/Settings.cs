@@ -22,7 +22,7 @@ namespace Mapify
             if (ShowHiddenSettings)
             {
                 VerboseLogging = GUILayout.Toggle(VerboseLogging, "Verbose Logging");
-                ExtremelyVerboseLogging = GUILayout.Toggle(VerboseLogging, "Extremely Verbose Logging");
+                ExtremelyVerboseLogging = GUILayout.Toggle(ExtremelyVerboseLogging, "Extremely Verbose Logging");
             }
 
             #endregion

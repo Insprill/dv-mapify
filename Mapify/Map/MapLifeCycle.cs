@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DV.CashRegister;
 using DV.Utils;
+using Mapify.BuildMode;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Patches;
@@ -102,6 +103,7 @@ namespace Mapify.Map
             }
 
             Maps.RegisterLoadedMap(mapInfo);
+            BuildingAssetsRegistry.Setup();
 
             // Load scenes for us to steal assets from
             MonoBehaviourDisablerPatch.DisableAll();
@@ -163,6 +165,8 @@ namespace Mapify.Map
 
             // Auto-save won't work without this line.
             SaveGameManager.Instance.disableAutosave = false;
+
+            BuildingAssetsRegistry.FinishRegistering();
         }
 
         private static void SetupStreamer(GameObject parent, MapInfo mapInfo)
@@ -231,6 +235,7 @@ namespace Mapify.Map
             }
             else if (VANILLA_STREAMER_SCENE_PATTERN.IsMatch(scene.name))
             {
+                BuildingAssetsRegistry.RegisterAssets(scene);
                 new StreamerCopier().CopyAssets(scene);
                 scenesToLoad--;
             }
@@ -249,6 +254,7 @@ namespace Mapify.Map
             SceneManager.sceneLoaded -= OnSceneLoad;
             WorldStreamingInit_Awake_Patch.CanInitialize = false;
             AssetCopier.Cleanup();
+            BuildingAssetsRegistry.CleanUp();
             originalRailwayScenePath = null;
             originalGameContentScenePath = null;
             scenesToLoad = 0;

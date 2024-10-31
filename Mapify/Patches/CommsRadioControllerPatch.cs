@@ -15,7 +15,7 @@ namespace Mapify.Patches
     {
         private static void Postfix(CommsRadioController __instance)
         {
-            var obj = new GameObject("[BuildMode]", typeof(BuildMode.BuildMode));
+            var obj = new GameObject("[BuildMode]", typeof(BuildMode.BuildModeClass));
 
             if (Maps.IsDefaultMap)
                 return;

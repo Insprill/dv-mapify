@@ -2,8 +2,10 @@
 using System.IO;
 using DV.UI;
 using HarmonyLib;
+using Mapify.BuildMode;
 using Mapify.Map;
 using Mapify.Patches;
+using UnityEngine;
 using UnityModManagerNet;
 using Object = UnityEngine.Object;
 
@@ -15,6 +17,8 @@ namespace Mapify
         private static Settings Settings;
         private const string LOCALE_FILE = "locale.csv";
 
+        private static AssetBundle buildmodebundle;
+
         internal static Harmony Harmony { get; private set; }
 
         private static bool Load(UnityModManager.ModEntry modEntry)
@@ -24,20 +28,56 @@ namespace Mapify
             Settings = Settings.Load<Settings>(ModEntry);
             ModEntry.OnGUI = entry => Settings.Draw(entry);
             ModEntry.OnSaveGUI = entry => Settings.Save(entry);
+            ModEntry.OnUnload = OnUnload;
 
             try
             {
                 LoadLocale();
                 Maps.Init();
+                LoadAssetBundles();
                 Patch();
             }
             catch (Exception ex)
             {
                 LogException("Failed to load", ex);
+                Harmony?.UnpatchAll(ModEntry.Info.Id);
                 return false;
             }
 
             return true;
+        }
+
+        private static bool OnUnload(UnityModManager.ModEntry modEntry)
+        {
+            Harmony?.UnpatchAll(ModEntry.Info.Id);
+            buildmodebundle?.Unload(true);
+            return true;
+        }
+
+        private static void LoadAssetBundles()
+        {
+            buildmodebundle = AssetBundle.LoadFromFile(Path.Combine(ModEntry.Path, "buildmodebundle"));
+
+            if (buildmodebundle == null)
+            {
+                throw new Exception("Failed to load buildmode bundle");
+            }
+
+            BuildModeClass.AssetMenuPrefab = buildmodebundle
+                .LoadAsset<GameObject>("assets/buildthis/menu_canvas.prefab");
+
+            if (BuildModeClass.AssetMenuPrefab == null)
+            {
+                throw new Exception("Failed to load menucanvas.prefab");
+            }
+
+            BuildModeClass.AssetAreaObjectPrefab = buildmodebundle
+                .LoadAsset<GameObject>("assets/buildthis/area_object.prefab");
+
+            if (BuildModeClass.AssetAreaObjectPrefab == null)
+            {
+                throw new Exception("Failed to load area_object.prefab");
+            }
         }
 
         private static void LoadLocale()

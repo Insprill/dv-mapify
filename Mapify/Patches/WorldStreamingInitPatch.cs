@@ -51,10 +51,10 @@ namespace Mapify.Patches
             var wsi = WorldStreamingInit.Instance;
 
             if(basicMapInfo.IsDefault()){
-                wsi.StartCoroutine(MapLifeCycle.LoadMap(basicMapInfo));
+                wsi.StartCoroutine(MapLifeCycleDV.FakeLoadMap());
             }
             else {
-                wsi.StartCoroutine(MapLifeCycleDV.FakeLoadMap());
+                wsi.StartCoroutine(MapLifeCycle.LoadMap(basicMapInfo));
             }
 
             yield return new WaitUntil(() => CanInitialize);

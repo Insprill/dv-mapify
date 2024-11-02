@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using DV;
 using DV.UI;
 using DV.Utils;
 using Mapify.Editor.Utils;
+using RuntimeHandle;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityModManagerNet;
 
 namespace Mapify.BuildMode
 {
@@ -19,8 +23,8 @@ namespace Mapify.BuildMode
         private GameObject originalObject;
         private List<GameObject> placedGameObjects;
 
-        public static GameObject AssetMenuPrefab;
-        public static GameObject AssetAreaObjectPrefab;
+        private static GameObject assetMenuPrefab;
+        private static GameObject assetAreaObjectPrefab;
         private GameObject assetMenu;
 
         private const int LEFT_MOUSE_BUTTON = 0;
@@ -38,12 +42,12 @@ namespace Mapify.BuildMode
 
         private void SetupAssetSelectMenu()
         {
-            assetMenu = Instantiate(AssetMenuPrefab);
+            assetMenu = Instantiate(assetMenuPrefab);
             var assetAreaObject = assetMenu.GetComponentInChildren<GridLayoutGroup>().gameObject;
 
             if (assetAreaObject == null)
             {
-                Mapify.LogError("Could not find asset area");
+                Mapify.LogError("Could not find asset area object");
                 return;
             }
 
@@ -64,7 +68,7 @@ namespace Mapify.BuildMode
             foreach (var ass in BuildingAssetsRegistry.Assets)
             {
                 assetAreaScript.CreateAreaObject(
-                    AssetAreaObjectPrefab,
+                    assetAreaObjectPrefab,
                     ass.Key,
                     placeHolderTexture,
                     () => { OnAssetClicked(ass.Key); }
@@ -138,8 +142,6 @@ namespace Mapify.BuildMode
                 //exited the menu
                 SetMouseMode(mouseModeWasEnabled);
             }
-
-
         }
 
         private void ShowPreview()
@@ -167,6 +169,8 @@ namespace Mapify.BuildMode
             var placed = Instantiate(originalObject, position, previewObject.transform.rotation);
             placed.SetActive(true);
             placedGameObjects.Add(placed);
+
+            RuntimeTransformHandle.Create(placed.transform, HandleType.POSITION);
         }
 
         private void TogglePlaceMode()
@@ -206,6 +210,25 @@ namespace Mapify.BuildMode
             }
 
             hasSelectedAnObject = true;
+        }
+
+        public static void LoadAssets(AssetBundle assetBundle, string assetsFolderPath)
+        {
+            assetMenuPrefab = assetBundle
+                .LoadAsset<GameObject>($"{assetsFolderPath}menu_canvas.prefab");
+
+            if (assetMenuPrefab == null)
+            {
+                throw new Exception("Failed to load menucanvas.prefab");
+            }
+
+            assetAreaObjectPrefab = assetBundle
+                .LoadAsset<GameObject>($"{assetsFolderPath}area_object.prefab");
+
+            if (assetAreaObjectPrefab == null)
+            {
+                throw new Exception("Failed to load area_object.prefab");
+            }
         }
     }
 }

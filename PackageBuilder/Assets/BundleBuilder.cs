@@ -1,51 +1,50 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Windows;
 
 #if UNITY_EDITOR
 
 public class BundleBuilder : MonoBehaviour
 {
-    public string bundleName;
-    public string exportPath;
-
     public void BuildIt()
     {
         var builds = new List<AssetBundleBuild>();
-        var asssetBundleFiles = new List<string>();
-
-        if (bundleName.Any(Char.IsUpper))
-        {
-            Debug.LogWarning("Upper case letters are automatically changed to lower case letters by Unity!");
-        }
+        var assetBundleFiles = new List<string>();
 
         Debug.Log("Building asset bundle. Files:");
 
         foreach (var assPath in AssetDatabase.GetAllAssetPaths())
         {
-            //the / at the end is crucial
-            if (!assPath.StartsWith("Assets/BuildThis/"))
+            if (!assPath.StartsWith("Assets/AssetBundleContent/"))
             {
                 continue;
             }
 
-            asssetBundleFiles.Add(assPath);
+            assetBundleFiles.Add(assPath);
             Debug.Log(assPath);
         }
 
-        if (!asssetBundleFiles.Any())
+        if (!assetBundleFiles.Any())
         {
             Debug.LogError("Empty asset bundle!");
             return;
         }
 
         builds.Add(new AssetBundleBuild {
-            assetBundleName = bundleName,
-            assetNames = asssetBundleFiles.ToArray()
+            assetBundleName = Mapify.Editor.Names.ASSET_BUNDLE_NAME,
+            assetNames = assetBundleFiles.ToArray()
         });
+
+        // Application.dataPath points to the Assets folder. We export the bundle to the build folder.
+        var exportPath = $"{Application.dataPath}/../../build/assetbundles/";
+        if (!Directory.Exists(exportPath))
+        {
+            Directory.CreateDirectory(exportPath);
+        }
+
+        Debug.Log($"Exporting to {exportPath}");
 
         var success = BuildPipeline.BuildAssetBundles(
             exportPath,

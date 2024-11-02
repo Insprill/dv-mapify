@@ -129,15 +129,17 @@ namespace Mapify.BuildMode
 
             if (assetMenu.activeSelf)
             {
-                //exited the menu
-                SetMouseMode(mouseModeWasEnabled);
-            }
-            else
-            {
                 //entered the menu
                 mouseModeWasEnabled = MouseModeIsEnabled();
                 SetMouseMode(true);
             }
+            else
+            {
+                //exited the menu
+                SetMouseMode(mouseModeWasEnabled);
+            }
+
+
         }
 
         private void ShowPreview()

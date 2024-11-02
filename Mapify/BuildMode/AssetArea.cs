@@ -27,7 +27,8 @@ namespace Mapify.BuildMode
         {
             foreach (var obj in areaObjects)
             {
-                obj.SetActive(obj.name.Contains(searchTerm));
+                // ToLower to make the search case-insensitive.
+                obj.SetActive(obj.name.ToLower().Contains(searchTerm.ToLower()));
             }
         }
 

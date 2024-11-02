@@ -25,7 +25,7 @@ namespace Mapify.Map
 {
     public static class MapLifeCycle
     {
-        private static readonly Regex VANILLA_STREAMER_SCENE_PATTERN = new Regex("Far__x[0-9]+_z[0-9]+");
+        public static readonly Regex VANILLA_STREAMER_SCENE_PATTERN = new Regex("Far__x[0-9]+_z[0-9]+");
 
         public static Action OnCleanup;
 

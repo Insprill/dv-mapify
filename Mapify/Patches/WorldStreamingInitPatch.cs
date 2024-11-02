@@ -22,13 +22,16 @@ namespace Mapify.Patches
 
         private static bool Prefix(WorldStreamingInit __instance)
         {
-            SaveGameManager saveGameManager = SaveGameManager.Instance;
+            var saveGameManager = SaveGameManager.Instance;
             saveGameManager.FindStartGameData();
-            BasicMapInfo basicMapInfo = saveGameManager.GetBasicMapInfo();
-            if (basicMapInfo.IsDefault())
-                return true;
-            SetFakeVegetationStudioPrefab(__instance);
+            var basicMapInfo = saveGameManager.GetBasicMapInfo();
+
+            if (!basicMapInfo.IsDefault()){
+                SetFakeVegetationStudioPrefab(__instance);
+            }
+
             __instance.StartCoroutine(WaitForLoadingScreen(basicMapInfo));
+
             return false;
         }
 
@@ -43,11 +46,19 @@ namespace Mapify.Patches
 
         private static IEnumerator WaitForLoadingScreen(BasicMapInfo basicMapInfo)
         {
-            WorldStreamingInit wsi = WorldStreamingInit.Instance;
             yield return new WaitUntil(() => CanLoad);
-            wsi.StartCoroutine(MapLifeCycle.LoadMap(basicMapInfo));
+
+            var wsi = WorldStreamingInit.Instance;
+
+            if(basicMapInfo.IsDefault()){
+                wsi.StartCoroutine(MapLifeCycle.LoadMap(basicMapInfo));
+            }
+            else {
+                wsi.StartCoroutine(MapLifeCycleDV.FakeLoadMap());
+            }
+
             yield return new WaitUntil(() => CanInitialize);
-            wsi.StartCoroutine("LoadingRoutine");
+            wsi.StartCoroutine(nameof(WorldStreamingInit.LoadingRoutine));
         }
     }
 }

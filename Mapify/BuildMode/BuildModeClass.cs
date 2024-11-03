@@ -148,7 +148,7 @@ namespace Mapify.BuildMode
         {
             var ray = Camera.current.ScreenPointToRay(Input.mousePosition);
 
-            if (!Physics.Raycast(ray, out RaycastHit hit, 150f))
+            if (!Physics.Raycast(ray, out RaycastHit hit, 500f))
             {
                 previewObject.SetActive(false);
                 return;
@@ -167,6 +167,7 @@ namespace Mapify.BuildMode
         {
             Mapify.LogDebug(() => $"Placing '{originalObject.name}' at {position}");
             var placed = Instantiate(originalObject, position, previewObject.transform.rotation);
+            placed.transform.SetParent(WorldMover.Instance.transform);
             placed.SetActive(true);
             placedGameObjects.Add(placed);
 

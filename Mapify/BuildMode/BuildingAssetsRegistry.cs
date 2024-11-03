@@ -10,16 +10,24 @@ namespace Mapify.BuildMode
     {
         public static SortedDictionary<string, GameObject> Assets = new SortedDictionary<string, GameObject>();
         private static GameObject registryMainObject;
+        private static List<string> searchedScenes = new List<string>();
 
         private static readonly Regex CLONE_PATTERN = new Regex(@"\(\d+\)$"); //matches 'blabla (1)' and not 'blabla'
 
-        public static void Setup()
+        public static void OnSceneLoad(Scene scene, LoadSceneMode mode)
         {
-            registryMainObject = new GameObject("[BuildingAssets]");
-        }
+            //TODO check if this scene is of the default game
+            if (searchedScenes.Contains(scene.name))
+            {
+                return;
+            }
 
-        public static void RegisterAssets(Scene scene)
-        {
+            if (registryMainObject == null)
+            {
+                registryMainObject = new GameObject("[BuildingAssets]");
+            }
+
+            searchedScenes.Add(scene.name);
             Mapify.Log("RegisterAssets "+scene.name);
 
             foreach (var rootObject in scene.GetRootGameObjects())

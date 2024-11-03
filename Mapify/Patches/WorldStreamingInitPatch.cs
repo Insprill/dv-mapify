@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using AwesomeTechnologies.VegetationSystem;
 using HarmonyLib;
+using Mapify.BuildMode;
 using Mapify.Components;
 using Mapify.Editor;
 using Mapify.Map;
 using Mapify.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Mapify.Patches
 {
@@ -22,16 +24,13 @@ namespace Mapify.Patches
 
         private static bool Prefix(WorldStreamingInit __instance)
         {
-            var saveGameManager = SaveGameManager.Instance;
+            SaveGameManager saveGameManager = SaveGameManager.Instance;
             saveGameManager.FindStartGameData();
-            var basicMapInfo = saveGameManager.GetBasicMapInfo();
-
-            if (!basicMapInfo.IsDefault()){
-                SetFakeVegetationStudioPrefab(__instance);
-            }
-
+            BasicMapInfo basicMapInfo = saveGameManager.GetBasicMapInfo();
+            if (basicMapInfo.IsDefault())
+                return true;
+            SetFakeVegetationStudioPrefab(__instance);
             __instance.StartCoroutine(WaitForLoadingScreen(basicMapInfo));
-
             return false;
         }
 
@@ -46,19 +45,11 @@ namespace Mapify.Patches
 
         private static IEnumerator WaitForLoadingScreen(BasicMapInfo basicMapInfo)
         {
+            WorldStreamingInit wsi = WorldStreamingInit.Instance;
             yield return new WaitUntil(() => CanLoad);
-
-            var wsi = WorldStreamingInit.Instance;
-
-            if(basicMapInfo.IsDefault()){
-                wsi.StartCoroutine(MapLifeCycleDV.FakeLoadMap());
-            }
-            else {
-                wsi.StartCoroutine(MapLifeCycle.LoadMap(basicMapInfo));
-            }
-
+            wsi.StartCoroutine(MapLifeCycle.LoadMap(basicMapInfo));
             yield return new WaitUntil(() => CanInitialize);
-            wsi.StartCoroutine(nameof(WorldStreamingInit.LoadingRoutine));
+            wsi.StartCoroutine("LoadingRoutine");
         }
     }
 }

@@ -45,7 +45,7 @@ namespace RuntimeHandle
 
         #pragma warning disable CS0649
         [SerializeField] private bool disableWhenNoTarget;
-        #pragma warning restore CS0649;
+        #pragma warning restore CS0649
 
         void Start()
         {

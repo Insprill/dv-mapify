@@ -58,6 +58,8 @@ namespace Mapify.BuildMode
             {
                 Mapify.LogDebug(() => ass.Value.name);
             }
+
+            BuildModeClass.Instance.SetupAssetSelectMenu();
         }
 
         public static void CleanUp()

@@ -1,6 +1,8 @@
 using System.Linq;
 using DV;
+using DV.Utils;
 using HarmonyLib;
+using Mapify.BuildMode;
 using Mapify.Map;
 using UnityEngine;
 
@@ -15,7 +17,8 @@ namespace Mapify.Patches
     {
         private static void Postfix(CommsRadioController __instance)
         {
-            var obj = new GameObject("[BuildMode]", typeof(BuildMode.BuildModeClass));
+            //ensure it exists
+            var obj2 = SingletonBehaviour<BuildModeClass>.Instance;
 
             if (Maps.IsDefaultMap)
                 return;

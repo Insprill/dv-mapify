@@ -14,6 +14,7 @@
     <ItemGroup>
         <Publicize Include="Assembly-CSharp" />
         <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DV.UserManagement" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="UnityModManager" IncludeCompilerGeneratedMembers="false" />
     </ItemGroup>

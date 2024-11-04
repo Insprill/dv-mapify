@@ -10,6 +10,8 @@ namespace Mapify.Editor
         public const string MOD_INFO_FILE = "info.json";
         public const string MAPIFY_VERSION_FILE = "Assets/Mapify/version.txt";
 
+        public const string PLACED_ASSETS_XML = "placed_assets.xml";
+
         // mapify asset bundles
         public const string ASSET_BUNDLE_NAME = "mapifybundle";
         public const string ASSETS_FOLDER_PATH = "Assets/AssetBundleContent/";

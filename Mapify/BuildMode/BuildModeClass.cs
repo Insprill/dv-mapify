@@ -2,26 +2,32 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
 using DV;
 using DV.UI;
+using DV.UserManagement;
+using DV.UserManagement.Storage.Implementation;
 using DV.Utils;
-using Mapify.Editor.Utils;
+using Mapify.Editor;
 using RuntimeHandle;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityModManagerNet;
+using Console = System.Console;
 
 namespace Mapify.BuildMode
 {
-    public class BuildModeClass: MonoBehaviour
+    public class BuildModeClass: SingletonBehaviour<BuildModeClass>
     {
         private bool placeMode = false;
         private bool hasSelectedAnObject = false;
         private bool mouseModeWasEnabled;
+        private bool initialized = false;
 
         private GameObject previewObject;
         private GameObject originalObject;
-        private List<GameObject> placedGameObjects;
+
+        private List<PlacedAsset> placedAssetsList = new List<PlacedAsset>();
+        private List<RuntimeTransformHandle> handles = new List<RuntimeTransformHandle>();
 
         private static GameObject assetMenuPrefab;
         private static GameObject assetAreaObjectPrefab;
@@ -30,17 +36,72 @@ namespace Mapify.BuildMode
         private const int LEFT_MOUSE_BUTTON = 0;
         private const int RIGHT_MOUSE_BUTTON = 1;
 
-        private void Awake()
+        //This is used, don't let Rider tell you otherwise.
+        public new static string AllowAutoCreate() => "[BuildMode]";
+
+        private void OnDisable()
         {
-            placedGameObjects = new List<GameObject>();
+            placedAssetsList = new List<PlacedAsset>();
+            foreach (var h in handles)
+            {
+                Destroy(h);
+            }
+            initialized = false;
         }
 
-        private void Start()
+        public void LoadPlacedAssets(string xmlPath)
         {
-            SetupAssetSelectMenu();
+            if (!File.Exists(xmlPath))
+            {
+                Mapify.LogDebug(() => $"{nameof(LoadPlacedAssets)}: Skipping XML file {xmlPath}, it doesn't exist.");
+                return;
+            }
+
+            try
+            {
+                using (var fileStream = File.OpenRead(xmlPath))
+                {
+                    placedAssetsList = (List<PlacedAsset>) new XmlSerializer(typeof(List<PlacedAsset>)).Deserialize(fileStream);
+                    foreach (var placedAsset in placedAssetsList)
+                    {
+                        try
+                        {
+                            PlaceObject(BuildingAssetsRegistry.Assets[placedAsset.Name], placedAsset.Position, placedAsset.Rotation);
+                        }
+                        catch (KeyNotFoundException)
+                        {
+                            Mapify.LogError($"{nameof(LoadPlacedAssets)}: key {placedAsset.Name} not in {nameof(BuildingAssetsRegistry.Assets)}");
+                        }
+                    }
+
+                    Mapify.LogDebug(() => $"{nameof(LoadPlacedAssets)}: loaded {placedAssetsList.Count} assets");
+                }
+            }
+            catch (Exception e)
+            {
+                Mapify.LogException($"Failed to load XML at {xmlPath}", e);
+            }
         }
 
-        private void SetupAssetSelectMenu()
+        //TODO object moved after placing is not taken into account
+        public void SavePlacedAssets(string xmlPath)
+        {
+            Mapify.LogDebug(() => $"{nameof(SavePlacedAssets)}: Saving XML file {xmlPath}");
+
+            try
+            {
+                using (var fileStream = File.OpenWrite(xmlPath))
+                {
+                    new XmlSerializer(typeof(List<PlacedAsset>)).Serialize(fileStream, placedAssetsList);
+                }
+            }
+            catch (Exception e)
+            {
+                Mapify.LogException($"Failed to save XML at {xmlPath}", e);
+            }
+        }
+
+        public void SetupAssetSelectMenu()
         {
             assetMenu = Instantiate(assetMenuPrefab);
             var assetAreaObject = assetMenu.GetComponentInChildren<GridLayoutGroup>().gameObject;
@@ -76,6 +137,8 @@ namespace Mapify.BuildMode
             }
 
             assetMenu.SetActive(false);
+
+            initialized = true;
         }
 
         private void OnAssetClicked(string assetName)
@@ -86,7 +149,7 @@ namespace Mapify.BuildMode
 
         private void Update()
         {
-            if (!Application.isFocused)
+            if (!Application.isFocused || !initialized)
             {
                 return;
             }
@@ -159,19 +222,20 @@ namespace Mapify.BuildMode
 
             if (Input.GetMouseButtonDown(LEFT_MOUSE_BUTTON))
             {
-                PlaceObject(hit.point);
+                PlaceObject(originalObject, hit.point, previewObject.transform.rotation);
+                placedAssetsList.Add(new PlacedAsset(originalObject.name, hit.point, previewObject.transform.rotation));
             }
         }
 
-        private void PlaceObject(Vector3 position)
+        private void PlaceObject(GameObject objectToPlace, Vector3 position, Quaternion rotation)
         {
-            Mapify.LogDebug(() => $"Placing '{originalObject.name}' at {position}");
-            var placed = Instantiate(originalObject, position, previewObject.transform.rotation);
+            Mapify.LogDebug(() => $"Placing '{objectToPlace.name}' at {position} rotation {rotation.eulerAngles}");
+            var placed = Instantiate(objectToPlace, position, rotation);
+            placed.name = objectToPlace.name;
             placed.transform.SetParent(WorldMover.Instance.transform);
             placed.SetActive(true);
-            placedGameObjects.Add(placed);
 
-            RuntimeTransformHandle.Create(placed.transform, HandleType.POSITION);
+            handles.Add(RuntimeTransformHandle.Create(placed.transform, HandleType.POSITION));
         }
 
         private void TogglePlaceMode()
@@ -230,6 +294,12 @@ namespace Mapify.BuildMode
             {
                 throw new Exception("Failed to load area_object.prefab");
             }
+        }
+
+        public static string GetDefaultMapXMLPath()
+        {
+            var storage = (FileSystemStorage)SingletonBehaviour<UserManager>.Instance.storage;
+            return Path.Combine(storage.basePath, Names.PLACED_ASSETS_XML);
         }
     }
 }

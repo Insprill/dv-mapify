@@ -7,7 +7,6 @@ using Mapify.Editor;
 using Mapify.Map;
 using Mapify.Utils;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Mapify.Patches
 {
@@ -28,7 +27,11 @@ namespace Mapify.Patches
             saveGameManager.FindStartGameData();
             BasicMapInfo basicMapInfo = saveGameManager.GetBasicMapInfo();
             if (basicMapInfo.IsDefault())
+            {
+                __instance.StartCoroutine(WaitForLoadingDefaultMap());
                 return true;
+            }
+
             SetFakeVegetationStudioPrefab(__instance);
             __instance.StartCoroutine(WaitForLoadingScreen(basicMapInfo));
             return false;
@@ -50,6 +53,17 @@ namespace Mapify.Patches
             wsi.StartCoroutine(MapLifeCycle.LoadMap(basicMapInfo));
             yield return new WaitUntil(() => CanInitialize);
             wsi.StartCoroutine("LoadingRoutine");
+        }
+
+        private static IEnumerator WaitForLoadingDefaultMap()
+        {
+            while (!WorldStreamingInit.isLoaded)
+            {
+                yield return null;
+            }
+
+            BuildModeClass.Instance.SetupAssetSelectMenu();
+            BuildModeClass.Instance.LoadPlacedAssets(BuildModeClass.GetDefaultMapXMLPath());
         }
     }
 }

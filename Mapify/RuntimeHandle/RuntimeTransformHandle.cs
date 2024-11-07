@@ -23,7 +23,7 @@ namespace RuntimeHandle
 
         public bool autoScale = false;
         public float autoScaleFactor = 1;
-        public Camera handleCamera;
+        public Camera handleCamera => Camera.current;
 
         private Vector3 _previousMousePosition;
         private HandleBase _previousAxis;
@@ -49,9 +49,6 @@ namespace RuntimeHandle
 
         void Start()
         {
-            if (handleCamera == null)
-                handleCamera = Camera.main;
-
             _previousType = type;
 
             if (target == null)

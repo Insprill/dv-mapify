@@ -1,8 +1,11 @@
+using System;
+
 namespace RuntimeHandle
 {
     /**
      * Created by Peter @sHTiF Stefcek 20.10.2020
      */
+    [Flags]
     public enum HandleAxes
     {
         X = 0b100,

@@ -166,7 +166,7 @@ namespace Mapify.Map
             SaveGameManager.Instance.disableAutosave = false;
 
             BuildingAssetsRegistry.FinishRegistering();
-            BuildModeClass.Instance.LoadPlacedAssets(Path.Combine(mapDir, Names.PLACED_ASSETS_XML));
+            BuildModeClass.Instance.LoadPlacedAssets(Path.Combine(mapDir, Constants.PLACED_ASSETS_XML));
         }
 
         private static void SetupStreamer(GameObject parent, MapInfo mapInfo)

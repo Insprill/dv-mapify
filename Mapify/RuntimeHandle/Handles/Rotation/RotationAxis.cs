@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace RuntimeHandle
@@ -114,7 +113,7 @@ namespace RuntimeHandle
 
             _startRotation = _parentTransformHandle.space == HandleSpace.LOCAL ? _parentTransformHandle.target.localRotation : _parentTransformHandle.target.rotation;
 
-            _arcMaterial = new Material(Shader.Find("sHTiF/HandleShader"));
+            _arcMaterial = new Material(HandleShader);
             _arcMaterial.color = new Color(1,1,0,.4f);
             _arcMaterial.renderQueue = 5000;
             //_arcMesh.gameObject.SetActive(true);

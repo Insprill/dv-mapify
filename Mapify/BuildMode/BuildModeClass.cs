@@ -8,11 +8,9 @@ using DV.UI;
 using DV.UserManagement;
 using DV.UserManagement.Storage.Implementation;
 using DV.Utils;
-using Mapify.Editor;
 using RuntimeHandle;
 using UnityEngine;
 using UnityEngine.UI;
-using Console = System.Console;
 
 namespace Mapify.BuildMode
 {
@@ -32,9 +30,6 @@ namespace Mapify.BuildMode
         private static GameObject assetMenuPrefab;
         private static GameObject assetAreaObjectPrefab;
         private GameObject assetMenu;
-
-        private const int LEFT_MOUSE_BUTTON = 0;
-        private const int RIGHT_MOUSE_BUTTON = 1;
 
         //This is used, don't let Rider tell you otherwise.
         public new static string AllowAutoCreate() => "[BuildMode]";
@@ -149,7 +144,9 @@ namespace Mapify.BuildMode
 
         private void Update()
         {
-            if (!Application.isFocused || !initialized)
+            if (!Application.isFocused ||
+                !initialized ||
+                SingletonBehaviour<AppUtil>.Instance.IsPauseMenuOpen)
             {
                 return;
             }
@@ -182,11 +179,39 @@ namespace Mapify.BuildMode
                 ToggleAssetSelectMenu();
             }
 
-            if (!SingletonBehaviour<AppUtil>.Instance.IsPauseMenuOpen &&
-                !assetMenu.activeSelf &&
-                hasSelectedAnObject)
+            if (assetMenu.activeSelf) return;
+
+            CheckHandleControls();
+
+            if (Input.GetMouseButtonDown(Constants.RIGHT_MOUSE_BUTTON))
+            {
+                hasSelectedAnObject = false;
+                previewObject.SetActive(false);
+            }
+
+            if (hasSelectedAnObject)
             {
                 ShowPreview();
+            }
+        }
+
+        public void CheckHandleControls()
+        {
+            if (Input.GetKeyDown(KeyCode.G))
+            {
+                SetHandleTypes(HandleType.POSITION);
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                SetHandleTypes(HandleType.ROTATION);
+            }
+        }
+
+        private void SetHandleTypes(HandleType handleType)
+        {
+            foreach (var h in handles)
+            {
+                h.SetHandleMode(handleType);
             }
         }
 
@@ -220,7 +245,7 @@ namespace Mapify.BuildMode
             previewObject.SetActive(true);
             previewObject.transform.position = hit.point;
 
-            if (Input.GetMouseButtonDown(LEFT_MOUSE_BUTTON))
+            if (Input.GetMouseButtonDown(Constants.LEFT_MOUSE_BUTTON))
             {
                 PlaceObject(originalObject, hit.point, previewObject.transform.rotation);
                 placedAssetsList.Add(new PlacedAsset(originalObject.name, hit.point, previewObject.transform.rotation));
@@ -299,7 +324,7 @@ namespace Mapify.BuildMode
         public static string GetDefaultMapXMLPath()
         {
             var storage = (FileSystemStorage)SingletonBehaviour<UserManager>.Instance.storage;
-            return Path.Combine(storage.basePath, Names.PLACED_ASSETS_XML);
+            return Path.Combine(storage.basePath, Constants.PLACED_ASSETS_XML);
         }
     }
 }

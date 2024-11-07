@@ -30,7 +30,7 @@ namespace Mapify.Patches
             {
                 xmlPath = Path.Combine(
                     Maps.GetDirectory(Maps.LoadedMap),
-                    Names.PLACED_ASSETS_XML
+                    Constants.PLACED_ASSETS_XML
                 );
             }
 

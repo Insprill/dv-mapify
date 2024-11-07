@@ -300,3 +300,6 @@ PackageBuilder/ProjectSettings/*
 !PackageBuilder/ProjectSettings/EditorSettings.asset
 !PackageBuilder/ProjectSettings/PackageManagerSettings.asset
 !PackageBuilder/ProjectSettings/ProjectVersion.txt
+
+# python virtual environment
+virtualenv/

@@ -8,7 +8,9 @@ namespace Mapify.BuildMode
 {
     public static class BuildingAssetsRegistry
     {
-        public static SortedDictionary<string, GameObject> Assets = new SortedDictionary<string, GameObject>();
+        public static SortedDictionary<string, GameObject> Assets => assets;
+        private static SortedDictionary<string, GameObject> assets = new SortedDictionary<string, GameObject>();
+
         private static GameObject registryMainObject;
         private static List<string> searchedScenes = new List<string>();
 
@@ -38,24 +40,29 @@ namespace Mapify.BuildMode
 
                     //TODO Names of objects might not be unique. Is there a better way to determine whether 2 GameObjects are of the same asset?
                     //avoid duplicates
-                    if (CLONE_PATTERN.IsMatch(originalObject.name) || Assets.ContainsKey(originalObject.name))
+                    if (CLONE_PATTERN.IsMatch(originalObject.name) || assets.ContainsKey(originalObject.name))
                     {
                         continue;
                     }
                     var copy = Object.Instantiate(originalObject, registryMainObject.transform);
                     copy.SetActive(false);
                     copy.name = originalObject.name;
-                    Assets.Add(copy.name, copy);
+                    assets.Add(copy.name, copy);
                 }
             }
         }
 
         public static void FinishRegistering()
         {
-            Mapify.LogDebug(() => $"Assets({Assets.Count}):");
+            Mapify.LogDebug(() => $"{nameof(FinishRegistering)}: assets({assets.Count}):");
 
-            foreach (var ass in Assets)
+            foreach (var ass in assets)
             {
+                if (ass.Value == null)
+                {
+                    Mapify.LogError($"{nameof(FinishRegistering)}: found null asset {ass.Key}");
+                    continue;
+                }
                 Mapify.LogDebug(() => ass.Value.name);
             }
 
@@ -64,12 +71,12 @@ namespace Mapify.BuildMode
 
         public static void CleanUp()
         {
-            foreach (var ass in Assets)
+            foreach (var ass in assets)
             {
                 Object.Destroy(ass.Value);
             }
 
-            Assets.Clear();
+            assets.Clear();
             Object.Destroy(registryMainObject);
         }
     }

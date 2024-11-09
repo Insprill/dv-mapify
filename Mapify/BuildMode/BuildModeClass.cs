@@ -16,16 +16,17 @@ namespace Mapify.BuildMode
 {
     public class BuildModeClass: SingletonBehaviour<BuildModeClass>
     {
-        private bool placeMode = false;
-        private bool hasSelectedAnObject = false;
+        private bool inBuildMode = false;
+        private bool inPlaceMode = false;
         private bool mouseModeWasEnabled;
         private bool initialized = false;
 
+        private bool hasSelectedAnObject = false;
         private GameObject previewObject;
         private GameObject originalObject;
 
         private List<PlacedAsset> placedAssetsList = new List<PlacedAsset>();
-        private List<RuntimeTransformHandle> handles = new List<RuntimeTransformHandle>();
+        private HandleManager handleManager;
 
         private static GameObject assetMenuPrefab;
         private static GameObject assetAreaObjectPrefab;
@@ -34,13 +35,16 @@ namespace Mapify.BuildMode
         //This is used, don't let Rider tell you otherwise.
         public new static string AllowAutoCreate() => "[BuildMode]";
 
+        protected override void Awake()
+        {
+            base.Awake();
+            handleManager = gameObject.AddComponent<HandleManager>();
+        }
+
         private void OnDisable()
         {
             placedAssetsList = new List<PlacedAsset>();
-            foreach (var h in handles)
-            {
-                Destroy(h);
-            }
+            Destroy(handleManager);
             initialized = false;
         }
 
@@ -140,6 +144,10 @@ namespace Mapify.BuildMode
         {
             SelectObject(BuildingAssetsRegistry.Assets[assetName]);
             assetMenu.SetActive(false);
+            if (!inPlaceMode)
+            {
+                EnterPlaceMode();
+            }
         }
 
         private void Update()
@@ -153,10 +161,19 @@ namespace Mapify.BuildMode
 
             if (Input.GetKeyDown(KeyCode.M))
             {
-                TogglePlaceMode();
+                ToggleBuildMode();
             }
 
-            if (placeMode)
+            if (!inBuildMode) { return; }
+
+            if (Input.GetKeyDown(KeyCode.Comma))
+            {
+                ToggleAssetSelectMenu();
+            }
+
+            CheckHandleControls();
+
+            if (inPlaceMode)
             {
                 UpdatePlaceMode();
             }
@@ -174,22 +191,14 @@ namespace Mapify.BuildMode
 
         private void UpdatePlaceMode()
         {
-            if (Input.GetKeyDown(KeyCode.Comma))
-            {
-                ToggleAssetSelectMenu();
-            }
-
-            if (assetMenu.activeSelf) return;
-
-            CheckHandleControls();
+            if (!hasSelectedAnObject || assetMenu.activeSelf) return;
 
             if (Input.GetMouseButtonDown(Constants.RIGHT_MOUSE_BUTTON))
             {
                 hasSelectedAnObject = false;
                 previewObject.SetActive(false);
             }
-
-            if (hasSelectedAnObject)
+            else
             {
                 ShowPreview();
             }
@@ -197,21 +206,22 @@ namespace Mapify.BuildMode
 
         public void CheckHandleControls()
         {
+            if (assetMenu.activeSelf) return;
+
+            //TODO make these rebindable
+            if (Input.GetKeyDown(KeyCode.P) && !inPlaceMode)
+            {
+                EnterPlaceMode();
+            }
             if (Input.GetKeyDown(KeyCode.G))
             {
-                SetHandleTypes(HandleType.POSITION);
+                handleManager.SetHandleTypes(HandleType.POSITION);
+                ExitPlaceMode();
             }
             if (Input.GetKeyDown(KeyCode.R))
             {
-                SetHandleTypes(HandleType.ROTATION);
-            }
-        }
-
-        private void SetHandleTypes(HandleType handleType)
-        {
-            foreach (var h in handles)
-            {
-                h.SetHandleMode(handleType);
+                handleManager.SetHandleTypes(HandleType.ROTATION);
+                ExitPlaceMode();
             }
         }
 
@@ -260,32 +270,57 @@ namespace Mapify.BuildMode
             placed.transform.SetParent(WorldMover.Instance.transform);
             placed.SetActive(true);
 
-            handles.Add(RuntimeTransformHandle.Create(placed.transform, HandleType.POSITION));
-        }
-
-        private void TogglePlaceMode()
-        {
-            if (placeMode)
-            {
-                ExitPlaceMode();
-            }
-            else
-            {
-                EnterPlaceMode();
-            }
+            handleManager.Add(placed.transform);
         }
 
         private void EnterPlaceMode()
         {
-            placeMode = true;
-            hasSelectedAnObject = false;
+            inPlaceMode = true;
+            if (hasSelectedAnObject)
+            {
+                previewObject.SetActive(true);
+            }
+            handleManager.SetHandlesActive(false);
         }
 
         private void ExitPlaceMode()
         {
-            placeMode = false;
+            inPlaceMode = false;
             previewObject.SetActive(false);
+            handleManager.SetHandlesActive(true);
+        }
+
+        private void ToggleBuildMode()
+        {
+            if (inBuildMode)
+            {
+                ExitBuildMode();
+            }
+            else
+            {
+                EnterBuildMode();
+            }
+        }
+
+        private void EnterBuildMode()
+        {
+            if (inPlaceMode)
+            {
+                EnterPlaceMode();
+            }
+            else
+            {
+                handleManager.SetHandlesActive(true);
+            }
+            inBuildMode = true;
+        }
+
+        private void ExitBuildMode()
+        {
+            previewObject.SetActive(false);
+            inBuildMode = false;
             assetMenu.SetActive(false);
+            handleManager.SetHandlesActive(false);
         }
 
         private void SelectObject(GameObject newObject)
@@ -296,7 +331,7 @@ namespace Mapify.BuildMode
             previewObject = Instantiate(originalObject);
             foreach (var collider in previewObject.GetComponentsInChildren<Collider>())
             {
-                DestroyImmediate(collider);
+                Destroy(collider);
             }
 
             hasSelectedAnObject = true;

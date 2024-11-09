@@ -95,6 +95,8 @@ namespace RuntimeHandle
 
         void Update()
         {
+            //TODO NullReferenceException somewhere in this function
+
             Vector3 axis1 = _axis1;
             Vector3 raxis1 = _parentTransformHandle.space == HandleSpace.LOCAL
                 ? _parentTransformHandle.target.rotation * axis1

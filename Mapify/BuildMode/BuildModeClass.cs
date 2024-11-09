@@ -111,14 +111,7 @@ namespace Mapify.BuildMode
                 return;
             }
 
-            var assetAreaScript = assetAreaObject.AddComponent<AssetArea>();
-
-            //TODO real image
-            var placeHolderTexture = FindObjectOfType<Texture2D>();
-            if (placeHolderTexture == null)
-            {
-                Mapify.LogError("Could not find Texture2D");
-            }
+            var assetArea = assetAreaObject.AddComponent<AssetArea>();
 
             if (!BuildingAssetsRegistry.Assets.Any())
             {
@@ -127,10 +120,12 @@ namespace Mapify.BuildMode
 
             foreach (var ass in BuildingAssetsRegistry.Assets)
             {
-                assetAreaScript.CreateAreaObject(
+                var texture = BuildingAssetsRegistry.AssetImages.ContainsKey(ass.Key) ? BuildingAssetsRegistry.AssetImages[ass.Key] : Texture2D.whiteTexture;
+
+                assetArea.CreateAreaObject(
                     assetAreaObjectPrefab,
                     ass.Key,
-                    placeHolderTexture,
+                    texture,
                     () => { OnAssetClicked(ass.Key); }
                 );
             }

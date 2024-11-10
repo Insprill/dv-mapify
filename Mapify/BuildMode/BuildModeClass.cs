@@ -24,8 +24,8 @@ namespace Mapify.BuildMode
         private bool hasSelectedAnObject = false;
         private GameObject previewObject;
         private GameObject originalObject;
+        private List<GameObject> placedObjects = new List<GameObject>();
 
-        private List<PlacedAsset> placedAssetsList = new List<PlacedAsset>();
         private HandleManager handleManager;
 
         private static GameObject assetMenuPrefab;
@@ -43,7 +43,7 @@ namespace Mapify.BuildMode
 
         private void OnDisable()
         {
-            placedAssetsList = new List<PlacedAsset>();
+            placedObjects = new List<GameObject>();
             Destroy(handleManager);
             initialized = false;
         }
@@ -60,7 +60,7 @@ namespace Mapify.BuildMode
             {
                 using (var fileStream = File.OpenRead(xmlPath))
                 {
-                    placedAssetsList = (List<PlacedAsset>) new XmlSerializer(typeof(List<PlacedAsset>)).Deserialize(fileStream);
+                    var placedAssetsList = (List<PlacedAsset>) new XmlSerializer(typeof(List<PlacedAsset>)).Deserialize(fileStream);
                     foreach (var placedAsset in placedAssetsList)
                     {
                         try
@@ -82,21 +82,31 @@ namespace Mapify.BuildMode
             }
         }
 
-        //TODO object moved after placing is not taken into account
         public void SavePlacedAssets(string xmlPath)
         {
             Mapify.LogDebug(() => $"{nameof(SavePlacedAssets)}: Saving XML file {xmlPath}");
+
+            var backupPath = xmlPath + ".bak";
+            if (File.Exists(xmlPath))
+            {
+                File.Copy(xmlPath, backupPath, true);
+                // XmlSerializer does not overwrite files correctly, so we must delete first
+                File.Delete(xmlPath);
+            }
 
             try
             {
                 using (var fileStream = File.OpenWrite(xmlPath))
                 {
+                    var placedAssetsList = placedObjects.Select(obj => new PlacedAsset(obj.name, obj.transform.position, obj.transform.rotation)).ToList();
                     new XmlSerializer(typeof(List<PlacedAsset>)).Serialize(fileStream, placedAssetsList);
                 }
             }
             catch (Exception e)
             {
                 Mapify.LogException($"Failed to save XML at {xmlPath}", e);
+                //restore backup
+                File.Move(backupPath, xmlPath);
             }
         }
 
@@ -253,7 +263,6 @@ namespace Mapify.BuildMode
             if (Input.GetMouseButtonDown(Constants.LEFT_MOUSE_BUTTON))
             {
                 PlaceObject(originalObject, hit.point, previewObject.transform.rotation);
-                placedAssetsList.Add(new PlacedAsset(originalObject.name, hit.point, previewObject.transform.rotation));
             }
         }
 
@@ -266,6 +275,7 @@ namespace Mapify.BuildMode
             placed.SetActive(true);
 
             handleManager.Add(placed.transform);
+            placedObjects.Add(placed);
         }
 
         private void EnterPlaceMode()
@@ -281,7 +291,10 @@ namespace Mapify.BuildMode
         private void ExitPlaceMode()
         {
             inPlaceMode = false;
-            previewObject.SetActive(false);
+            if (hasSelectedAnObject)
+            {
+                previewObject.SetActive(false);
+            }
             handleManager.SetHandlesActive(true);
         }
 
@@ -312,7 +325,9 @@ namespace Mapify.BuildMode
 
         private void ExitBuildMode()
         {
-            previewObject.SetActive(false);
+            if (hasSelectedAnObject) {
+                previewObject.SetActive(false);
+            }
             inBuildMode = false;
             assetMenu.SetActive(false);
             handleManager.SetHandlesActive(false);

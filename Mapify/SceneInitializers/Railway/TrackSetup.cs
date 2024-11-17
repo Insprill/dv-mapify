@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Mapify.Components;
 using Mapify.Editor;
+using Mapify.Patches;
 using Mapify.Utils;
 using UnityEngine;
 
@@ -40,7 +42,19 @@ namespace Mapify.SceneInitializers.Railway
                 railTrack.dontChange = false;
                 railTrack.age = (int)track.age;
                 railTrack.ApplyRailType();
+
+                if (!track.isRetarder) continue;
+                CreateRetarder(track, railTrack);
             }
+        }
+
+        private static void CreateRetarder(Track track, RailTrack railTrack)
+        {
+            Mapify.LogDebug(() => $"{nameof(CreateRetarder)}: adding {nameof(Retarder)} on track {track.name}");
+            var retarder = track.gameObject.AddComponent<Retarder>();
+            //convert to meter per second
+            var retarderMaxSpeedMS = track.retarderMaxSpeedKMH / 3.6f;
+            retarder.Setup(retarderMaxSpeedMS, railTrack, track.retarderBrakeForce);
         }
 
         private static void CreateJunctions()
@@ -56,6 +70,7 @@ namespace Mapify.SceneInitializers.Railway
                 foreach (Transform child in prefabCloneTransform)
                     child.transform.position += offset;
                 prefabCloneTransform.SetPositionAndRotation(swTransform.position, swTransform.rotation);
+
                 Junction junction = inJunction.GetComponent<Junction>();
                 junction.selectedBranch = sw.IsLeft
                     ? sw.defaultState == Switch.StandSide.THROUGH

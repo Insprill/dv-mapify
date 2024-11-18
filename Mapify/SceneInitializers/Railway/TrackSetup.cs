@@ -2,7 +2,6 @@
 using System.Linq;
 using Mapify.Components;
 using Mapify.Editor;
-using Mapify.Patches;
 using Mapify.Utils;
 using UnityEngine;
 
@@ -82,6 +81,12 @@ namespace Mapify.SceneInitializers.Railway
                 foreach (Junction.Branch branch in junction.outBranches)
                     branch.track.generateColliders = true;
                 prefabClone.SetActive(true);
+
+                if (sw.TryGetComponent(typeof(SwitchControllerPls), out Component scp))
+                {
+                    var sc = prefabClone.AddComponent<SwitchController>();
+                    sc.Setup(junction);
+                }
             }
         }
 

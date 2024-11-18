@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using CommandTerminal;
 using DV.JObjectExtstensions;
 using DV.PointSet;
@@ -216,6 +217,21 @@ namespace Mapify.Utils
                 saveGameData.RemoveData(SAVE_KEY_NAME);
             else
                 saveGameData.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
+        }
+
+        public static RailTrack GetRailTrack(this RailTrackRegistry registry, string stationID, string yardID, byte trackNumber)
+        {
+            var query = $"[{stationID}]_[{yardID}-{trackNumber:D2}";
+
+            return registry.AllTracks.FirstOrDefault(track => track.name.Contains(query));
+        }
+
+        public static void SwitchTo(this Junction junction, int branchNumber, Junction.SwitchMode switchMode)
+        {
+            Mapify.LogDebug($"junction {junction.name} switch to {branchNumber}");
+
+            junction.selectedBranch = branchNumber - 1;
+            junction.Switch(switchMode);
         }
 
         #endregion

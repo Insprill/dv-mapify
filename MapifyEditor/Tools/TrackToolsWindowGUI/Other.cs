@@ -17,6 +17,7 @@ namespace Mapify.Editor.Tools
 
         // Settings.
         private bool _showSettings = false;
+        private bool _drawTrackPreviews = true;
         private bool _drawNewPreview = true;
         private bool _performanceMode = false;
         private bool _zTestTrack = true;
@@ -87,9 +88,16 @@ namespace Mapify.Editor.Tools
             {
                 EditorGUI.indentLevel++;
 
-                _drawNewPreview = EditorGUILayout.Toggle(
-                    new GUIContent("New track preview", "Show or hide the new track preview"),
-                    _drawNewPreview);
+                _drawTrackPreviews = EditorGUILayout.Toggle(
+                    new GUIContent("Track previews", "Show or hide the track previews"),
+                    _drawTrackPreviews);
+
+                if (_drawTrackPreviews)
+                {
+                    _drawNewPreview = EditorGUILayout.Toggle(
+                        new GUIContent("New track preview", "Show or hide the new track preview"),
+                        _drawNewPreview);
+                }
 
                 _performanceMode = EditorGUILayout.Toggle(
                     new GUIContent("Performance mode", "Reduces redraw frequency"),

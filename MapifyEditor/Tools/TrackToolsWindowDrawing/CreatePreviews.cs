@@ -23,6 +23,8 @@ namespace Mapify.Editor.Tools
                 return;
             }
 
+            if (!_drawTrackPreviews) { return; }
+
             if (_drawNewPreview)
             {
                 AttachPoint ap = new AttachPoint(

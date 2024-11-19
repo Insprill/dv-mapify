@@ -81,7 +81,8 @@ namespace Mapify.SceneInitializers.Railway
 
         private static void CreateCustomSwitch(CustomSwitch customSwitch)
         {
-            var vanillaAsset = customSwitch.standSide == CustomSwitch.StandSide.LEFT ? VanillaAsset.SwitchLeft : VanillaAsset.SwitchRight;
+            // we use SwitchRight because with SwitchLeft the animation would be mirrored
+            var vanillaAsset = customSwitch.standSide == CustomSwitch.StandSide.LEFT ? VanillaAsset.SwitchRightOuterSign : VanillaAsset.SwitchRight;
 
             var prefabClone = AssetCopier.Instantiate(vanillaAsset);
             prefabClone.transform.SetPositionAndRotation(customSwitch.transform.position, customSwitch.transform.rotation);

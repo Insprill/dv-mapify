@@ -58,6 +58,7 @@
         <Reference Include="Unity.Postprocessing.Runtime" />
         <Reference Include="Unity.TextMeshPro" />
         <Reference Include="UnityEngine"/>
+        <Reference Include="UnityEngine.AnimationModule"/>
         <Reference Include="UnityEngine.AssetBundleModule"/>
         <Reference Include="UnityEngine.CoreModule"/>
         <Reference Include="UnityEngine.ImageConversionModule"/>

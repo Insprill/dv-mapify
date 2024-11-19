@@ -2,6 +2,7 @@
 using System.Linq;
 using Mapify.Components;
 using Mapify.Editor;
+using Mapify.Editor.Utils;
 using Mapify.Utils;
 using UnityEngine;
 
@@ -10,12 +11,14 @@ namespace Mapify.SceneInitializers.Railway
     [SceneSetupPriority(int.MinValue)]
     public class TrackSetup : SceneSetup
     {
+        private const string IN_JUNCTION_NAME = "in_junction";
+
         public override void Run()
         {
             Track[] tracks = Object.FindObjectsOfType<Track>().Where(t => !t.IsSwitch).ToArray();
 
             Mapify.LogDebug(() => "Creating RailTracks");
-            CreateRailTracks(tracks);
+            CreateRailTracks(tracks, false);
 
             Mapify.LogDebug(() => "Creating Junctions");
             CreateJunctions();
@@ -29,22 +32,28 @@ namespace Mapify.SceneInitializers.Railway
             RailManager.TestConnections();
         }
 
-        private static void CreateRailTracks(IEnumerable<Track> tracks)
+        private static List<RailTrack> CreateRailTracks(IEnumerable<Track> tracks, bool setActive)
         {
-            foreach (Track track in tracks)
-            {
-                track.gameObject.SetActive(false);
-                if (!track.IsSwitch && !track.IsTurntable)
-                    track.name = track.LogicName;
-                RailTrack railTrack = track.gameObject.AddComponent<RailTrack>();
-                railTrack.generateColliders = !track.IsTurntable;
-                railTrack.dontChange = false;
-                railTrack.age = (int)track.age;
-                railTrack.ApplyRailType();
+            return tracks.Select(track => CreateRailTrack(track, setActive)).ToList();
+        }
 
-                if (!track.isRetarder) continue;
+        private static RailTrack CreateRailTrack(Track track, bool setActive)
+        {
+            track.gameObject.SetActive(setActive);
+            if (!track.IsSwitch && !track.IsTurntable)
+                track.name = track.LogicName;
+            var railTrack = track.gameObject.AddComponent<RailTrack>();
+            railTrack.generateColliders = !track.IsTurntable;
+            railTrack.dontChange = false;
+            railTrack.age = (int)track.age;
+            railTrack.ApplyRailType();
+
+            if (track.isRetarder)
+            {
                 CreateRetarder(track, railTrack);
             }
+
+            return railTrack;
         }
 
         private static void CreateRetarder(Track track, RailTrack railTrack)
@@ -58,13 +67,112 @@ namespace Mapify.SceneInitializers.Railway
 
         private static void CreateJunctions()
         {
+            CreateCustomSwitches();
+            CreateVanillaSwitches();
+        }
+
+        private static void CreateCustomSwitches()
+        {
+            foreach (var customSwitch in Object.FindObjectsOfType<CustomSwitch>())
+            {
+                CreateCustomSwitch(customSwitch);
+            }
+        }
+
+        private static void CreateCustomSwitch(CustomSwitch customSwitch)
+        {
+            var vanillaAsset = customSwitch.standSide == CustomSwitch.StandSide.LEFT ? VanillaAsset.SwitchLeft : VanillaAsset.SwitchRight;
+
+            var prefabClone = AssetCopier.Instantiate(vanillaAsset);
+            prefabClone.transform.SetPositionAndRotation(customSwitch.transform.position, customSwitch.transform.rotation);
+
+            //Junction
+            var inJunction = prefabClone.GetComponentInChildren<Junction>();
+            inJunction.selectedBranch = customSwitch.defaultBranch;
+
+            DestroyPrefabTracks(prefabClone);
+            CreateNewTracks(customSwitch, prefabClone, inJunction);
+            SetupGraphical(prefabClone);
+        }
+
+        private static void DestroyPrefabTracks(GameObject prefabClone)
+        {
+            // must be destroyed inmediately to prevent:
+            // "Junction 'in_junction' doesn't have track '[track diverging]' assigned"
+            // from RailManager.TestConnections
+            Object.DestroyImmediate(prefabClone.FindChildByName("[track through]"));
+            Object.DestroyImmediate(prefabClone.FindChildByName("[track diverging]"));
+        }
+
+        private static void CreateNewTracks(CustomSwitch customSwitch, GameObject prefabClone, Junction switchJunction)
+        {
+            var railTracksInSwitch = CreateRailTracks(
+                customSwitch.gameObject
+                    .GetComponentsInChildren<Editor.Track>(), true
+            );
+
+            railTracksInSwitch = railTracksInSwitch
+                .OrderBy(track => track.gameObject.name)
+                .ToList();
+
+            if (!railTracksInSwitch.Any())
+            {
+                Mapify.LogError($"{nameof(CreateCustomSwitches)}: {nameof(railTracksInSwitch)} is empty");
+                return;
+            }
+
+            switchJunction.outBranches = new List<Junction.Branch>();
+
+            foreach (var t in railTracksInSwitch)
+            {
+                t.transform.SetParent(prefabClone.transform, true);
+
+                t.inBranch = new Junction.Branch();
+                t.inBranch.track = null;
+                t.inJunction = switchJunction;
+
+                switchJunction.outBranches.Add(new Junction.Branch(t, true));
+            }
+
+            //track before the switch
+            switchJunction.inBranch = switchJunction.FindClosestBranch(railTracksInSwitch[0].curve[0].transform.position);
+
+            //connect the track before the switch to the switch
+            if (switchJunction.inBranch.first)
+            {
+                switchJunction.inBranch.track.inJunction = switchJunction;
+            }
+            else
+            {
+                switchJunction.inBranch.track.outJunction = switchJunction;
+            }
+
+            if (switchJunction.inBranch == null)
+            {
+                Mapify.LogError($"{nameof(CreateNewTracks)}: inBranch is null");
+            }
+        }
+
+        private static void SetupGraphical(GameObject prefabClone)
+        {
+            var graphical = prefabClone.FindChildByName("Graphical");
+            string[] toDelete = {"ballast", "anchors", "sleepers", "rails_static", "rails_moving"};
+            foreach (var child in graphical.transform.GetChildren())
+            {
+                if (!toDelete.Contains(child.name)) continue;
+                Object.Destroy(child.gameObject);
+            }
+        }
+
+        private static void CreateVanillaSwitches()
+        {
             foreach (Switch sw in Object.FindObjectsOfType<Switch>())
             {
                 Transform swTransform = sw.transform;
                 VanillaAsset vanillaAsset = sw.GetComponent<VanillaObject>().asset;
                 GameObject prefabClone = AssetCopier.Instantiate(vanillaAsset, false);
                 Transform prefabCloneTransform = prefabClone.transform;
-                Transform inJunction = prefabCloneTransform.Find("in_junction");
+                Transform inJunction = prefabCloneTransform.Find(IN_JUNCTION_NAME);
                 Vector3 offset = prefabCloneTransform.position - inJunction.position;
                 foreach (Transform child in prefabCloneTransform)
                     child.transform.position += offset;
@@ -82,6 +190,7 @@ namespace Mapify.SceneInitializers.Railway
                     branch.track.generateColliders = true;
                 prefabClone.SetActive(true);
 
+                //TODO add this to CustomSwitch too?
                 if (sw.TryGetComponent(typeof(SwitchControllerPls), out Component scp))
                 {
                     var sc = prefabClone.AddComponent<SwitchController>();

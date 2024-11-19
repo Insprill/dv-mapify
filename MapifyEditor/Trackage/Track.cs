@@ -61,12 +61,12 @@ namespace Mapify.Editor
             }
         }
 
-        private Switch _parentSwitch;
+        private SwitchBase _parentSwitch;
 
-        private Switch ParentSwitch {
+        private SwitchBase ParentSwitch {
             get {
                 if (_parentSwitch) return _parentSwitch;
-                return _parentSwitch = GetComponentInParent<Switch>();
+                return _parentSwitch = GetComponentInParent<SwitchBase>();
             }
         }
 

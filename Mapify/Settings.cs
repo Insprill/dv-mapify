@@ -11,6 +11,8 @@ namespace Mapify
         public bool VerboseLogging;
         public bool ExtremelyVerboseLogging;
 
+        public CarLabeler.YardDestination lastUsedLabel;
+
         public void Draw(UnityModManager.ModEntry modEntry)
         {
             #region Hidden Settings

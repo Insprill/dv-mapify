@@ -12,7 +12,7 @@ namespace Mapify
     public static class Mapify
     {
         private static UnityModManager.ModEntry ModEntry { get; set; }
-        private static Settings Settings;
+        public static Settings Settings { get; private set; }
         private const string LOCALE_FILE = "locale.csv";
 
         internal static Harmony Harmony { get; private set; }

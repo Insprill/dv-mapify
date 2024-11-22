@@ -73,6 +73,8 @@ namespace Mapify.Editor
 
         #region Stores
 
+        //TODO update this, add new items
+
         Store = 80,
         StoreMesh = 81,
         StoreItemBoombox = 82,

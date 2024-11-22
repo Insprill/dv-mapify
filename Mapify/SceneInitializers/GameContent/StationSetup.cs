@@ -105,9 +105,9 @@ namespace Mapify.SceneInitializers.GameContent
             Transform teleportAnchor = station.gameObject.NewChild("TeleportAnchor").transform;
             teleportAnchor.position = station.teleportLocation.position;
             teleportAnchor.rotation = station.teleportLocation.rotation;
-            StationTeleporter teleporter = teleportAnchor.gameObject.AddComponent<StationTeleporter>();
+            StationFastTravelDestination teleporter = teleportAnchor.gameObject.AddComponent<StationFastTravelDestination>();
             teleporter.playerTeleportAnchor = teleportAnchor;
-            teleporter.playerTeleportMapMarkerAnchor = teleportAnchor;
+            teleporter.mapMarkerAnchor = teleportAnchor;
         }
 
         private static void SetupLocomotiveSpawners(Station station)

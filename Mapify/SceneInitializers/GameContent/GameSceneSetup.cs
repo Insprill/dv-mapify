@@ -29,14 +29,7 @@ namespace Mapify.SceneInitializers.GameContent
                 if (!ShouldEnable(gameObject))
                     continue;
 
-                try
-                {
-                    gameObject.SetActive(true);
-                }
-                catch (NullReferenceException e)
-                {
-                    Mapify.LogError($"{nameof(GameSceneSetup)}.{nameof(Run)}: SetActive on gameObject {gameObject.name} failed: {e}");
-                }
+                gameObject.SetActive(true);
             }
 
             // I'm not sure where vanilla creates this because it doesn't have auto create enabled, nor is it in any of the four main scenes, or created in code.

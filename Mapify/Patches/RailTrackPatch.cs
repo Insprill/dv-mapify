@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Mapify.Editor;
+using Mapify.Map;
 
 namespace Mapify.Patches
 {
@@ -63,12 +64,12 @@ namespace Mapify.Patches
     /// <summary>
     /// This function throws a NullReferenceException on custom maps. It doesn't look critical so let's just skip it for now.
     /// </summary>
-    // [HarmonyPatch(typeof(RailTrack), nameof(RailTrack.WarnIfConnectionsAreDisjoint))]
-    // public static class RailTrack_WarnIfConnectionsAreDisjoint_Patch
-    // {
-    //     private static bool Prefix()
-    //     {
-    //         return Maps.IsDefaultMap;
-    //     }
-    // }
+    [HarmonyPatch(typeof(RailTrack), nameof(RailTrack.WarnIfConnectionsAreDisjoint))]
+    public static class RailTrack_WarnIfConnectionsAreDisjoint_Patch
+    {
+        private static bool Prefix()
+        {
+            return Maps.IsDefaultMap;
+        }
+    }
 }

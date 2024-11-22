@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Mapify.Editor;
-using Mapify.Map;
 
 namespace Mapify.Patches
 {

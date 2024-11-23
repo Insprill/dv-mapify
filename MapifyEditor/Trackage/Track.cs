@@ -28,7 +28,7 @@ namespace Mapify.Editor
         [Tooltip("The age of the track. Older tracks are rougher and more rusted, newer tracks are smoother and cleaner")]
         public TrackAge age;
         [Tooltip("Whether speed limit, grade, and marker signs should be generated. Only applies to road tracks")]
-        public bool generateSigns;
+        public bool generateSigns = true;
         [Tooltip("Whether ballast is generated for the track. Doesn't apply to switches")]
         public bool generateBallast = true;
         [Tooltip("Whether sleepers and anchors are generated for the track. Doesn't apply to switches")]

@@ -23,8 +23,10 @@ namespace Mapify
                 UseAssetImagesCache = GUILayout.Toggle(UseAssetImagesCache, "Use asset preview images cache. Set this to false to regenerate the preview images in the asset menu instead of loading them from disk.");
 
                 #region Verbose Logging
+
                 VerboseLogging = GUILayout.Toggle(VerboseLogging, "Verbose Logging");
                 ExtremelyVerboseLogging = GUILayout.Toggle(ExtremelyVerboseLogging, "Extremely Verbose Logging");
+
                 #endregion
             }
 

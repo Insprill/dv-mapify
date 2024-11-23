@@ -49,26 +49,6 @@ namespace Mapify.SceneInitializers.GameContent
 
             stations.SetActive(true);
             SingletonBehaviour<LogicController>.Instance.gameObject.SetActive(true);
-
-            // var logicController = SingletonBehaviour<LogicController>.Instance;
-            // logicController.gameObject.SetActive(true);
-            //
-            // foreach (var railTrack in SingletonBehaviour<RailTrackRegistry>.Instance.AllTracks)
-            // {
-            //     if (railTrack.logicTrack != null) continue;
-            //
-            //     Mapify.LogError($"{nameof(railTrack.logicTrack)} of {nameof(RailTrack)} {railTrack.name} was null");
-            //     railTrack.logicTrack = new Track(0);
-            // }
-            //
-            // foreach (var controller in WarehouseMachineController.allControllers)
-            // {
-            //     if(controller.warehouseMachine != null) continue;
-            //
-            //     Mapify.LogError($"{nameof(controller.warehouseMachine)} of {nameof(WarehouseMachineController)} {controller.name} was null");
-            //     controller.warehouseMachine = new WarehouseMachine(new Track(0), new List<CargoType>());
-            // }
-
         }
 
         private static void SetupJobBookletSpawnSurface(Station station, StationController stationController)

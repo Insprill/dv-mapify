@@ -16,7 +16,7 @@ namespace Mapify.Editor.Tools
         // Global options.
         private Transform _currentParent;
         private TrackAge _trackAge = TrackAge.New;
-        private bool _generateSigns = false;
+        private bool _generateSigns = true;
         private bool _generateBallast = true;
         private bool _generateSleepers = true;
 

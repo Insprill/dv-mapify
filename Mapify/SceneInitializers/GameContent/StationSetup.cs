@@ -1,13 +1,17 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using DV.Teleporters;
 using DV.ThingTypes;
 using DV.Utils;
 using HarmonyLib;
 using Mapify.Editor;
+using Mapify.Map;
 using Mapify.SceneInitializers.Railway;
 using Mapify.Utils;
 using UnityEngine;
+using Track = DV.Logic.Job.Track;
+using WarehouseMachine = DV.Logic.Job.WarehouseMachine;
 
 namespace Mapify.SceneInitializers.GameContent
 {
@@ -105,9 +109,9 @@ namespace Mapify.SceneInitializers.GameContent
             Transform teleportAnchor = station.gameObject.NewChild("TeleportAnchor").transform;
             teleportAnchor.position = station.teleportLocation.position;
             teleportAnchor.rotation = station.teleportLocation.rotation;
-            StationTeleporter teleporter = teleportAnchor.gameObject.AddComponent<StationTeleporter>();
+            StationFastTravelDestination teleporter = teleportAnchor.gameObject.AddComponent<StationFastTravelDestination>();
             teleporter.playerTeleportAnchor = teleportAnchor;
-            teleporter.playerTeleportMapMarkerAnchor = teleportAnchor;
+            teleporter.mapMarkerAnchor = teleportAnchor;
         }
 
         private static void SetupLocomotiveSpawners(Station station)

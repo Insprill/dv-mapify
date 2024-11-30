@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using DV;
 using Mapify.Components;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -180,15 +181,19 @@ namespace Mapify.SceneInitializers.Railway
                 prefabCloneTransform.SetPositionAndRotation(swTransform.position, swTransform.rotation);
 
                 Junction junction = inJunction.GetComponent<Junction>();
-                junction.selectedBranch = sw.IsLeft
+                junction.selectedBranch = (byte) (sw.IsLeft
                     ? sw.defaultState == Switch.StandSide.THROUGH
                         ? 1
                         : 0
                     : sw.defaultState == Switch.StandSide.THROUGH
                         ? 0
-                        : 1;
+                        : 1
+                    );
+
                 foreach (Junction.Branch branch in junction.outBranches)
                     branch.track.generateColliders = true;
+
+                prefabClone.transform.SetParent(WorldData.Instance.TrackRootParent);
                 prefabClone.SetActive(true);
 
                 //TODO add this to CustomSwitch too?

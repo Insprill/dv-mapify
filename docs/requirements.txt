@@ -4,7 +4,7 @@
 #
 #    pip-compile docs/requirements.in
 #
-certifi==2022.12.7
+certifi==2024.7.4
     # via requests
 charset-normalizer==3.1.0
     # via requests
@@ -14,9 +14,9 @@ colorama==0.4.6
     # via mkdocs-material
 ghp-import==2.1.0
     # via mkdocs
-idna==3.4
+idna==3.7
     # via requests
-jinja2==3.1.2
+jinja2==3.1.4
     # via
     #   mkdocs
     #   mkdocs-material
@@ -31,17 +31,17 @@ mergedeep==1.3.4
     # via mkdocs
 mkdocs==1.4.2
     # via
-    #   -r docs/requirements.in
+    #   -r requirements.in
     #   mkdocs-material
 mkdocs-material==9.1.6
-    # via -r docs/requirements.in
+    # via -r requirements.in
 mkdocs-material-extensions==1.1.1
     # via mkdocs-material
 packaging==23.0
     # via mkdocs
-pygments==2.14.0
+pygments==2.15.0
     # via mkdocs-material
-pymdown-extensions==9.11
+pymdown-extensions==10.0
     # via mkdocs-material
 python-dateutil==2.8.2
     # via ghp-import
@@ -54,11 +54,11 @@ pyyaml-env-tag==0.1
     # via mkdocs
 regex==2023.3.23
     # via mkdocs-material
-requests==2.28.2
+requests==2.32.2
     # via mkdocs-material
 six==1.16.0
     # via python-dateutil
-urllib3==1.26.15
+urllib3==1.26.19
     # via requests
 watchdog==3.0.0
     # via mkdocs

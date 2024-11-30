@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DV;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Utils;
@@ -10,7 +11,7 @@ namespace Mapify.SceneInitializers.Vanilla.Railway
     {
         protected override IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
-            if (gameObject.name != "[railway]")
+            if (gameObject.name != WorldData.RAILWAY_ROOT)
                 yield break;
 
             for (int i = 0; i < gameObject.transform.childCount; i++)
@@ -25,8 +26,7 @@ namespace Mapify.SceneInitializers.Vanilla.Railway
                         visual.localPosition = visual.localPosition.AddY(2.5f);
                         Transform colliders = bridge.FindChildByName("colliders").transform;
                         colliders.localPosition = colliders.localPosition.AddY(2.5f);
-                        GameObject rail = bridge.FindChildByName("TurntableRail");
-                        yield return (VanillaAsset.TurntableTrack, rail);
+                        yield return (VanillaAsset.TurntableTrack, child);
                         yield return (VanillaAsset.TurntableBridge, bridge);
                         continue;
                     case "TurntableControlPanel":

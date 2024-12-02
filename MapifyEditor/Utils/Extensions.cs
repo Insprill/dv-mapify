@@ -243,12 +243,6 @@ namespace Mapify.Editor.Utils
                 .ToDictionary(group => group.Key, group => group.ToList());
         }
 
-        // Switches.
-        public static BezierPoint GetJointPoint(this Switch s) => s.ThroughTrack.Curve[0];
-        public static BezierPoint GetThroughPoint(this Switch s) => s.ThroughTrack.Curve[1];
-        public static BezierPoint GetDivergingPoint(this Switch s) => s.DivergingTrack.Curve[1];
-        public static BezierPoint GetDivergeJoinPoint(this Switch s) => s.DivergingTrack.Curve[0];
-
         // Track.
         /// <summary>
         /// Returns true if this track starts at grade of 0%.

@@ -239,10 +239,10 @@ namespace Mapify.Editor.Tools
 
         // Switches.
         /// <summary>
-        /// Instantiates a <see cref="Switch"/>.
+        /// Instantiates a <see cref="VanillaSwitch"/>.
         /// </summary>
-        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
-        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="leftPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the right.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new switch.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
@@ -251,15 +251,14 @@ namespace Mapify.Editor.Tools
         /// <returns>The instantiated <see cref="Track"/>.</returns>
         /// <remarks>
         /// Derail Valley switches are static assets, and their tracks cannot be changed.
-        /// <para>The switches are also always made at a grade of <b>0%</b>.</para> 
+        /// <para>The switches are also always made at a grade of <b>0%</b>.</para>
         /// </remarks>
-        public static Switch CreateSwitch(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        public static VanillaSwitch CreateVanillaSwitch(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, SwitchPoint connectingPoint)
         {
             // Create switch object.
-            Switch s = Object.Instantiate(orientation == TrackOrientation.Left ? leftPrefab : rightPrefab);
+            VanillaSwitch s = Object.Instantiate(orientation == TrackOrientation.Left ? leftPrefab : rightPrefab, parent);
             s.gameObject.name = $"[Switch {orientation}]";
-            s.transform.parent = parent;
             // Helper variables.
             Vector3 pivot;
             Quaternion rot;
@@ -296,14 +295,62 @@ namespace Mapify.Editor.Tools
             return s;
         }
 
+        /// <summary>
+        /// Creates a switch without the limitations of the base game switches
+        /// </summary>
+        public static CustomSwitch CreateCustomSwitch(Transform parent, Vector3 attachPoint, Vector3 handlePosition, int switchBranchesCount,
+            int connectingPoint, float radius, float arc, float endGrade)
+        {
+            //TODO connectingPoint
+
+            var switchObject = new GameObject($"[Switch w/ {switchBranchesCount} branches]");
+            var switchComponent = switchObject.AddComponent<CustomSwitch>();
+            //TODO
+            switchComponent.defaultBranch = 0;
+            switchComponent.standSide = CustomSwitch.StandSide.LEFT;
+
+            var tracks = new Track[switchBranchesCount];
+            var length = radius * arc * Mathf.Deg2Rad;
+
+            for (int branchIndex = 0; branchIndex < switchBranchesCount; branchIndex++)
+            {
+                if (switchBranchesCount % 2 == 1 && branchIndex == (switchBranchesCount-1) / 2)
+                {
+                    //middle track
+                    tracks[branchIndex] = CreateStraight(switchObject.transform, attachPoint, handlePosition, length, endGrade);
+                    continue;
+                }
+
+                TrackOrientation trackOrientation;
+                float thisRadius;
+
+                if (branchIndex < switchBranchesCount / 2.0)
+                {
+                    //left of center
+                    trackOrientation = TrackOrientation.Left;
+                    thisRadius = (branchIndex + 1) * radius;
+                }
+                else
+                {
+                    //right of center
+                    trackOrientation = TrackOrientation.Right;
+                    thisRadius = (switchBranchesCount - branchIndex) * radius;
+                }
+
+                var thisArc = length / thisRadius * Mathf.Rad2Deg;
+                tracks[branchIndex] = CreateArcCurve(switchObject.transform, attachPoint, handlePosition, trackOrientation, thisRadius, thisArc, 360, endGrade);
+            }
+
+            switchComponent.Tracks = tracks;
+            return switchComponent;
+        }
 
         // Yards.
         /// <summary>
         /// Creates a yard with similar shape to the ones present in the base game.
         /// </summary>
-        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
-        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
-        /// <param name="trackPrefab">The base track prefab.</param>
+        /// <param name="leftPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the right.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the first switch.</param>
         /// <param name="handlePosition">Handle of the attachment point for the first switch.</param>
@@ -319,7 +366,7 @@ namespace Mapify.Editor.Tools
         /// <param name="startingTrackId">The starting number of the sidings.</param>
         /// <param name="reverseNumbers">Whether the track numbers should increase FROM the starting ID or decrease TO the starting ID.</param>
         /// <param name="sidings">An array with all sidings.</param>
-        /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
+        /// <returns>An array with the <see cref="VanillaSwitch"/>es at each end of the yard.</returns>
         /// <remarks>
         /// For yards with the same number of tracks on both sides, it is recommended to set <paramref name="alternateSides"/> to <c>true</c>.
         /// This allows for yards with a shorter overall length, and with similar lengths on both sides. If the number of sides is different,
@@ -341,8 +388,8 @@ namespace Mapify.Editor.Tools
         /// total tracks, will use the numbers 3, 4, 5, 6, and 7 always, but the order will be reversed.
         /// </para>
         /// </remarks>
-        /// <seealso cref="CreateSwitch(Switch, Switch, Transform, Vector3, Vector3, TrackOrientation, SwitchPoint, bool)"/>
-        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        /// <seealso cref="CreateVanillaSwitch"/>
+        public static VanillaSwitch[] CreateYard(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool half, bool alternateSides, float minimumLength,
             string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
@@ -363,8 +410,8 @@ namespace Mapify.Editor.Tools
         /// <summary>
         /// Creates a yard with similar shape to the ones present in the base game.
         /// </summary>
-        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
-        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="leftPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the right.</param>
         /// <param name="trackPrefab">The base track prefab.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the first switch.</param>
@@ -373,9 +420,9 @@ namespace Mapify.Editor.Tools
         /// <param name="trackDistance">The distance between the sidings.</param>
         /// <param name="yardOptions">Settings for the creation of the yard.</param>
         /// <param name="sidings">An array with all sidings.</param>
-        /// <returns>An array with the <see cref="Switch"/>es at each end of the yard.</returns>
-        /// <seealso cref="CreateYard(Switch, Switch, Track, Transform, Vector3, Vector3, TrackOrientation, float, int, int, bool, float, string, char, byte, bool)"/>
-        public static Switch[] CreateYard(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        /// <returns>An array with the <see cref="VanillaSwitch"/>es at each end of the yard.</returns>
+        /// <seealso cref="CreateYard(VanillaSwitch, VanillaSwitch, Track, Transform, Vector3, Vector3, TrackOrientation, float, int, int, bool, float, string, char, byte, bool)"/>
+        public static VanillaSwitch[] CreateYard(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, YardOptions yardOptions, out Track[] sidings)
         {
             return CreateYard(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, trackDistance,
@@ -383,7 +430,7 @@ namespace Mapify.Editor.Tools
                 yardOptions.StationId, yardOptions.YardId, yardOptions.StartTrackId, yardOptions.ReverseNumbers, out sidings);
         }
 
-        private static Switch[] CreateFullYard(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        private static VanillaSwitch[] CreateFullYard(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, bool alternateSides, float minimumLength,
             string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
@@ -393,9 +440,9 @@ namespace Mapify.Editor.Tools
             }
 
             Vector3 dir = (attachPoint - handlePosition).normalized;
-            Switch start;
-            Switch end;
-            Switch s;
+            VanillaSwitch start;
+            VanillaSwitch end;
+            VanillaSwitch s;
             Track t;
 
             // Points to connect each yard track.
@@ -598,10 +645,10 @@ namespace Mapify.Editor.Tools
             Object.DestroyImmediate(endObj);
 
             sidings = storageTracks.ToArray();
-            return new Switch[] { start, end };
+            return new VanillaSwitch[] { start, end };
         }
 
-        private static Switch[] CreateHalfYard(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        private static VanillaSwitch[] CreateHalfYard(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, float trackDistance, int mainSideTracks, int otherSideTracks, float minimumLength,
             string stationId, char yardId, byte startingTrackId, bool reverseNumbers, out Track[] sidings)
         {
@@ -619,8 +666,8 @@ namespace Mapify.Editor.Tools
                 rotDir = -rotDir;
             }
 
-            Switch start;
-            Switch s;
+            VanillaSwitch start;
+            VanillaSwitch s;
             Track t;
 
             // Points to connect each yard track.
@@ -806,20 +853,20 @@ namespace Mapify.Editor.Tools
             Object.DestroyImmediate(startObj);
 
             sidings = storageTracks.ToArray();
-            return new Switch[] { start };
+            return new VanillaSwitch[] { start };
         }
 
         // Switches on each side of the yard.
-        private static List<BezierPoint> CreateSwitchSprawl(Switch leftPrefab, Switch rightPrefab, Transform parent,
-            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, int sideTracks, float trackDistance, out Switch start,
+        private static List<BezierPoint> CreateSwitchSprawl(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent,
+            Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, int sideTracks, float trackDistance, out VanillaSwitch start,
             out Track[] endMerge)
         {
             // Starting switch.
             // Switch stands are all on the outside of the yard.
-            start = CreateSwitch(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, SwitchPoint.Joint);
-            start.standSide = Switch.StandSide.DIVERGING;
-            start.defaultState = Switch.StandSide.THROUGH;
-            Switch s = start;
+            start = CreateVanillaSwitch(leftPrefab, rightPrefab, parent, attachPoint, handlePosition, orientation, SwitchPoint.Joint);
+            start.standSide = VanillaSwitch.StandSide.DIVERGING;
+            start.defaultState = VanillaSwitch.StandSide.THROUGH;
+            VanillaSwitch s = start;
             BezierPoint now = s.GetDivergingPoint();
 
             // Points where each track will be.
@@ -838,12 +885,12 @@ namespace Mapify.Editor.Tools
             for (int i = 1; i < sideTracks; i++)
             {
                 t = CreateStraight(parent, now.position, now.globalHandle1, length, 0);
-                s = CreateSwitch(leftPrefab, rightPrefab, parent, t.Curve[1].position, t.Curve[1].globalHandle1,
+                s = CreateVanillaSwitch(leftPrefab, rightPrefab, parent, t.Curve[1].position, t.Curve[1].globalHandle1,
                     orientation, SwitchPoint.Joint);
                 now = s.GetThroughPoint();
                 points.Add(s.GetDivergingPoint());
-                s.standSide = Switch.StandSide.THROUGH;
-                s.defaultState = Switch.StandSide.THROUGH;
+                s.standSide = VanillaSwitch.StandSide.THROUGH;
+                s.defaultState = VanillaSwitch.StandSide.THROUGH;
                 length = sideL;
             }
 
@@ -964,16 +1011,16 @@ namespace Mapify.Editor.Tools
         }
 
         /// <summary>
-        /// Instantiates the diverging track of a <see cref="Switch"/> only.
+        /// Instantiates the diverging track of a <see cref="VanillaSwitch"/> only.
         /// </summary>
-        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
-        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="leftPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the right.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
         /// <param name="orientation">Which side the curve turns to.</param>
         /// <returns>The instantiated <see cref="Track"/>.</returns>
-        public static Track CreateSwitchCurve(Switch leftPrefab, Switch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
+        public static Track CreateSwitchCurve(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent, Vector3 attachPoint, Vector3 handlePosition,
             TrackOrientation orientation, SwitchPoint connectingPoint)
         {
             Track t;
@@ -985,7 +1032,7 @@ namespace Mapify.Editor.Tools
             {
                 t = Object.Instantiate(rightPrefab.DivergingTrack);
             }
-            Switch s = orientation == TrackOrientation.Left ? leftPrefab : rightPrefab;
+            VanillaSwitch s = orientation == TrackOrientation.Left ? leftPrefab : rightPrefab;
 
             Vector3 offset = -t.Curve[0].localPosition;
 
@@ -1090,8 +1137,8 @@ namespace Mapify.Editor.Tools
         /// <summary>
         /// Creates a crossover.
         /// </summary>
-        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
-        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="leftPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the right.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
@@ -1099,8 +1146,8 @@ namespace Mapify.Editor.Tools
         /// <param name="trackDistance">The distance between the parallel tracks.</param>
         /// <param name="trailing">Whether to the crossover is in front or comes from behind.</param>
         /// <param name="switchDistance">The distance between the switches on the same track.</param>
-        /// <returns>An array with the <see cref="Switch"/> at the attachment point (index <c>0</c>) and the other <see cref="Switch"/> (index <c>1</c>).</returns>
-        public static Switch[] CreateCrossover(Switch leftPrefab, Switch rightPrefab, Transform parent,
+        /// <returns>An array with the <see cref="VanillaSwitch"/> at the attachment point (index <c>0</c>) and the other <see cref="VanillaSwitch"/> (index <c>1</c>).</returns>
+        public static VanillaSwitch[] CreateCrossover(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent,
             Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, bool trailing,
             float switchDistance)
         {
@@ -1119,7 +1166,7 @@ namespace Mapify.Editor.Tools
                 sp = SwitchPoint.Joint;
             }
 
-            Switch s1 = CreateSwitch(leftPrefab, rightPrefab, crossObj.transform,
+            VanillaSwitch s1 = CreateVanillaSwitch(leftPrefab, rightPrefab, crossObj.transform,
                 attachPoint, handlePosition, orientation, sp);
             BezierPoint bp1 = s1.GetDivergingPoint();
 
@@ -1132,20 +1179,20 @@ namespace Mapify.Editor.Tools
 
             point = point + (dir * switchDistance) + offset;
 
-            Switch s2 = CreateSwitch(leftPrefab, rightPrefab, crossObj.transform,
+            VanillaSwitch s2 = CreateVanillaSwitch(leftPrefab, rightPrefab, crossObj.transform,
                 point, point - dir, orientation, SwitchPoint.Through);
             BezierPoint bp2 = s2.GetDivergingPoint();
 
             CreateConnect2Point(crossObj.transform, bp1, bp2, false, false, 1.0f);
 
-            return new Switch[] { s1, s2 };
+            return new VanillaSwitch[] { s1, s2 };
         }
 
         /// <summary>
         /// Creates a scissors crossover (2 crossovers in the same place).
         /// </summary>
-        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
-        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="leftPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the right.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
@@ -1153,9 +1200,9 @@ namespace Mapify.Editor.Tools
         /// <param name="trackDistance">The distance between the parallel tracks.</param>
         /// <param name="switchDistance">The distance between the switches on the same track.</param>
         /// <returns>
-        /// An array of <see cref="Switch"/>es in the following order: [0] attach [1] opposite to 0 [2] next to 0 [3] opposite to 2.
+        /// An array of <see cref="VanillaSwitch"/>es in the following order: [0] attach [1] opposite to 0 [2] next to 0 [3] opposite to 2.
         /// </returns>
-        public static Switch[] CreateScissorsCrossover(Switch leftPrefab, Switch rightPrefab, Transform parent,
+        public static VanillaSwitch[] CreateScissorsCrossover(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent,
             Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float trackDistance, float switchDistance)
         {
             // Create 2 crossovers offset from eachother.
@@ -1184,23 +1231,23 @@ namespace Mapify.Editor.Tools
             CreateConnect2Point(t1, c2[0].GetThroughPoint(), c1[1].GetThroughPoint(), false, false, 1.0f);
 
             // Return all 4 switches.
-            return new Switch[] { c1[0], c1[1], c2[0], c2[1] };
+            return new VanillaSwitch[] { c1[0], c1[1], c2[0], c2[1] };
         }
 
         /// <summary>
         /// Creates a double slip.
         /// </summary>
-        /// <param name="leftPrefab">Prefab of a <see cref="Switch"/> with diverging track to the left.</param>
-        /// <param name="rightPrefab">Prefab of a <see cref="Switch"/> with diverging track to the right.</param>
+        /// <param name="leftPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the left.</param>
+        /// <param name="rightPrefab">Prefab of a <see cref="VanillaSwitch"/> with diverging track to the right.</param>
         /// <param name="parent">The parent <see cref="Transform"/> for the new track.</param>
         /// <param name="attachPoint">Attachment point for the track.</param>
         /// <param name="handlePosition">Handle of the attachment point for the track.</param>
         /// <param name="orientation">The side to which the first switch turns to.</param>
         /// <param name="crossAngle">The angle at which the 2 middle tracks cross eachother.</param>
         /// <returns>
-        /// An array of <see cref="Switch"/>es in the following order: [0] attach [1] diverging attach [2] opposite to 0 [3] opposite to 1.
+        /// An array of <see cref="VanillaSwitch"/>es in the following order: [0] attach [1] diverging attach [2] opposite to 0 [3] opposite to 1.
         /// </returns>
-        public static Switch[] CreateDoubleSlip(Switch leftPrefab, Switch rightPrefab, Transform parent,
+        public static VanillaSwitch[] CreateDoubleSlip(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Transform parent,
             Vector3 attachPoint, Vector3 handlePosition, TrackOrientation orientation, float crossAngle)
         {
             // Create the parent object.
@@ -1217,10 +1264,10 @@ namespace Mapify.Editor.Tools
 
             // First side.
             // Creates a switch, a curve, and then another switch connected through its diverging track.
-            Switch s00 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, attachPoint, handlePosition, orientation, SwitchPoint.Joint);
+            VanillaSwitch s00 = CreateVanillaSwitch(leftPrefab, rightPrefab, obj.transform, attachPoint, handlePosition, orientation, SwitchPoint.Joint);
             bp = s00.GetDivergingPoint();
             bp = CreateArcCurve(obj.transform, bp.position, bp.globalHandle1, orientation, radius, arc, 180.0f, 0).Curve.Last();
-            Switch s01 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
+            VanillaSwitch s01 = CreateVanillaSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
                 FlipOrientation(orientation), SwitchPoint.Diverging);
 
             // Calculate the middle crossover's position by interesecting the 2 through tracks.
@@ -1233,16 +1280,16 @@ namespace Mapify.Editor.Tools
             Vector3 next = MathHelper.MirrorAround(attachPoint, mid);
 
             // Repeat the process for the other side.
-            Switch s10 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, next, next + dir, orientation, SwitchPoint.Joint);
+            VanillaSwitch s10 = CreateVanillaSwitch(leftPrefab, rightPrefab, obj.transform, next, next + dir, orientation, SwitchPoint.Joint);
             bp = s10.GetDivergingPoint();
             bp = CreateArcCurve(obj.transform, bp.position, bp.globalHandle1, orientation, radius, arc, 180.0f, 0).Curve.Last();
-            Switch s11 = CreateSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
+            VanillaSwitch s11 = CreateVanillaSwitch(leftPrefab, rightPrefab, obj.transform, bp.position, bp.globalHandle1,
                 FlipOrientation(orientation), SwitchPoint.Diverging);
 
             CreateConnect2Point(obj.transform, s00.GetThroughPoint(), s10.GetThroughPoint(), false, false, 1.0f);
             CreateConnect2Point(obj.transform, s01.GetThroughPoint(), s11.GetThroughPoint(), false, false, 1.0f);
 
-            return new Switch[] { s00, s01, s10, s11 };
+            return new VanillaSwitch[] { s00, s01, s10, s11 };
         }
 
         /// <summary>

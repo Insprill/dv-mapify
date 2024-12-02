@@ -71,122 +71,122 @@ namespace Mapify.Editor.Tools
                 case SelectionType.Turntable:
                     CacheTrack(CurrentTurntable.Track);
                     break;
-                default:
-                    break;
             }
 
             switch (_currentPiece)
             {
                 case TrackPiece.Straight:
-                    foreach (var cache in _newCache)
-                    {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewStraight(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _length, _endGrade, out cache.Points, _sampleCount) };
-                    }
-                    foreach (var cache in _nextCache)
-                    {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewStraight(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _length, _endGrade, out cache.Points, _sampleCount) };
-                    }
-                    foreach (var cache in _backCache)
-                    {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewStraight(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _length, _endGrade, out cache.Points, _sampleCount) };
-                    }
+                {
+                    FillCache(ref _newCache);
+                    FillCache(ref _nextCache);
+                    FillCache(ref _backCache);
                     break;
+
+                    void FillCache(ref List<PreviewPointCache> caches)
+                    {
+                        foreach (var cache in caches)
+                        {
+                            cache.Lines = new[]
+                            { TrackToolsCreator.Previews.PreviewStraight(
+                                cache.Attach.Position, cache.Attach.Handle,
+                                _length, _endGrade, out cache.Points, _sampleCount) };
+                        }
+                    }
+                }
                 case TrackPiece.Curve:
-                    foreach (var cache in _newCache)
-                    {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewArcCurve(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out cache.Points, _sampleCount) };
-                    }
-                    foreach (var cache in _nextCache)
-                    {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewArcCurve(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out cache.Points, _sampleCount) };
-                    }
-                    foreach (var cache in _backCache)
-                    {
-                        cache.Lines = new Vector3[][] { TrackToolsCreator.Previews.PreviewArcCurve(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out cache.Points, _sampleCount) };
-                    }
+                {
+                    FillCache(ref _newCache);
+                    FillCache(ref _nextCache);
+                    FillCache(ref _backCache);
                     break;
-                case TrackPiece.Switch:
-                    if (LeftSwitch && RightSwitch)
+
+                    void FillCache(ref List<PreviewPointCache> caches)
                     {
-                        foreach (var cache in _newCache)
+                        foreach (var cache in caches)
                         {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _connectingPoint, _sampleCount);
-                        }
-                        foreach (var cache in _nextCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _connectingPoint, _sampleCount);
-                        }
-                    foreach (var cache in _backCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _connectingPoint, _sampleCount);
+                            cache.Lines = new[]
+                            {
+                                TrackToolsCreator.Previews.PreviewArcCurve(
+                                    cache.Attach.Position, cache.Attach.Handle,
+                                    _orientation, _radius, _arc, _maxArcPerPoint, _endGrade, out cache.Points, _sampleCount)
+                            };
                         }
                     }
+                }
+                case TrackPiece.Switch:
+                    if (_switchType == SwitchType.Vanilla)
+                    {
+                        if (!LeftSwitch || !RightSwitch) break;
+
+                        void FillCache(ref List<PreviewPointCache> caches)
+                        {
+                            foreach (var cache in caches)
+                            {
+                                cache.Lines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
+                                    cache.Attach.Position, cache.Attach.Handle,
+                                    _connectingPointVanilla, _sampleCount);
+                            }
+                        }
+
+                        FillCache(ref _newCache);
+                        FillCache(ref _nextCache);
+                        FillCache(ref _backCache);
+                    }
+                    else
+                    {
+                        void FillCache(ref List<PreviewPointCache> caches)
+                        {
+                            foreach (var cache in caches)
+                            {
+                                cache.Lines = TrackToolsCreator.Previews.PreviewCustomSwitch(
+                                    cache.Attach.Position, cache.Attach.Handle, _switchBranchesCount, _connectingPointCustom, _radius, _arc, _endGrade, _sampleCount);
+                            }
+                        }
+
+                        FillCache(ref _newCache);
+                        FillCache(ref _nextCache);
+                        FillCache(ref _backCache);
+                    }
+
                     break;
                 case TrackPiece.Yard:
-                    if (LeftSwitch && RightSwitch)
+                {
+                    if (!LeftSwitch || !RightSwitch) break;
+
+                    FillCache(ref _newCache);
+                    FillCache(ref _nextCache);
+                    FillCache(ref _backCache);
+                    break;
+
+                    void FillCache(ref List<PreviewPointCache> caches)
                     {
-                        foreach (var cache in _newCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewYard(LeftSwitch, RightSwitch,
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _orientation, _trackDistance, _yardOptions, _sampleCount);
-                        }
-                        foreach (var cache in _nextCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewYard(LeftSwitch, RightSwitch,
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _orientation, _trackDistance, _yardOptions, _sampleCount);
-                        }
-                        foreach (var cache in _backCache)
+                        foreach (var cache in caches)
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewYard(LeftSwitch, RightSwitch,
                                 cache.Attach.Position, cache.Attach.Handle,
                                 _orientation, _trackDistance, _yardOptions, _sampleCount);
                         }
                     }
-                    break;
+                }
                 case TrackPiece.Turntable:
-                    foreach (var cache in _newCache)
-                    {
-                        cache.Lines = TrackToolsCreator.Previews.PreviewTurntable(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _turntableOptions, _sampleCount);
-                    }
-                    foreach (var cache in _nextCache)
-                    {
-                        cache.Lines = TrackToolsCreator.Previews.PreviewTurntable(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _turntableOptions, _sampleCount);
-                    }
-                    foreach (var cache in _backCache)
-                    {
-                        cache.Lines = TrackToolsCreator.Previews.PreviewTurntable(
-                            cache.Attach.Position, cache.Attach.Handle,
-                            _turntableOptions, _sampleCount);
-                    }
+                {
+                    FillCache(ref _newCache);
+                    FillCache(ref _nextCache);
+                    FillCache(ref _backCache);
                     break;
+
+                    void FillCache(ref List<PreviewPointCache> caches)
+                    {
+                        foreach (var cache in caches)
+                        {
+                            cache.Lines = TrackToolsCreator.Previews.PreviewTurntable(
+                                cache.Attach.Position, cache.Attach.Handle,
+                                _turntableOptions, _sampleCount);
+                        }
+                    }
+                }
                 case TrackPiece.Special:
                     SpecialPreviews();
-                    break;
-                default:
                     break;
             }
         }
@@ -198,31 +198,25 @@ namespace Mapify.Editor.Tools
                 case SpecialTrackPiece.Buffer:
                     break;
                 case SpecialTrackPiece.SwitchCurve:
-                    if (LeftSwitch && RightSwitch)
+                {
+                    if (!LeftSwitch || !RightSwitch) break;
+
+                    FillCache(ref _newCache);
+                    FillCache(ref _nextCache);
+                    FillCache(ref _backCache);
+                    break;
+
+                    void FillCache(ref List<PreviewPointCache> caches)
                     {
-                        foreach (var cache in _newCache)
+                        foreach (var cache in caches)
                         {
                             cache.Lines = new Vector3[1][];
                             System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
                                 cache.Attach.Position, cache.Attach.Handle,
-                                _connectingPoint, _sampleCount), 1, cache.Lines, 0, 1);
-                        }
-                        foreach (var cache in _nextCache)
-                        {
-                            cache.Lines = new Vector3[1][];
-                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _connectingPoint, _sampleCount), 1, cache.Lines, 0, 1);
-                        }
-                        foreach (var cache in _backCache)
-                        {
-                            cache.Lines = new Vector3[1][];
-                            System.Array.Copy(TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _connectingPoint, _sampleCount), 1, cache.Lines, 0, 1);
+                                _connectingPointVanilla, _sampleCount), 1, cache.Lines, 0, 1);
                         }
                     }
-                    break;
+                }
                 case SpecialTrackPiece.Connect2:
                     {
                         BezierPoint p0 = null;
@@ -285,76 +279,62 @@ namespace Mapify.Editor.Tools
                     }
                     break;
                 case SpecialTrackPiece.Crossover:
-                    if (LeftSwitch && RightSwitch)
+                {
+                    if (!LeftSwitch || !RightSwitch) break;
+
+                    FillCache(ref _newCache);
+                    FillCache(ref _nextCache);
+                    FillCache(ref _backCache);
+                    break;
+
+                    void FillCache(ref List<PreviewPointCache> caches)
                     {
-                        foreach (var cache in _newCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
-                        }
-                        foreach (var cache in _nextCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
-                        }
-                        foreach (var cache in _backCache)
+                        foreach (var cache in caches)
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewCrossover(GetCurrentSwitchPrefab(),
                                 cache.Attach.Position, cache.Attach.Handle,
                                 _orientation, _trackDistance, _isTrailing, _switchDistance, _sampleCount);
                         }
                     }
-                    break;
+                }
                 case SpecialTrackPiece.ScissorsCrossover:
-                    if (LeftSwitch && RightSwitch)
+                {
+                    if (!LeftSwitch || !RightSwitch) break;
+
+                    FillCache(ref _newCache);
+                    FillCache(ref _nextCache);
+                    FillCache(ref _backCache);
+                    break;
+
+                    void FillCache(ref List<PreviewPointCache> caches)
                     {
-                        foreach (var cache in _newCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _orientation, _trackDistance, _switchDistance, _sampleCount);
-                        }
-                        foreach (var cache in _nextCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _orientation, _trackDistance, _switchDistance, _sampleCount);
-                        }
-                        foreach (var cache in _backCache)
+                        foreach (var cache in caches)
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewScissorsCrossover(LeftSwitch, RightSwitch,
                                 cache.Attach.Position, cache.Attach.Handle,
                                 _orientation, _trackDistance, _switchDistance, _sampleCount);
                         }
                     }
-                    break;
+                }
                 case SpecialTrackPiece.DoubleSlip:
-                    if (LeftSwitch && RightSwitch)
+                {
+                    if (!LeftSwitch || !RightSwitch) break;
+
+                    FillCache(ref _newCache);
+                    FillCache(ref _nextCache);
+                    FillCache(ref _backCache);
+                    break;
+
+                    void FillCache(ref List<PreviewPointCache> caches)
                     {
-                        foreach (var cache in _newCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewDoubleSlip(LeftSwitch, RightSwitch,
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _orientation, _crossAngle, _sampleCount);
-                        }
-                        foreach (var cache in _nextCache)
-                        {
-                            cache.Lines = TrackToolsCreator.Previews.PreviewDoubleSlip(LeftSwitch, RightSwitch,
-                                cache.Attach.Position, cache.Attach.Handle,
-                                _orientation, _crossAngle, _sampleCount);
-                        }
-                        foreach (var cache in _backCache)
+                        foreach (var cache in caches)
                         {
                             cache.Lines = TrackToolsCreator.Previews.PreviewDoubleSlip(LeftSwitch, RightSwitch,
                                 cache.Attach.Position, cache.Attach.Handle,
                                 _orientation, _crossAngle, _sampleCount);
                         }
                     }
-                    break;
-                default:
-                    break;
+                }
             }
         }
 
@@ -380,18 +360,6 @@ namespace Mapify.Editor.Tools
                 _backCache.Add(new PreviewPointCache(
                     new AttachPoint(t.Curve[0].position, t.Curve[0].globalHandle2)));
                 _backCache[0].Tooltip = PreviewPointCache.BackString;
-            }
-        }
-
-        private void CreateEditingPreviews()
-        {
-            switch (_editingMode)
-            {
-                case EditingMode.InsertPoint:
-
-                    break;
-                default:
-                    break;
             }
         }
     }

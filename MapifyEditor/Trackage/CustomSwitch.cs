@@ -11,9 +11,12 @@ namespace Mapify.Editor
         }
 
         [Tooltip("Which way the switch should be flipped by default")]
-        public int defaultBranch = 0;
+        public byte defaultBranch = 0;
 
         [Tooltip("Which side of the switch the stand will appear on")]
         public StandSide standSide;
+
+        [Tooltip("Tracks in the switch, from left to right")]
+        public new Track[] Tracks;
     }
 }

@@ -1,16 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Mapify.Editor.Utils;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace Mapify.Editor
 {
     [RequireComponent(typeof(VanillaObject))]
-    public class Switch : SwitchBase
+    public class VanillaSwitch : SwitchBase
     {
         public enum StandSide
         {
@@ -27,5 +20,10 @@ namespace Mapify.Editor
         public Track ThroughTrack => transform.Find("[track through]").GetComponent<Track>();
         public Track DivergingTrack => transform.Find("[track diverging]").GetComponent<Track>();
         public bool IsLeft => DivergingTrack.Curve.Last().localPosition.x < 0;
+
+        public BezierPoint GetJointPoint() => ThroughTrack.Curve[0];
+        public BezierPoint GetThroughPoint() => ThroughTrack.Curve[1];
+        public BezierPoint GetDivergingPoint() => DivergingTrack.Curve[1];
+        public BezierPoint GetDivergeJoinPoint() => DivergingTrack.Curve[0];
     }
 }

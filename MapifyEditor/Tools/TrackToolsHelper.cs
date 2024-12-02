@@ -1,3 +1,4 @@
+using System.Linq;
 using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -43,11 +44,10 @@ namespace Mapify.Editor.Tools
         /// <param name="handlePosition">The handle of the attachment point.</param>
         /// <param name="connectingPoint">Which point of the switch connects to the attachment point.</param>
         /// <returns>An array with 2 arrays representing the through track (index <c>0</c>) and diverging track (index <c>1</c>).</returns>
-        public static SimpleBezier[] GetSwitchBeziers(Switch s, Vector3 attachPoint, Vector3 handlePosition, SwitchPoint connectingPoint)
+        public static SimpleBezier[] GetSwitchBeziers(VanillaSwitch s, Vector3 attachPoint, Vector3 handlePosition, SwitchPoint connectingPoint)
         {
             // Create the original beziers.
-            SimpleBezier[] curves = new SimpleBezier[]
-            {
+            SimpleBezier[] curves = {
                 new SimpleBezier(
                     s.GetJointPoint().position,
                     s.GetJointPoint().globalHandle2,
@@ -101,19 +101,19 @@ namespace Mapify.Editor.Tools
         }
 
         /// <summary>
-        /// Calculates the radius of the diverging track of a <see cref="Switch"/>.
+        /// Calculates the radius of the diverging track of a <see cref="VanillaSwitch"/>.
         /// </summary>
-        public static float CalculateSwitchRadius(Switch s)
+        public static float CalculateSwitchRadius(VanillaSwitch s)
         {
             BezierPoint bp = s.GetDivergingPoint();
             return bp.position.z / Mathf.Sin(Mathf.Atan(Mathf.Abs(bp.handle1.x / bp.handle1.z)));
         }
 
         /// <summary>
-        /// Calculates the angle at the end of the diverging track of a <see cref="Switch"/>.
+        /// Calculates the angle at the end of the diverging track of a <see cref="VanillaSwitch"/>.
         /// </summary>
         /// <returns>The angle in radians.</returns>
-        public static float CalculateSwitchAngle(Switch s)
+        public static float CalculateSwitchAngle(VanillaSwitch s)
         {
             BezierPoint bp = s.GetDivergingPoint();
             return Mathf.Atan(Mathf.Abs(bp.handle1.x / bp.handle1.z));
@@ -121,6 +121,7 @@ namespace Mapify.Editor.Tools
 
         /// <summary>
         /// Returns the speed limit shown on track speed signs for a given radius.
+        /// source: DV.Signs.SignPlacer.GetMaxSpeedForRadius
         /// </summary>
         /// <returns>The speed in km/h.</returns>
         public static float GetMaxSpeedForRadiusGame(float radius)
@@ -196,7 +197,7 @@ namespace Mapify.Editor.Tools
 
             handle = newTarget + (handle - newTarget).normalized * length;
 
-            return new Vector3[] { attachPosition,
+            return new[] { attachPosition,
                 attachPosition + dir * length,
                 handle,
                 newTarget };
@@ -237,7 +238,7 @@ namespace Mapify.Editor.Tools
 
             length *= 1 + MathHelper.ArcToBezierHandleLength(angle * Mathf.Deg2Rad);
 
-            return new Vector3[] { attachPosition,
+            return new[] { attachPosition,
                 attachPosition + dir * length,
                 newTarget - dirNext * length,
                 newTarget };
@@ -264,7 +265,7 @@ namespace Mapify.Editor.Tools
             Vector3[] s = GetSmoothBezierToConnectSimple(attachPosition, attachHandle, newTarget);
             Vector3[] c = GetSmoothBezierToConnectComplex(attachPosition, attachHandle, newTarget);
 
-            return new Vector3[] {Vector3.Lerp(s[0], c[0], mix),
+            return new[] {Vector3.Lerp(s[0], c[0], mix),
                 Vector3.Lerp(s[1], c[1], mix),
                 Vector3.Lerp(s[2], c[2], mix),
                 Vector3.Lerp(s[3], c[3], mix) };
@@ -275,7 +276,7 @@ namespace Mapify.Editor.Tools
             Vector3[] s = GetSmoothBezierToConnectSimple(attachPosition, attachHandle, newTarget, maxAngle);
             Vector3[] c = GetSmoothBezierToConnectComplex(attachPosition, attachHandle, newTarget, maxAngle);
 
-            return new Vector3[] {Vector3.Lerp(s[0], c[0], mix),
+            return new[] {Vector3.Lerp(s[0], c[0], mix),
                 Vector3.Lerp(s[1], c[1], mix),
                 Vector3.Lerp(s[2], c[2], mix),
                 Vector3.Lerp(s[3], c[3], mix) };
@@ -337,7 +338,7 @@ namespace Mapify.Editor.Tools
         /// </summary>
         public static Vector3[] ReverseCurve(Vector3[] curve)
         {
-            return new Vector3[] { curve[3],
+            return new[] { curve[3],
                 curve[2],
                 curve[1],
                 curve[0] };
@@ -388,7 +389,7 @@ namespace Mapify.Editor.Tools
         }
 
         // The length of the straight section (middle track) of a crossover.
-        internal static float CalculateCrossoverDistance(Switch switchPrefab, float trackDistance)
+        internal static float CalculateCrossoverDistance(VanillaSwitch switchPrefab, float trackDistance)
         {
             float targetDistance = trackDistance - (2.0f * Mathf.Abs(switchPrefab.DivergingTrack.Curve[1].position.x));
             Vector3 handle = switchPrefab.DivergingTrack.Curve[1].handle1;
@@ -397,7 +398,7 @@ namespace Mapify.Editor.Tools
         }
 
         // The length of the straight section connecting the middle switch to the outer switches in a yard.
-        internal static float CalculateLengthFromDistanceYardCentre(Switch switchPrefab, float trackDistance)
+        internal static float CalculateLengthFromDistanceYardCentre(VanillaSwitch switchPrefab, float trackDistance)
         {
             float targetDistance = trackDistance - Mathf.Abs(switchPrefab.DivergingTrack.Curve[1].position.x);
 
@@ -410,7 +411,7 @@ namespace Mapify.Editor.Tools
         }
 
         // The length of the straight section connecting the outer switches in a yard.
-        internal static float CalculateLengthFromDistanceYardSides(Switch switchPrefab, float trackDistance)
+        internal static float CalculateLengthFromDistanceYardSides(VanillaSwitch switchPrefab, float trackDistance)
         {
             float targetDistance = trackDistance;
 
@@ -445,7 +446,7 @@ namespace Mapify.Editor.Tools
         /// This will only look in the default directory (Mapify folder in the Assets root).
         /// If a parameter is not null, it will not be replaced.
         /// </remarks>
-        public static void TryGetDefaultPrefabs(ref Track track, ref BufferStop buffer, ref Switch switchLeft, ref Switch switchRight, ref Turntable turntable)
+        public static void TryGetDefaultPrefabs(ref Track track, ref BufferStop buffer, ref VanillaSwitch switchLeft, ref VanillaSwitch switchRight, ref Turntable turntable)
         {
             string[] guids;
 
@@ -475,7 +476,7 @@ namespace Mapify.Editor.Tools
 
                 if (guids.Length > 0)
                 {
-                    switchLeft = AssetDatabase.LoadAssetAtPath<Switch>(AssetDatabase.GUIDToAssetPath(guids[0]));
+                    switchLeft = AssetDatabase.LoadAssetAtPath<VanillaSwitch>(AssetDatabase.GUIDToAssetPath(guids[0]));
                 }
             }
 
@@ -485,7 +486,7 @@ namespace Mapify.Editor.Tools
 
                 if (guids.Length > 0)
                 {
-                    switchRight = AssetDatabase.LoadAssetAtPath<Switch>(AssetDatabase.GUIDToAssetPath(guids[0]));
+                    switchRight = AssetDatabase.LoadAssetAtPath<VanillaSwitch>(AssetDatabase.GUIDToAssetPath(guids[0]));
                 }
             }
 

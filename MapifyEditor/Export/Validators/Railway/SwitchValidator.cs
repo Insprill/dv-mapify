@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using System.Linq;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Editor.Validators;
@@ -12,7 +13,12 @@ namespace MapifyEditor.Export.Validators
         {
             foreach (var switch_ in scenes.railwayScene.GetAllComponents<SwitchBase>())
             {
-                foreach (var track in switch_.GetComponentsInChildren<Track>())
+                if (switch_.Tracks.Length < 2)
+                {
+                    yield return Result.Error("Switches must have at least 2 branches", switch_);
+                }
+
+                foreach (var track in switch_.Tracks)
                 {
                     track.Snap();
 
@@ -21,6 +27,8 @@ namespace MapifyEditor.Export.Validators
                     yield return Result.Error("Switches must have a track attached to all points", switch_);
                     break;
                 }
+
+                //TODO valideer dat de tracks met de [0] aan elkaar zitten
             }
         }
     }

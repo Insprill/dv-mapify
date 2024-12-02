@@ -69,16 +69,7 @@ namespace Mapify.Editor
             }
         }
 
-        private SwitchBase _parentSwitch;
-
-        private SwitchBase ParentSwitch {
-            get {
-                if (_parentSwitch) return _parentSwitch;
-                return _parentSwitch = GetComponentInParent<SwitchBase>();
-            }
-        }
-
-        public bool IsSwitch => ParentSwitch != null;
+        public bool IsSwitch => GetComponentInParent<SwitchBase>() != null;
         public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
         public string LogicName =>

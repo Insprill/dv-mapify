@@ -45,7 +45,7 @@ namespace Mapify.Editor.Tools
 
         public Track CurrentTrack => _selectedTracks.Length > 0 ? _selectedTracks[0] : null;
         public BezierPoint CurrentPoint => _selectedPoints.Length > 0 ? _selectedPoints[0] : null;
-        public Switch CurrentSwitch { get; private set; }
+        public VanillaSwitch CurrentSwitch { get; private set; }
         public Turntable CurrentTurntable { get; private set; }
 
         #endregion
@@ -146,7 +146,7 @@ namespace Mapify.Editor.Tools
             {
                 _selectionType = SelectionType.BezierPoint;
             }
-            else if (go.TryGetComponent(out Switch s))
+            else if (go.TryGetComponent(out VanillaSwitch s))
             {
                 _selectionType = SelectionType.Switch;
                 CurrentSwitch = s;
@@ -207,8 +207,16 @@ namespace Mapify.Editor.Tools
                     Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Curve");
                     break;
                 case TrackPiece.Switch:
-                    go = TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
-                        _orientation, _connectingPoint).gameObject;
+                    if (_switchType == SwitchType.Vanilla)
+                    {
+                        go = TrackToolsCreator.CreateVanillaSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
+                            _orientation, _connectingPointVanilla).gameObject;
+                    }
+                    else
+                    {
+                        go = TrackToolsCreator.CreateCustomSwitch(_currentParent, position, handle, _switchBranchesCount, _connectingPointCustom, _radius, _arc, _endGrade).gameObject;
+                    }
+
                     SelectGameObject(go);
                     Undo.RegisterCreatedObjectUndo(go, "Created Switch");
                     break;
@@ -256,7 +264,7 @@ namespace Mapify.Editor.Tools
                     break;
                 case SpecialTrackPiece.SwitchCurve:
                     t = TrackToolsCreator.CreateSwitchCurve(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
-                        _orientation, _connectingPoint);
+                        _orientation, (SwitchPoint)_connectingPointVanilla);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
                     Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Switch Curve");
@@ -392,7 +400,7 @@ namespace Mapify.Editor.Tools
             }
             if (all || _currentPiece == TrackPiece.Switch)
             {
-                _connectingPoint = SwitchPoint.Joint;
+                _connectingPointVanilla = SwitchPoint.Joint;
             }
             if (all || _currentPiece == TrackPiece.Yard)
             {
@@ -565,12 +573,12 @@ namespace Mapify.Editor.Tools
             SceneView.RepaintAll();
         }
 
-        private Switch GetCurrentSwitchPrefab()
+        private VanillaSwitch GetCurrentSwitchPrefab()
         {
             return IsLeft ? LeftSwitch : RightSwitch;
         }
 
-        private Switch GetSwitch(TrackOrientation orientation)
+        private VanillaSwitch GetSwitch(TrackOrientation orientation)
         {
             if (orientation == TrackOrientation.Left)
             {

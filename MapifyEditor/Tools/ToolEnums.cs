@@ -12,6 +12,12 @@ namespace Mapify.Editor.Tools
             Right
         }
 
+        public enum SwitchType
+        {
+            Vanilla,
+            Custom
+        }
+
         public enum SwitchPoint
         {
             Joint,
@@ -85,14 +91,14 @@ namespace Mapify.Editor.Tools
             return SwitchPoint.Joint;
         }
 
-        public static Switch.StandSide FlipStand(Switch.StandSide standSide)
+        public static VanillaSwitch.StandSide FlipStand(VanillaSwitch.StandSide standSide)
         {
-            if (standSide == Switch.StandSide.THROUGH)
+            if (standSide == VanillaSwitch.StandSide.THROUGH)
             {
-                return Switch.StandSide.DIVERGING;
+                return VanillaSwitch.StandSide.DIVERGING;
             }
 
-            return Switch.StandSide.THROUGH;
+            return VanillaSwitch.StandSide.THROUGH;
         }
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Mapify.Editor
 {
     [RequireComponent(typeof(VanillaObject))]
-    public class VanillaSwitch : SwitchBase
+    public class Switch : SwitchBase
     {
         public enum StandSide
         {

@@ -314,20 +314,27 @@ namespace Mapify.Editor.Tools
             _radius = EditorGUILayout.FloatField(new GUIContent("Radius", "Radius of the curve"),
                 _radius);
 
-            if (!CustomSwitchBranch && GUILayout.Button(new GUIContent("Use switch radius", "Sets the radius to the one of switch curves"),
+            if (GUILayout.Button(new GUIContent("Use switch radius", "Sets the radius to the one of switch curves"),
                 GUILayout.MaxWidth(140)))
             {
-                if (LeftSwitch)
+                if (CustomSwitchBranch)
                 {
-                    _radius = TrackToolsHelper.CalculateSwitchRadius(LeftSwitch);
-                }
-                else if (RightSwitch)
-                {
-                    _radius = TrackToolsHelper.CalculateSwitchRadius(RightSwitch);
+                    _radius = TrackToolsHelper.DefaultSwitchRadius;
                 }
                 else
                 {
-                    _radius = TrackToolsHelper.DefaultSwitchRadius;
+                    if (LeftSwitch)
+                    {
+                        _radius = TrackToolsHelper.CalculateSwitchRadius(LeftSwitch);
+                    }
+                    else if (RightSwitch)
+                    {
+                        _radius = TrackToolsHelper.CalculateSwitchRadius(RightSwitch);
+                    }
+                    else
+                    {
+                        _radius = TrackToolsHelper.DefaultSwitchRadius;
+                    }
                 }
             }
 
@@ -362,7 +369,7 @@ namespace Mapify.Editor.Tools
 
             _changeArc = EditorGUILayout.ToggleLeft(new GUIContent("Change arc",
                 "Change the arc of the curve instead of the radius to match the length"),
-                _changeArc, GUILayout.MaxWidth(100));
+                _changeArc, GUILayout.MaxWidth(140));
 
             if (changed)
             {

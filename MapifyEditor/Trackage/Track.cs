@@ -45,13 +45,6 @@ namespace Mapify.Editor
         [Tooltip("The purpose of this track")]
         public TrackType trackType;
 
-        [Tooltip("A retarder is a device used to reduce the speed of freight cars")]
-        public bool isRetarder;
-        [Tooltip("The retarder will activate when the speed of the car is above this limit (km/h)")]
-        public float retarderMaxSpeedKMH = 10.0f;
-        [Tooltip("The maximum brake force of the retarder, in Newtons")]
-        public float retarderBrakeForce = 50000f;
-
 #if UNITY_EDITOR
         [Header("Editor Visualization")]
         [SerializeField]
@@ -70,6 +63,7 @@ namespace Mapify.Editor
         }
 
         public bool IsSwitch => GetComponentInParent<SwitchBase>() != null;
+        public bool IsVanillaSwitch => GetComponentInParent<Switch>() != null;
         public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
         public string LogicName =>

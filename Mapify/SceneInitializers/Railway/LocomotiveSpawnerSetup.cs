@@ -26,6 +26,12 @@ namespace Mapify.SceneInitializers.Railway
                         ).ToList()
                     )
                 ).ToList();
+
+            if (!locoSpawner.locoTypeGroupsToSpawn.Any())
+            {
+                Mapify.LogError($"{nameof(LocomotiveSpawnerSetup)} locoTypeGroupsToSpawn is empty. {nameof(spawner.condensedLocomotiveTypes)}: {spawner.condensedLocomotiveTypes}");
+            }
+
             spawner.gameObject.SetActive(wasActive);
         }
     }

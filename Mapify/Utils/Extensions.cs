@@ -252,11 +252,11 @@ namespace Mapify.Utils
                 .Distinct();
         }
 
-        public static void SwitchTo(this Junction junction, int branchNumber, Junction.SwitchMode switchMode)
+        public static void SwitchTo(this Junction junction, byte branchNumber, Junction.SwitchMode switchMode)
         {
             Mapify.LogDebug($"junction {junction.name} switch to {branchNumber}");
 
-            junction.selectedBranch = branchNumber - 1;
+            junction.selectedBranch = (byte) Misc.BetterModulo(branchNumber - 1, junction.outBranches.Count);
             junction.Switch(switchMode);
         }
 

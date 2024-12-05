@@ -1,32 +1,29 @@
 ﻿using System.Linq;
+using Mapify.Editor;
 using UnityEngine;
 
 namespace Mapify.Components
 {
-    public class Retarder: MonoBehaviour
+    public class Retarder_r: MonoBehaviour
     {
         private float maxSpeed; // meter per second
         private RailTrack railTrack;
         private float brakeForce; //Newton
 
-        private bool hasBeenSetup = false;
-
-        public void Setup(float maxSpeed_, RailTrack railTrack_, float brakeForce_)
+        private void Start()
         {
-            maxSpeed = maxSpeed_;
-            railTrack = railTrack_;
-            brakeForce = brakeForce_;
-
-            hasBeenSetup = true;
-        }
-
-        private void Awake()
-        {
-            if (!hasBeenSetup)
+            var retarderValues = GetComponent<Retarder>();
+            if (!retarderValues)
             {
-                Mapify.LogError($"{nameof(Retarder)} on {gameObject.name} has not been setup yet");
+                Mapify.LogError($"Can't find {nameof(Retarder)} on {gameObject.name}");
                 Destroy(this);
+                return;
             }
+
+            railTrack = GetComponent<RailTrack>();
+
+            maxSpeed = retarderValues.maxSpeedKMH / 3.6f; // to m/s
+            brakeForce = retarderValues.brakeForce;
         }
 
         private void FixedUpdate()
@@ -39,8 +36,8 @@ namespace Mapify.Components
                 var force3D = car.transform.forward * (-brakeForce * Mathf.Sign(forwardSpeed));
                 car.rb.AddForce(force3D);
 
-                Mapify.LogDebugExtreme(() => $"{nameof(Retarder)} force {force3D}");
-                Mapify.LogDebugExtreme(() => $"{nameof(Retarder)} forwardSpeed {forwardSpeed}");
+                Mapify.LogDebugExtreme(() => $"{nameof(Retarder_r)} force {force3D}");
+                Mapify.LogDebugExtreme(() => $"{nameof(Retarder_r)} forwardSpeed {forwardSpeed}");
             }
         }
     }

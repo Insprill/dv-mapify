@@ -45,7 +45,7 @@ namespace Mapify.Editor.Tools
 
         public Track CurrentTrack => _selectedTracks.Length > 0 ? _selectedTracks[0] : null;
         public BezierPoint CurrentPoint => _selectedPoints.Length > 0 ? _selectedPoints[0] : null;
-        public VanillaSwitch CurrentSwitch { get; private set; }
+        public Switch CurrentSwitch { get; private set; }
         public Turntable CurrentTurntable { get; private set; }
 
         #endregion
@@ -146,7 +146,7 @@ namespace Mapify.Editor.Tools
             {
                 _selectionType = SelectionType.BezierPoint;
             }
-            else if (go.TryGetComponent(out VanillaSwitch s))
+            else if (go.TryGetComponent(out Switch s))
             {
                 _selectionType = SelectionType.Switch;
                 CurrentSwitch = s;
@@ -445,6 +445,7 @@ namespace Mapify.Editor.Tools
                         return false;
                     }
 
+                    //TODO this one sometimes gives a false positive
                     if (!CheckGrade(isBehind ? CurrentTrack.GetGradeAtStart() : CurrentTrack.GetGradeAtEnd()))
                     {
                         tooltip = "Grade too steep for creation";
@@ -573,12 +574,12 @@ namespace Mapify.Editor.Tools
             SceneView.RepaintAll();
         }
 
-        private VanillaSwitch GetCurrentSwitchPrefab()
+        private Switch GetCurrentSwitchPrefab()
         {
             return IsLeft ? LeftSwitch : RightSwitch;
         }
 
-        private VanillaSwitch GetSwitch(TrackOrientation orientation)
+        private Switch GetSwitch(TrackOrientation orientation)
         {
             if (orientation == TrackOrientation.Left)
             {

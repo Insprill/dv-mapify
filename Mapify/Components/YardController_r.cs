@@ -1,25 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Management.Instrumentation;
-using System.Runtime.InteropServices;
 using Mapify.Editor;
 using Mapify.Utils;
 using UnityEngine;
 
 namespace Mapify.Components
 {
-    public class SwitchController: MonoBehaviour
+    public class YardController_r: MonoBehaviour
     {
-        // public Track DetectorTrack;
+        // private enum SortStrategy
+        // {
+        //     Label,
+        //     CarType
+        // }
+
+        private RailTrack detectorTrack;
         private Junction rootJunction;
+
+        private string stationID;
+        private string yardID;
+
+        private Dictionary<byte, string> trackNumberToCarID = new();
 
         private bool hasBeenSetup = false;
 
-        public void Setup(Junction junction)
+        /// <summary>
+        /// </summary>
+        /// <param name="rootJunction_">The first junction in the tree of junctions (switches)</param>
+        /// <param name="yardControllerValues"></param>
+        public void Setup(Junction rootJunction_, YardController yardControllerValues)
         {
-            // DetectorTrack = detectorTrack;
-            rootJunction = junction;
+            detectorTrack = yardControllerValues.DetectorTrack.GetComponent<RailTrack>();
+            rootJunction = rootJunction_;
+
+            stationID = yardControllerValues.StationID;
+            yardID = yardControllerValues.YardID;
 
             hasBeenSetup = true;
         }
@@ -28,44 +43,55 @@ namespace Mapify.Components
         {
             if (!hasBeenSetup)
             {
-                Mapify.LogError($"{nameof(SwitchController)} on {gameObject.name} has not been setup yet");
+                Mapify.LogError($"{nameof(YardController_r)} on {gameObject.name} has not been setup");
                 Destroy(this);
             }
+
+            foreach (var trackNumber in RailTrackRegistry.Instance.GetTrackNumbersOfSubYard(stationID, yardID))
+            {
+                trackNumberToCarID.Add((byte)trackNumber, "");
+            }
+
+            if (trackNumberToCarID.Any()) return;
+
+            Mapify.LogError($"{nameof(YardController_r)}: could not find track numbers for yard {stationID}-{yardID}");
+            Destroy(this);
         }
 
         private void Update()
         {
-            int track = -1;
+            var detectedCar = detectorTrack.onTrackBogies.Select(bogie => bogie._car).FirstOrDefault();
+            if(!detectedCar) return;
 
-            if (Input.GetKeyDown(KeyCode.Keypad1))
+            var carTypeID = detectedCar.carLivery.parentType.id;
+
+            foreach (var pair in trackNumberToCarID)
             {
-                track = 1;
-            }
-            if (Input.GetKeyDown(KeyCode.Keypad2))
-            {
-                track = 2;
-            }
-            if (Input.GetKeyDown(KeyCode.Keypad3))
-            {
-                track = 3;
-            }
-            if (Input.GetKeyDown(KeyCode.Keypad4))
-            {
-                track = 4;
+                if(pair.Value != carTypeID) continue;
+                Mapify.LogDebug($"{carTypeID} -> {stationID}-{yardID}-{pair.Key}");
+                SetSwitches(pair.Key);
+                return;
             }
 
-            if (track == -1) { return; }
+            foreach (var pair in trackNumberToCarID)
+            {
+                if(pair.Value != "") continue;
+                Mapify.LogDebug($"{carTypeID} -> {stationID}-{yardID}-{pair.Key}");
+                trackNumberToCarID[pair.Key] = carTypeID;
+                SetSwitches(pair.Key);
+                return;
+            }
 
-            SetSwitches((byte)track);
+            Mapify.LogError($"All {trackNumberToCarID.Values.Count} tracks taken");
+            foreach (var pair in trackNumberToCarID)
+            {
+                Mapify.LogDebug($"{pair.Key} -> {pair.Value}");
+            }
         }
 
         // set the switches, so that they form a path to trackNumber
         private void SetSwitches(byte trackNumber)
         {
-            //TODO
-            var stationID = "station";
-            var yardID = "B";
-
             var goal = RailTrackRegistry.Instance.GetRailTrack(stationID, yardID, trackNumber);
 
             if (goal == null)
@@ -74,6 +100,7 @@ namespace Mapify.Components
                 return;
             }
 
+            //TODO cache the paths in Start?
             var start = rootJunction.inBranch.track;
             var path = PathFinder.FindPath(start, goal);
 
@@ -104,9 +131,9 @@ namespace Mapify.Components
         }
 
         /// Returns the index of the branch that connects to the track
-        private int GetBranchForTrack(List<Junction.Branch> outBranches, RailTrack track)
+        private byte GetBranchForTrack(List<Junction.Branch> outBranches, RailTrack track)
         {
-            for (int branchIndex = 0; branchIndex < outBranches.Count; branchIndex++)
+            for (byte branchIndex = 0; branchIndex < outBranches.Count; branchIndex++)
             {
                 if (outBranches[branchIndex].track.outBranch.track == track)
                 {

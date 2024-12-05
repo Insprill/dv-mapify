@@ -65,7 +65,7 @@ namespace Mapify.Editor.Tools
                 return lines.ToArray();
             }
 
-            public static Vector3[][] PreviewSwitch(VanillaSwitch prefab, Vector3 attachPoint, Vector3 handlePosition, SwitchPoint connectingPoint,
+            public static Vector3[][] PreviewSwitch(Switch prefab, Vector3 attachPoint, Vector3 handlePosition, SwitchPoint connectingPoint,
                 int samples = 8)
             {
                 var curves = TrackToolsHelper.GetSwitchBeziers(prefab, attachPoint, handlePosition, connectingPoint);
@@ -117,7 +117,7 @@ namespace Mapify.Editor.Tools
                 return curves;
             }
 
-            public static Vector3[][] PreviewYard(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
+            public static Vector3[][] PreviewYard(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
                 TrackOrientation orientation, float trackDistance, YardOptions yardOptions, int samples = 8)
             {
                 if (yardOptions.Half)
@@ -130,7 +130,7 @@ namespace Mapify.Editor.Tools
                 }
             }
 
-            private static Vector3[][] PreviewFullYard(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
+            private static Vector3[][] PreviewFullYard(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
                 TrackOrientation orientation, float trackDistance, YardOptions yardOptions, int samples)
             {
                 List<Vector3[]> results = new List<Vector3[]>();
@@ -336,7 +336,7 @@ namespace Mapify.Editor.Tools
                 return results.ToArray();
             }
 
-            private static Vector3[][] PreviewHalfYard(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
+            private static Vector3[][] PreviewHalfYard(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
                 TrackOrientation orientation, float trackDistance, YardOptions yardOptions, int samples)
             {
                 List<Vector3[]> results = new List<Vector3[]>();
@@ -491,13 +491,13 @@ namespace Mapify.Editor.Tools
                 return results.ToArray();
             }
 
-            private static Vector3[][] PreviewSwitchSprawl(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, YardOptions yardOptions, TrackOrientation orientation,
+            private static Vector3[][] PreviewSwitchSprawl(Switch leftPrefab, Switch rightPrefab, YardOptions yardOptions, TrackOrientation orientation,
                 float trackDistance, bool mainSide, bool reverse, out Vector3[] trackPoints, int samples = 8)
             {
                 List<Vector3[]> results = new List<Vector3[]>();
                 List<Vector3> points = new List<Vector3>();
 
-                VanillaSwitch current = orientation == TrackOrientation.Left ? leftPrefab : rightPrefab;
+                Switch current = orientation == TrackOrientation.Left ? leftPrefab : rightPrefab;
 
                 Vector3[][] temp = PreviewSwitch(current, Vector3.zero, Vector3.back, SwitchPoint.Joint, samples);
                 results.AddRange(temp);
@@ -597,7 +597,7 @@ namespace Mapify.Editor.Tools
                     samples);
             }
 
-            public static Vector3[][] PreviewCrossover(VanillaSwitch prefab, Vector3 attachPoint, Vector3 handlePosition,
+            public static Vector3[][] PreviewCrossover(Switch prefab, Vector3 attachPoint, Vector3 handlePosition,
                 TrackOrientation orientation, float trackDistance, bool isTrailing, float switchDistance, int samples = 8)
             {
                 List<Vector3[]> results = new List<Vector3[]>();
@@ -625,7 +625,7 @@ namespace Mapify.Editor.Tools
                 return results.ToArray();
             }
 
-            public static Vector3[][] PreviewScissorsCrossover(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
+            public static Vector3[][] PreviewScissorsCrossover(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
                 TrackOrientation orientation, float trackDistance, float switchDistance, int samples = 8)
             {
                 List<Vector3[]> results = new List<Vector3[]>();
@@ -651,7 +651,7 @@ namespace Mapify.Editor.Tools
                 return results.ToArray();
             }
 
-            public static Vector3[][] PreviewDoubleSlip(VanillaSwitch leftPrefab, VanillaSwitch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
+            public static Vector3[][] PreviewDoubleSlip(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
                 TrackOrientation orientation, float crossAngle, int samples = 8)
             {
                 List<Vector3[]> results = new List<Vector3[]>();

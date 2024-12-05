@@ -206,7 +206,7 @@ namespace Mapify.Editor.BezierCurves
 
         private static void DrawPointSceneGUI(BezierPoint point)
         {
-            if (point.GetComponentInParent<Track>()?.IsSwitch == true)
+            if (point.GetComponentInParent<Track>()?.IsVanillaSwitch == true)
                 return;
             Handles.Label(point.position + new Vector3(0, HandleUtility.GetHandleSize(point.position) * 0.4f, 0), point.gameObject.name);
 

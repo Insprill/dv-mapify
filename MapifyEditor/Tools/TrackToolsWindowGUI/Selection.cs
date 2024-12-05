@@ -77,7 +77,7 @@ namespace Mapify.Editor.Tools
 
             if (GUILayout.Button(new GUIContent("Swap tracks", "Swaps the selected track between the through and diverging tracks")) && isSwitch)
             {
-                VanillaSwitch s = CurrentTrack.GetComponentInParent<VanillaSwitch>();
+                Switch s = CurrentTrack.GetComponentInParent<Switch>();
 
                 if (CurrentTrack == s.ThroughTrack)
                 {
@@ -186,7 +186,7 @@ namespace Mapify.Editor.Tools
                 new GUIContent($"{(CurrentSwitch.IsLeft ? "Left" : "Right")}"));
 
             EditorGUILayout.BeginHorizontal();
-            CurrentSwitch.defaultState = (VanillaSwitch.StandSide)EditorGUILayout.EnumPopup(new GUIContent("Currently set to",
+            CurrentSwitch.defaultState = (Switch.StandSide)EditorGUILayout.EnumPopup(new GUIContent("Currently set to",
                 "The switch state when exporting"),
                 CurrentSwitch.defaultState);
 

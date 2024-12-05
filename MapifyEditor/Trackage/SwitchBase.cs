@@ -8,7 +8,10 @@ namespace Mapify.Editor
 {
     public abstract class SwitchBase: MonoBehaviour
     {
-        public Track[] Tracks => gameObject.GetComponentsInChildren<Track>();
+        public virtual Track[] GetTracks()
+        {
+            return gameObject.GetComponentsInChildren<Track>();
+        }
 
         // TODO why is this unused
 //         protected void Snap()

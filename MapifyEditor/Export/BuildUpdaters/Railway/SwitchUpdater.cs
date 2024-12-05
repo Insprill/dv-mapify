@@ -7,14 +7,14 @@ namespace Mapify.Editor.StateUpdaters
     {
         protected override void Update(Scenes scenes)
         {
-            foreach (VanillaSwitch sw in scenes.railwayScene.GetAllComponents<VanillaSwitch>())
+            foreach (Switch sw in scenes.railwayScene.GetAllComponents<Switch>())
             {
                 VanillaObject vanillaObject = sw.GetComponent<VanillaObject>();
                 vanillaObject.asset = sw.IsLeft
-                    ? sw.standSide == VanillaSwitch.StandSide.DIVERGING
+                    ? sw.standSide == Switch.StandSide.DIVERGING
                         ? VanillaAsset.SwitchLeft
                         : VanillaAsset.SwitchLeftOuterSign
-                    : sw.standSide == VanillaSwitch.StandSide.DIVERGING
+                    : sw.standSide == Switch.StandSide.DIVERGING
                         ? VanillaAsset.SwitchRight
                         : VanillaAsset.SwitchRightOuterSign;
             }

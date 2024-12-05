@@ -91,14 +91,14 @@ namespace Mapify.Editor.Tools
             return SwitchPoint.Joint;
         }
 
-        public static VanillaSwitch.StandSide FlipStand(VanillaSwitch.StandSide standSide)
+        public static Switch.StandSide FlipStand(Switch.StandSide standSide)
         {
-            if (standSide == VanillaSwitch.StandSide.THROUGH)
+            if (standSide == Switch.StandSide.THROUGH)
             {
-                return VanillaSwitch.StandSide.DIVERGING;
+                return Switch.StandSide.DIVERGING;
             }
 
-            return VanillaSwitch.StandSide.THROUGH;
+            return Switch.StandSide.THROUGH;
         }
     }
 }

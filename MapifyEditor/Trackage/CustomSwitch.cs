@@ -10,6 +10,8 @@ namespace Mapify.Editor
             RIGHT
         }
 
+        public BezierPoint JointPoint => Tracks[0].Curve[0];
+
         [Tooltip("Which way the switch should be flipped by default")]
         public byte defaultBranch = 0;
 
@@ -17,6 +19,17 @@ namespace Mapify.Editor
         public StandSide standSide;
 
         [Tooltip("Tracks in the switch, from left to right")]
-        public new Track[] Tracks;
+        [SerializeField]
+        private Track[] Tracks;
+
+        public override Track[] GetTracks()
+        {
+            return Tracks;
+        }
+
+        public void SetTracks(Track[] newTracks)
+        {
+            Tracks = newTracks;
+        }
     }
 }

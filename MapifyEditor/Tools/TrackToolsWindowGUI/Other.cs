@@ -13,8 +13,8 @@ namespace Mapify.Editor.Tools
         // Track prefabs.
         private bool _showPrefabs = false;
         public BufferStop BufferPrefab;
-        public VanillaSwitch LeftSwitch;
-        public VanillaSwitch RightSwitch;
+        public Switch LeftSwitch;
+        public Switch RightSwitch;
         public Turntable TurntablePrefab;
 
         // Settings.

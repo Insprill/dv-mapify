@@ -5,6 +5,7 @@ using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Utils;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Mapify.SceneInitializers.Railway
 {
@@ -75,11 +76,12 @@ namespace Mapify.SceneInitializers.Railway
 
             //Junction
             var inJunction = prefabClone.GetComponentInChildren<Junction>();
+            inJunction.transform.position = customSwitch.JointPoint.transform.position;
             inJunction.selectedBranch = customSwitch.defaultBranch;
 
             DestroyPrefabTracks(prefabClone);
-            CreateNewTracks(customSwitch, prefabClone, inJunction);
-            SetupGraphical(prefabClone);
+            CreateSwitchTracks(customSwitch, prefabClone, inJunction);
+            SetupStalk(prefabClone);
         }
 
         private static void DestroyPrefabTracks(GameObject prefabClone)
@@ -91,16 +93,11 @@ namespace Mapify.SceneInitializers.Railway
             Object.DestroyImmediate(prefabClone.FindChildByName("[track diverging]"));
         }
 
-        private static void CreateNewTracks(CustomSwitch customSwitch, GameObject prefabClone, Junction switchJunction)
+        private static void CreateSwitchTracks(CustomSwitch customSwitch, GameObject prefabClone, Junction switchJunction)
         {
             var railTracksInSwitch = CreateRailTracks(
-                customSwitch.gameObject
-                    .GetComponentsInChildren<Editor.Track>(), true
+                customSwitch.GetTracks(), true
             );
-
-            railTracksInSwitch = railTracksInSwitch
-                .OrderBy(track => track.gameObject.name)
-                .ToList();
 
             if (!railTracksInSwitch.Any())
             {
@@ -136,41 +133,55 @@ namespace Mapify.SceneInitializers.Railway
 
             if (switchJunction.inBranch == null)
             {
-                Mapify.LogError($"{nameof(CreateNewTracks)}: inBranch is null");
+                Mapify.LogError($"{nameof(CreateSwitchTracks)}: inBranch is null");
             }
         }
 
-        private static void SetupGraphical(GameObject prefabClone)
+        private static void SetupStalk(GameObject prefabClone)
         {
             var graphical = prefabClone.FindChildByName("Graphical");
             string[] toDelete = {"ballast", "anchors", "sleepers", "rails_static", "rails_moving"};
+
             foreach (var child in graphical.transform.GetChildren())
             {
                 if (!toDelete.Contains(child.name)) continue;
                 Object.Destroy(child.gameObject);
             }
+
+            var switch_base = graphical.transform.FindChildByName("switch_base");
+            if (!switch_base)
+            {
+                Mapify.LogError("Could not determine switch offset");
+                return;
+            }
+
+            var offsetZ = switch_base.localPosition.z;
+            Mapify.LogDebug($"offsetZ: {offsetZ}");
+            graphical.transform.localPosition -= new Vector3(0f, 0f, offsetZ);
+            var switchTrigger = prefabClone.FindChildByName("SwitchTrigger");
+            switchTrigger.transform.localPosition -= new Vector3(0f, 0f, offsetZ);
         }
 
         private static void CreateVanillaSwitches()
         {
-            foreach (Switch sw in Object.FindObjectsOfType<Switch>())
+            foreach (Switch switch_ in Object.FindObjectsOfType<Switch>())
             {
-                Transform swTransform = sw.transform;
-                VanillaAsset vanillaAsset = sw.GetComponent<VanillaObject>().asset;
+                Transform swTransform = switch_.transform;
+                VanillaAsset vanillaAsset = switch_.GetComponent<VanillaObject>().asset;
                 GameObject prefabClone = AssetCopier.Instantiate(vanillaAsset, false);
                 Transform prefabCloneTransform = prefabClone.transform;
-                Transform inJunction = prefabCloneTransform.Find(IN_JUNCTION_NAME);
-                Vector3 offset = prefabCloneTransform.position - inJunction.position;
+                Transform junctionTransform = prefabCloneTransform.Find(IN_JUNCTION_NAME);
+                Vector3 offset = prefabCloneTransform.position - junctionTransform.position;
                 foreach (Transform child in prefabCloneTransform)
                     child.transform.position += offset;
                 prefabCloneTransform.SetPositionAndRotation(swTransform.position, swTransform.rotation);
 
-                Junction junction = inJunction.GetComponent<Junction>();
-                junction.selectedBranch = (byte) (sw.IsLeft
-                    ? sw.defaultState == Switch.StandSide.THROUGH
+                Junction junction = junctionTransform.GetComponent<Junction>();
+                junction.selectedBranch = (byte) (switch_.IsLeft
+                    ? switch_.defaultState == Switch.StandSide.THROUGH
                         ? 1
                         : 0
-                    : sw.defaultState == Switch.StandSide.THROUGH
+                    : switch_.defaultState == Switch.StandSide.THROUGH
                         ? 0
                         : 1
                     );

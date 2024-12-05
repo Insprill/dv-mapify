@@ -13,12 +13,13 @@ namespace MapifyEditor.Export.Validators
         {
             foreach (var switch_ in scenes.railwayScene.GetAllComponents<SwitchBase>())
             {
-                if (switch_.Tracks.Length < 2)
+                var switchTracks = switch_.GetTracks();
+                if (switchTracks.Length < 2)
                 {
                     yield return Result.Error("Switches must have at least 2 branches", switch_);
                 }
 
-                foreach (var track in switch_.Tracks)
+                foreach (var track in switchTracks)
                 {
                     track.Snap();
 

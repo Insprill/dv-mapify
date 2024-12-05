@@ -164,14 +164,14 @@ namespace Mapify.BuildMode
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.M))
+            if (Input.GetKeyDown(KeyCode.B))
             {
                 ToggleBuildMode();
             }
 
             if (!inBuildMode) { return; }
 
-            if (Input.GetKeyDown(KeyCode.Comma))
+            if (Input.GetKeyDown(KeyCode.M))
             {
                 ToggleAssetSelectMenu();
             }
@@ -213,7 +213,7 @@ namespace Mapify.BuildMode
         {
             if (assetMenu.activeSelf) return;
 
-            //TODO make these rebindable
+            //TODO make all controls rebindable
             if (Input.GetKeyDown(KeyCode.P) && !inPlaceMode)
             {
                 EnterPlaceMode();

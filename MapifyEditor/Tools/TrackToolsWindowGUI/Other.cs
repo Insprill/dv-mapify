@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -17,6 +19,7 @@ namespace Mapify.Editor.Tools
 
         // Settings.
         private bool _showSettings = false;
+        private bool _drawTrackPreviews = true;
         private bool _drawNewPreview = true;
         private bool _performanceMode = false;
         private bool _zTestTrack = true;
@@ -87,9 +90,16 @@ namespace Mapify.Editor.Tools
             {
                 EditorGUI.indentLevel++;
 
-                _drawNewPreview = EditorGUILayout.Toggle(
-                    new GUIContent("New track preview", "Show or hide the new track preview"),
-                    _drawNewPreview);
+                _drawTrackPreviews = EditorGUILayout.Toggle(
+                    new GUIContent("Track previews", "Show or hide the track previews"),
+                    _drawTrackPreviews);
+
+                if (_drawTrackPreviews)
+                {
+                    _drawNewPreview = EditorGUILayout.Toggle(
+                        new GUIContent("New track preview", "Show or hide the new track preview"),
+                        _drawNewPreview);
+                }
 
                 _performanceMode = EditorGUILayout.Toggle(
                     new GUIContent("Performance mode", "Reduces redraw frequency"),
@@ -147,20 +157,69 @@ namespace Mapify.Editor.Tools
             EditorGUILayout.EndHorizontal();
         }
 
+        private void DrawVanillaSwitchOptions()
+        {
+            if (!Require(LeftSwitch, "Left switch prefab") ||
+                !Require(RightSwitch, "Right switch prefab"))
+            {
+                return;
+            }
+            DrawOrientationGUI("Which side the diverging track turns to");
+            DrawVanillaSwitchPointGUI();
+        }
+
         // SwitchPoint enum dropdown with a button to swap options easily.
-        private void DrawSwitchPointGUI()
+        private void DrawVanillaSwitchPointGUI()
         {
             EditorGUILayout.BeginHorizontal();
-            _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
-                "Which of the 3 switch points should connect to the current track"),
-                _connectingPoint);
+            _connectingPointVanilla = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
+                    "Which of the 3 switch points should connect to the current track"),
+                _connectingPointVanilla);
 
             if (GUILayout.Button(new GUIContent("Next point", "Swaps between the 3 switch points."), GUILayout.MaxWidth(140)))
             {
-                _connectingPoint = NextPoint(_connectingPoint);
+                _connectingPointVanilla = NextPoint(_connectingPointVanilla);
             }
 
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawCustomSwitchOptions()
+        {
+            _switchBranchesCount = EditorGUILayout.IntField(new GUIContent("Branches", "How many branches the switch has (at least 2)"), _switchBranchesCount);
+            if (_switchBranchesCount < 2) _switchBranchesCount = 2;
+
+            EditorGUILayout.BeginHorizontal();
+
+            var displayedOptions = new GUIContent[_switchBranchesCount + 1];
+            displayedOptions[0] = new GUIContent("Joint point");
+            for (int i = 0; i < _switchBranchesCount; i++)
+            {
+                displayedOptions[i+1] = new GUIContent($"Branch out {i}");
+            }
+
+            var optionValues = new int[displayedOptions.Length];
+            for (int i = 0; i < displayedOptions.Length; i++)
+            {
+                optionValues[i] = i;
+            }
+
+            _connectingPointCustom = EditorGUILayout.IntPopup(
+                new GUIContent("Connecting point", "Which of the switch points should connect to the current track"),
+                _connectingPointCustom,
+                displayedOptions,
+                optionValues,
+                EditorStyles.popup
+            );
+
+            if (GUILayout.Button(new GUIContent("Next point", "Swaps between the switch points."), GUILayout.MaxWidth(120)))
+            {
+                _connectingPointCustom = (_connectingPointCustom+1) % (_switchBranchesCount+1);
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            DrawCurveOptions(true);
         }
 
         // Orientation enum dropdown with a button to swap options easily.

@@ -1,9 +1,8 @@
 {
-  "Id": "Mapify Build Mode",
-  "Version": "2024.12.05",
-  "DisplayName": "Mapify",
+  "Id": "Mapify",
+  "Version": "2024.12.07",
+  "DisplayName": "Mapify Build Mode",
   "Author": "Insprill",
   "EntryMethod": "Mapify.Mapify.Load",
-  "ManagerVersion": "0.27.13",
-  "HomePage": "https://www.nexusmods.com/derailvalley/mods/593"
+  "ManagerVersion": "0.27.13"
 }

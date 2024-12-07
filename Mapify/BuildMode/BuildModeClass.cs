@@ -164,7 +164,7 @@ namespace Mapify.BuildMode
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.B))
+            if (Input.GetKeyDown(KeyCode.B) && !assetMenu.activeSelf)
             {
                 ToggleBuildMode();
             }

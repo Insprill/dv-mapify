@@ -15,7 +15,7 @@ namespace Mapify.SceneInitializers.Terrain
             DistantTerrain distantTerrain = distantTerrainObject.gameObject.AddComponent<DistantTerrain>();
             distantTerrain.trackingReference = SingletonBehaviour<WorldMover>.Instance.playerTracker.GetTrackerTransform();
             distantTerrain.singleTerrainSize = levelInfo.terrainSize;
-            distantTerrain.worldScale = levelInfo.worldSize;
+            distantTerrain.worldScale = levelInfo.worldSize.x;
             distantTerrain.step = 128; // No idea what this means but this is what it's set to in the game.
         }
     }

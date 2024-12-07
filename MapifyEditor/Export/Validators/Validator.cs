@@ -35,9 +35,10 @@ namespace Mapify.Editor.Validators
             Scenes scenes = Scenes.FromEnumerable(sceneStates.Keys.ToList());
             for (int i = 0; i < validators.Length; i++)
             {
-                EditorUtility.DisplayProgressBar("Validating map", null, i / (float)validators.Length);
-
                 Validator validator = validators[i];
+
+                EditorUtility.DisplayProgressBar("Validating map", validator.GetType().ToString(), i / (float)validators.Length);
+
                 List<Result> results;
                 try
                 {

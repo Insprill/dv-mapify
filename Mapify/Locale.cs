@@ -48,8 +48,8 @@ namespace Mapify
                     return MISSING_TRANSLATION;
                 }
 
+                Mapify.LogWarning($"Failed to find locale language '{locale}', using default language '{DEFAULT_LANGUAGE}'");
                 locale = DEFAULT_LANGUAGE;
-                Mapify.LogWarning($"Failed to find locale language {locale}");
             }
 
             Dictionary<string, string> localeDict = csv[locale];

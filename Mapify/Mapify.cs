@@ -43,7 +43,7 @@ namespace Mapify
         private static void LoadLocale()
         {
             string localePath = Path.Combine(ModEntry.Path, LOCALE_FILE);
-            if (!Locale.Load(localePath))
+            if (!Locale.LoadCSV(localePath))
                 LogError($"Failed to find locale file at {localePath}! Please make sure it's there.");
         }
 
@@ -63,10 +63,20 @@ namespace Mapify
                 LogDebug(resolver);
         }
 
+        public static void LogDebugExtreme(object msg)
+        {
+            LogDebugExtreme(() => msg);
+        }
+
         public static void LogDebug(Func<object> resolver)
         {
             if (Settings.VerboseLogging)
                 ModEntry.Logger.Log($"[Debug] {resolver.Invoke()}");
+        }
+
+        public static void LogDebug(object msg)
+        {
+            LogDebug(() => msg);
         }
 
         public static void Log(object msg)

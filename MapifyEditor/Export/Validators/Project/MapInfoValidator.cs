@@ -63,6 +63,18 @@ namespace MapifyEditor.Export.Validators.Project
                     yield return Result.Warning($"MapInfo: '{nameof(MapInfo.fixedMapImage)}' should be square or it will be stretched. Current dimensions: {mapInfo.fixedMapImage.width}x{mapInfo.fixedMapImage.height}", mapInfo);
                 }
             }
+
+            if (mapInfo.LoadingScreenLogo != null)
+            {
+                var logo = mapInfo.LoadingScreenLogo;
+                const int optimalWidth = 1024;
+                const int optimalHeight = 575;
+
+                if (logo.width != optimalWidth || logo.height != optimalHeight)
+                {
+                    yield return Result.Warning($"MapInfo: '{nameof(MapInfo.LoadingScreenLogo)}' should be {optimalWidth}x{optimalHeight} to show up correctly", mapInfo);
+                }
+            }
         }
     }
 }

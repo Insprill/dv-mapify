@@ -94,10 +94,9 @@ namespace Mapify.Map
                 {
                     ShowLoadingScreenImage(mapInfo);
                 }
-                if (mapInfo.LoadingScreenMusic != null)
-                {
-                    PlayLoadingScreenMusic(mapInfo.LoadingScreenMusic);
-                }
+
+                PlayLoadingScreenMusic(mapInfo.LoadingScreenMusic);
+                ShowLoadingScreenLogo(mapInfo.LoadingScreenLogo);
             }
 
             string[] miscAssets_bundlePaths = Maps.GetMapAssets(Names.MISC_ASSETS_ASSET_BUNDLES_PREFIX+"*", mapDir);
@@ -213,7 +212,6 @@ namespace Mapify.Map
             var customImage = mapInfo.LoadingScreenImages[randomInt];
 
             var canvasGameObject = Object.FindObjectsOfType<GameObject>().FirstOrDefault(gameObject => gameObject.name.Contains("LoadImage_Background_"));
-
             if (canvasGameObject is null)
             {
                 Mapify.LogError("cant find canvasGameObject");
@@ -224,12 +222,41 @@ namespace Mapify.Map
             canvasGameObject.GetComponent<CanvasRenderer>().SetTexture(customImage);
         }
 
-        private static void PlayLoadingScreenMusic(AudioClip mapInfoLoadingScreenMusic)
+        private static void ShowLoadingScreenLogo(Texture2D loadingScreenLogo)
         {
+            if (loadingScreenLogo == null)
+            {
+                Mapify.LogDebug(() => "Skipping loading screen logo, it is null");
+                return;
+            }
+
+            Mapify.Log("Showing custom loading screen logo");
+
+            var canvasGameObject = Object.FindObjectsOfType<GameObject>().FirstOrDefault(gameObject => gameObject.name == "LogoImage_alignedByHand");
+            if (canvasGameObject is null)
+            {
+                Mapify.LogError("cant find canvasGameObject");
+                return;
+            }
+
+            // set the image
+            canvasGameObject.GetComponent<CanvasRenderer>().SetTexture(loadingScreenLogo);
+        }
+
+        private static void PlayLoadingScreenMusic(AudioClip loadingScreenMusic)
+        {
+            if (loadingScreenMusic == null) return;
+
             Mapify.Log("Playing custom loading screen music");
-            var mainMenuMusicSource = GameObject.Find("Audio Source - main menu music").GetComponent<AudioSource>();
+            var mainMenuMusicSource = GameObject.Find("Audio Source - main menu music")?.GetComponent<AudioSource>();
+            if (mainMenuMusicSource == null)
+            {
+                Mapify.LogError(nameof(PlayLoadingScreenMusic)+": can't find audio source");
+                return;
+            }
+
             mainMenuMusicSource.Pause();
-            mainMenuMusicSource.clip = mapInfoLoadingScreenMusic;
+            mainMenuMusicSource.clip = loadingScreenMusic;
             mainMenuMusicSource.Play();
         }
 

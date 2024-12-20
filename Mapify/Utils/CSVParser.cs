@@ -21,13 +21,16 @@ namespace Mapify.Utils
 
             List<string> keys = ParseLine(lines[0]);
             foreach (string key in keys)
+            {
+                if(key == "") continue;
                 columns.Add(key, new Dictionary<string, string>());
+            }
 
             for (int i = 1; i < lines.Length; i++)
             {
                 string line = lines[i];
                 List<string> values = ParseLine(line);
-                if (values.Count == 0)
+                if (values.Count == 0 || values[0] == "")
                     continue;
                 string key = values[0];
                 for (int j = 0; j < values.Count; j++)

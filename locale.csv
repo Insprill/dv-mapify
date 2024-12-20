@@ -1,8 +1,13 @@
-Keys,Description,English
-launcher/session_map,,Map:
-session/map_selector,,Map
-session/map_selector__tooltip,,Select a Map
-launcher/map_selector__tooltip_disabled,,
-loading/please_wait,,"loading{0}, please wait... {1}%"
-loading/loading_map,,Loading map {0}
-launcher/session_map_not_installed,,The map {0} isn't installed! Please install it before loading this save.
+Keys,Description,English,Dutch,Chinese_Simplified,Chinese_Traditional,German,Italian,French,Russian,Hungarian,Spanish
+launcher/session_map,,Map:,Kaart:,地图:,地圖:,Karte:,Mappa:,Carte:,карта,Térkép,Mapa:
+session/map_selector,,Map,Kaart,地图,地圖,Karte,Mappa,Carte,выбор карты,Térkép,Mapa
+session/map_selector__tooltip,,Select a Map,Kies een kaart,选择一张地图,選擇壹張地圖:,Wähle eine Karte,Seleziona una mappa,Selectionner une carte,,Válasszon ki egy térkép,Selecciona un mapa
+launcher/map_selector__tooltip_disabled,,,,,,,,,,,
+loading/please_wait,,"loading{0}, please wait... {1}%","laden{0}, even wachten aub... {1}%","加载中{0}, 请稍等...{1}%","加載中{0}, 請稍等...{1}%",Lädt {0} bitte warten ....{1}%,"caricamento{0}, attendere... {1}%","chargement{0}, veuillez patienter..{1}%","Загрузка{0}, пожалуйста подождите... {1}%","Betöltés{0}, kérem várjon... {1}%","cargando{0}, por favor espere... {1}%"
+loading/loading_map,,Loading map {0},Kaart aan het laden: {0},"加载地图""{0}""中","加載地圖""{0}""中",Karte wird geladen... {0}%,Caricamento mappa {0},Chargement de la carte {0},Загрузка карты {0},Térkép betöltés{0},Cargando mapa {0}
+launcher/session_map_not_installed,,The map {0} isn't installed! Please install it before loading this save.,De kaart {0} is niet geïnstalleerd! Installeer het a.u.b. voordat u dit opgeslagen spel laadt.,"""{0}""这张地图还没下载呢！请你在加载这个存档之前先下载它","""{0}""這張地圖還沒下載呢！請妳在加載這個存檔之前先下載它",Die Karte {0} ist nicht installiert! Bitte installieren Sie die Karte bevor Sie diesen Spielstand laden.,La mappa {0} non è installata! Per favore installala prima di caricare questo salvataggio.,La carte {0} n'est pas installée sur le système! Veuillez l'installer avant de charger cette sauvegarde. ,Карта не установлена. Установите карту прежде чем загружать сохранение.,A {0} térkép nincs telepítve!! Kérem telepítése mielőtt betőlti a játékot,"¡El mapa {0} no está instalado! Por favor, instálalo antes de cargar esta partida."
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+Translator:,,Insprill,Tostiman,我叫无聊 My Name Is BorING,我叫无聊 My Name Is BorING,kev & Coookie,tablesidecat02,"Corpet, Louvet & Cie",RaY,Dank_memey,The72

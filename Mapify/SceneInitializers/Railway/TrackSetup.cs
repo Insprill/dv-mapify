@@ -82,6 +82,11 @@ namespace Mapify.SceneInitializers.Railway
             DestroyPrefabTracks(prefabClone);
             CreateSwitchTracks(customSwitch, prefabClone, inJunction);
             SetupStalk(prefabClone);
+
+            foreach (var track in customSwitch.GetTracks())
+            {
+                track.gameObject.SetActive(true);
+            }
         }
 
         private static void DestroyPrefabTracks(GameObject prefabClone)
@@ -96,7 +101,7 @@ namespace Mapify.SceneInitializers.Railway
         private static void CreateSwitchTracks(CustomSwitch customSwitch, GameObject prefabClone, Junction switchJunction)
         {
             var railTracksInSwitch = CreateRailTracks(
-                customSwitch.GetTracks(), true
+                customSwitch.GetTracks(), false
             );
 
             if (!railTracksInSwitch.Any())
@@ -107,15 +112,15 @@ namespace Mapify.SceneInitializers.Railway
 
             switchJunction.outBranches = new List<Junction.Branch>();
 
-            foreach (var t in railTracksInSwitch)
+            foreach (var trackInSwitch in railTracksInSwitch)
             {
-                t.transform.SetParent(prefabClone.transform, true);
+                trackInSwitch.transform.SetParent(prefabClone.transform, true);
 
-                t.inBranch = new Junction.Branch();
-                t.inBranch.track = null;
-                t.inJunction = switchJunction;
+                trackInSwitch.inBranch = new Junction.Branch();
+                trackInSwitch.inBranch.track = null;
+                trackInSwitch.inJunction = switchJunction;
 
-                switchJunction.outBranches.Add(new Junction.Branch(t, true));
+                switchJunction.outBranches.Add(new Junction.Branch(trackInSwitch, true));
             }
 
             //track before the switch
@@ -156,7 +161,7 @@ namespace Mapify.SceneInitializers.Railway
             }
 
             var offsetZ = switch_base.localPosition.z;
-            Mapify.LogDebug($"offsetZ: {offsetZ}");
+            // Mapify.LogDebug($"offsetZ: {offsetZ}");
             graphical.transform.localPosition -= new Vector3(0f, 0f, offsetZ);
             var switchTrigger = prefabClone.FindChildByName("SwitchTrigger");
             switchTrigger.transform.localPosition -= new Vector3(0f, 0f, offsetZ);

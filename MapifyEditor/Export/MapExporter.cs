@@ -208,9 +208,9 @@ namespace Mapify.Editor
                     scenePaths.Add(assetPath);
                 }
                 else if (obj is MapInfo ||
-                         mapInfo.LoadingScreenImages.Contains(obj) ||
-                         obj == mapInfo.LoadingScreenMusic ||
-                         obj == mapInfo.LoadingScreenLogo)
+                         (mapInfo.LoadingScreenImages != null && mapInfo.LoadingScreenImages.Contains(obj)) ||
+                          obj == mapInfo.LoadingScreenMusic ||
+                          obj == mapInfo.LoadingScreenLogo)
                 {
                     mapInfoPaths.Add(assetPath);
                 }

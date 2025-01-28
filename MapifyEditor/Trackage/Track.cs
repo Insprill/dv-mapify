@@ -64,6 +64,7 @@ namespace Mapify.Editor
 
         public bool IsSwitch => GetComponentInParent<SwitchBase>() != null;
         public bool IsVanillaSwitch => GetComponentInParent<Switch>() != null;
+        public bool IsCustomSwitch => GetComponentInParent<CustomSwitch>() != null;
         public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
         public string LogicName =>

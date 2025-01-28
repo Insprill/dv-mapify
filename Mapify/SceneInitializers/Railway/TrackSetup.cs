@@ -16,18 +16,19 @@ namespace Mapify.SceneInitializers.Railway
 
         public override void Run()
         {
-            Track[] tracks = Object.FindObjectsOfType<Track>().Where(t => !t.IsSwitch).ToArray();
+            var allTracks = Object.FindObjectsOfType<Track>();
+            var nonSwitchTracks = allTracks.Where(t => !t.IsSwitch).ToArray();
 
             Mapify.LogDebug(() => "Creating RailTracks");
-            CreateRailTracks(tracks, false);
+            CreateRailTracks(nonSwitchTracks, false);
 
             Mapify.LogDebug(() => "Creating Junctions");
             CreateJunctions();
 
-            tracks.SetActive(true);
+            nonSwitchTracks.SetActive(true);
 
             Mapify.LogDebug(() => "Connecting tracks");
-            ConnectTracks(tracks);
+            ConnectTracks(allTracks);
 
             RailManager.AlignAllTrackEnds();
             RailManager.TestConnections();
@@ -207,13 +208,25 @@ namespace Mapify.SceneInitializers.Railway
 
             foreach (Track track in tracks)
             {
+                //vanilla switches are connected elsewhere
+                if(track.IsVanillaSwitch) continue;
+
                 RailTrack railTrack = track.GetComponent<RailTrack>();
-                if (railTrack.isJunctionTrack)
-                    continue;
-                if (railTrack.ConnectInToClosestJunction() == null)
-                    railTrack.ConnectInToClosestBranch();
-                if (railTrack.ConnectOutToClosestJunction() == null)
+
+                if (track.IsCustomSwitch)
+                {
                     railTrack.ConnectOutToClosestBranch();
+
+                    if (railTrack.outBranch != null) continue;
+                    Mapify.LogError($"{nameof(ConnectTracks)}: {nameof(railTrack.outBranch)} is null for custom switch track {track.name}");
+                }
+                else
+                {
+                    if (railTrack.ConnectInToClosestJunction() == null)
+                        railTrack.ConnectInToClosestBranch();
+                    if (railTrack.ConnectOutToClosestJunction() == null)
+                        railTrack.ConnectOutToClosestBranch();
+                }
             }
 
             Debug.unityLogger.filterLogType = type;

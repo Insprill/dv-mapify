@@ -226,41 +226,6 @@ namespace Mapify.Utils
             return registry.AllTracks.FirstOrDefault(track => track.name.Contains(query));
         }
 
-        /// <summary>
-        /// Returns the subyard IDs of all subyards in the yard(station) with ID yardID
-        /// </summary>
-        public static IEnumerable<string> GetSubYardIDsOfYard(this RailTrackRegistry registry, string yardID)
-        {
-            return registry.AllTracks
-                .Select(railTrack => railTrack.logicTrack.ID)
-                .Where(ID => ID.yardId == yardID)
-                .Select(ID => ID.subYardId)
-                .Distinct();
-        }
-
-        /// <summary>
-        /// Returns the track numbers of all track in the subyard with ID subYardID in the yard(station) with yardID
-        /// </summary>
-        public static IEnumerable<int> GetTrackNumbersOfSubYard(this RailTrackRegistry registry, string yardID, string subYardID)
-        {
-            return registry.AllTracks
-                .Select(railTrack => railTrack.logicTrack.ID)
-                .Where(ID => ID.yardId == yardID &&
-                             ID.subYardId == subYardID)
-                .Select(ID => ID.orderNumber)
-                .Where(trackNumberString => trackNumberString != "")
-                .Select(int.Parse)
-                .Distinct();
-        }
-
-        public static void SwitchTo(this Junction junction, byte branchNumber, Junction.SwitchMode switchMode)
-        {
-            Mapify.LogDebug($"junction {junction.name} switch to {branchNumber}");
-
-            junction.selectedBranch = (byte) Misc.BetterModulo(branchNumber - 1, junction.outBranches.Count);
-            junction.Switch(switchMode);
-        }
-
         public static Junction.Branch FindClosestBranch(this Junction junction, Vector3 fromPoint, float maxRange = 5f)
         {
             var closestDistance = float.PositiveInfinity;

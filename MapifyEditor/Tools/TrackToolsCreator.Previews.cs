@@ -80,7 +80,7 @@ namespace Mapify.Editor.Tools
             public static Vector3[][] PreviewCustomSwitch(Vector3 attachPoint, Vector3 handlePosition, int switchBranchesCount, int connectingPoint, float radius, float arc, float endGrade,
                 int samples = 8)
             {
-                //TODO connectingPoint
+                //TODO implement connectingPoint
 
                 var curves = new Vector3[switchBranchesCount][];
                 var length = radius * arc * Mathf.Deg2Rad;

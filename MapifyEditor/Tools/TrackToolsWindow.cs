@@ -445,7 +445,7 @@ namespace Mapify.Editor.Tools
                         return false;
                     }
 
-                    //TODO this one sometimes gives a false positive
+                    //TODO bug: this check sometimes gives a false positive
                     if (!CheckGrade(isBehind ? CurrentTrack.GetGradeAtStart() : CurrentTrack.GetGradeAtEnd()))
                     {
                         tooltip = "Grade too steep for creation";

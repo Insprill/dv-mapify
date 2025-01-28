@@ -196,18 +196,19 @@ namespace Mapify.Editor.Tools
                 optionValues[i] = i;
             }
 
-            _connectingPointCustom = EditorGUILayout.IntPopup(
-                new GUIContent("Connecting point", "Which of the switch points should connect to the current track"),
-                _connectingPointCustom,
-                displayedOptions,
-                optionValues,
-                EditorStyles.popup
-            );
+            //TODO implement connecting point
+            // _connectingPointCustom = EditorGUILayout.IntPopup(
+            //     new GUIContent("Connecting point", "Which of the switch points should connect to the current track"),
+            //     _connectingPointCustom,
+            //     displayedOptions,
+            //     optionValues,
+            //     EditorStyles.popup
+            // );
 
-            if (GUILayout.Button(new GUIContent("Next point", "Swaps between the switch points."), GUILayout.MaxWidth(120)))
-            {
-                _connectingPointCustom = (_connectingPointCustom+1) % (_switchBranchesCount+1);
-            }
+            // if (GUILayout.Button(new GUIContent("Next point", "Swaps between the switch points."), GUILayout.MaxWidth(120)))
+            // {
+            //     _connectingPointCustom = (_connectingPointCustom+1) % (_switchBranchesCount+1);
+            // }
 
             EditorGUILayout.EndHorizontal();
 

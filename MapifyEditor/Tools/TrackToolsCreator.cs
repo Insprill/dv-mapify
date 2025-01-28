@@ -301,13 +301,15 @@ namespace Mapify.Editor.Tools
         public static CustomSwitch CreateCustomSwitch(Transform parent, Vector3 attachPoint, Vector3 handlePosition, int switchBranchesCount,
             int connectingPoint, float radius, float arc, float endGrade)
         {
-            //TODO connectingPoint
+            //TODO implement connectingPoint
 
             var switchObject = new GameObject($"[Switch w/ {switchBranchesCount} branches]");
             switchObject.transform.position = attachPoint;
+            switchObject.transform.parent = parent; //todo test this
 
             var switchComponent = switchObject.AddComponent<CustomSwitch>();
-            //TODO
+
+            //TODO maybe make this configurable? not important
             switchComponent.defaultBranch = 0;
             switchComponent.standSide = CustomSwitch.StandSide.LEFT;
 

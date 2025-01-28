@@ -76,7 +76,7 @@ namespace Mapify.SceneInitializers.Railway
 
             //Junction
             var inJunction = prefabClone.GetComponentInChildren<Junction>();
-            inJunction.transform.position = customSwitch.JointPoint.transform.position;
+            inJunction.transform.position = customSwitch.GetJointPoint().transform.position;
             inJunction.selectedBranch = customSwitch.defaultBranch;
 
             DestroyPrefabTracks(prefabClone);

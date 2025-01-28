@@ -14,6 +14,8 @@ namespace Mapify.Editor
             return tracks ?? new Track[] {};
         }
 
+        public abstract BezierPoint GetJointPoint();
+
         // TODO why is this unused
 //         protected void Snap()
 //         {

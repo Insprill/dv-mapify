@@ -305,7 +305,7 @@ namespace Mapify.Editor.Tools
 
             var switchObject = new GameObject($"[Switch w/ {switchBranchesCount} branches]");
             switchObject.transform.position = attachPoint;
-            switchObject.transform.parent = parent; //todo test this
+            switchObject.transform.parent = parent;
 
             var switchComponent = switchObject.AddComponent<CustomSwitch>();
 

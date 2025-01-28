@@ -16,7 +16,13 @@ namespace MapifyEditor.Export.Validators
                 var switchTracks = switch_.GetTracks();
                 if (switchTracks.Length < 2)
                 {
-                    yield return Result.Error("Switches must have at least 2 branches", switch_);
+                    yield return Result.Error($"Switches must have at least 2 branches but it has {switchTracks.Length}", switch_);
+                }
+
+                if (switchTracks.Any(switchTrack => switchTrack == null))
+                {
+                    yield return Result.Error($"Switch track is null", switch_);
+                    continue;
                 }
 
                 foreach (var track in switchTracks)

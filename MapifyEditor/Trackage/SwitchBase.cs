@@ -10,7 +10,8 @@ namespace Mapify.Editor
     {
         public virtual Track[] GetTracks()
         {
-            return gameObject.GetComponentsInChildren<Track>();
+            var tracks = gameObject.GetComponentsInChildren<Track>();
+            return tracks ?? new Track[] {};
         }
 
         // TODO why is this unused

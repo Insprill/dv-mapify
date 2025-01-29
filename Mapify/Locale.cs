@@ -117,16 +117,11 @@ namespace Mapify
             if (!mapSpecificTranslationsLoaded) return false;
 
             var locale = LocalizationManager.CurrentLanguage;
-            Mapify.LogDebug($"{nameof(TryGetMapSpecificTranslation)} key: '{key}' locale: '{locale}'");
 
             if (!mapSpecificTranslations.ContainsKey(locale)) return false;
 
             var success = mapSpecificTranslations[locale].TryGetValue(key.TrimStart(PREFIX_CHARS), out translation);
             success = success && translation != "";
-            if (success)
-            {
-                Mapify.LogDebug($"translation: '{translation}'");
-            }
             return success;
         }
 

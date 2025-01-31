@@ -2,20 +2,10 @@
 
 ---
 
-To build Mapify's docs, you'll need to have Python 3 and Pip installed.
+To build Mapify's docs, first install mdBook by following the [installation instructions here](https://rust-lang.github.io/mdBook/guide/installation.html).
 
-- [How to install Python](https://wiki.python.org/moin/BeginnersGuide/Download)
-- [How to install pip](https://pip.pypa.io/en/stable/installation/)
+Run `mdbook serve --open` in the `docs` folder to view the documentation in your webbrowser.
 
-To install the required dependencies, you can run the following command:
-```shell
-python -m pip install -r docs/requirements.txt
-```
-To serve the documentation locally, you can run
-```shell
-python -m mkdocs serve
-```
+To build the docs, run `mdbook build`.
 
-It can then be accessed at [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
-
-For information on how MkDocs works, check out [their documentation](https://www.mkdocs.org/getting-started/#adding-pages).
+For information on how mdBook works, check out [their documentation](https://rust-lang.github.io/mdBook/index.html).

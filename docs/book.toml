@@ -1,6 +1,6 @@
 [book]
-authors = ["Insprill", "Tostiman"]
-language = "en"
-multilingual = false
-src = "src"
 title = "Mapify"
+authors = ["Insprill", "Tostiman"]
+
+[output.html]
+git-repository-url = "https://github.com/Insprill/dv-mapify"

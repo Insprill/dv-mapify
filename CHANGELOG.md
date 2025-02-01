@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Runtime:
+#### Added
+- More in-game translations (Dutch, Chinese(Simplified), Chinese(Traditional), German, Italian, French, Russian, Hungarian, Spanish) ([#108] by [@Tostiman], 我叫无聊 My Name Is BorING, kev & Coookie, tablesidecat02, Corpet, Louvet & Cie, RaY, Dank_memey and The72)
+
+#### Fixed
+- Game would freeze when reloading a map ([#81] by [@Tostiman]).
+- "Failed to find locale language" warning (it reported the wrong language) ([#108] by [@Tostiman]).
+
+### Map Creation Package:
+#### Added
+- Option to add custom screenshots, music and logo on the loading screen ([#80] by [@Tostiman]). 
+- Ability to translate station names ([#108] by [@Tostiman]).
+
+#### Fixed
+- Framerate in editor with many tracks was extremely low. Now it's just regular low ([#78] by [@Tostiman]).
+
+### Documentation:
+
+- Changed the documentation website generator to mdBook ([#115] by [@Tostiman]).
+
+## [0.5.0] - 2025.02.01
 ### Runtime:
 #### Added
 - Support for build 98 ([#64] by [@Tostiman]).
@@ -14,6 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Job booklets spawning under the station ([#45] by [@Tostiman]).
 - Stations showing missing translation text instead of the station name ([#48] by [@Tostiman]).
 - The world map getting modified when loading the default map ([#61] by [@Tostiman]).
+- The MapInfo.json would be found before the Info.json when installing maps, causing them to be uninstallable.
+- Auto-saving on custom maps didn't work ([#69] by [@Tostiman]).
+- Settings.ExtremelyVerboseLogging fixed ([#83] by [@Tostiman]).
+- Mod was incompatible with the newest DV update ([#97], [#106] by [@Tostiman]).
 
 ### Map Creation Package:
 #### Added
@@ -30,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 - Clarified the error message when warehouse machine validation failed ([#36] by [@Tostiman]).
+- Restricted station IDs to letters & numbers, to avoid breaking Wiz's cargo loading format ([#72] by [@Tostiman]).
+- Enabled sign generation by default ([#82] by [@Tostiman]).
 
 
 ## [0.4.1] - 2023-07-23
@@ -144,7 +172,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2023-04-22
 - Initial release.
 
-
 <!-- Users -->
 [@Tostiman]: https://github.com/t0stiman
 [@Wiz]: https://github.com/WhistleWiz
@@ -162,9 +189,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#61]: https://github.com/Insprill/dv-mapify/pull/61
 [#63]: https://github.com/Insprill/dv-mapify/pull/63
 [#64]: https://github.com/Insprill/dv-mapify/pull/64
+[#72]: https://github.com/Insprill/dv-mapify/pull/72
+[#73]: https://github.com/Insprill/dv-mapify/pull/73
+[#82]: https://github.com/Insprill/dv-mapify/pull/82
+[#83]: https://github.com/Insprill/dv-mapify/pull/83
+[#95]: https://github.com/Insprill/dv-mapify/pull/95
+[#97]: https://github.com/Insprill/dv-mapify/pull/97
+[#106]: https://github.com/Insprill/dv-mapify/pull/106
+[#78]: https://github.com/Insprill/dv-mapify/pull/78
+[#80]: https://github.com/Insprill/dv-mapify/pull/80
+[#81]: https://github.com/Insprill/dv-mapify/pull/81
+[#108]: https://github.com/Insprill/dv-mapify/pull/108
+[#115]: https://github.com/Insprill/dv-mapify/pull/115
+
+
 
 <!-- Diffs -->
-[Unreleased]: https://github.com/Insprill/dv-mapify/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/Insprill/dv-mapify/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Insprill/dv-mapify/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/Insprill/dv-mapify/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/Insprill/dv-mapify/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Insprill/dv-mapify/compare/v0.2.0...v0.3.0

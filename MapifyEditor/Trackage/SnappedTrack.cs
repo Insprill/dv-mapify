@@ -2,13 +2,14 @@
 {
     public class SnappedTrack
     {
+        private Track track;
+        private BezierPoint point;
+
         public SnappedTrack(Track aTrack, BezierPoint aPoint)
         {
             track = aTrack;
             point = aPoint;
         }
-        private Track track;
-        private BezierPoint point;
 
         public void UnSnapped()
         {

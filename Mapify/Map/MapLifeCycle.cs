@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DV.CashRegister;
 using DV.Utils;
+using Mapify.BuildMode;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Patches;
@@ -24,7 +25,7 @@ namespace Mapify.Map
 {
     public static class MapLifeCycle
     {
-        private static readonly Regex VANILLA_STREAMER_SCENE_PATTERN = new Regex("Far__x[0-9]+_z[0-9]+");
+        public static readonly Regex VANILLA_STREAMER_SCENE_PATTERN = new Regex("Far__x[0-9]+_z[0-9]+");
 
         public static Action OnCleanup;
 
@@ -163,6 +164,9 @@ namespace Mapify.Map
 
             // Auto-save won't work without this line.
             SaveGameManager.Instance.disableAutosave = false;
+
+            BuildingAssetsRegistry.FinishRegistering();
+            BuildModeClass.Instance.LoadPlacedAssets(Path.Combine(mapDir, Constants.PLACED_ASSETS_XML));
         }
 
         private static void SetupStreamer(GameObject parent, MapInfo mapInfo)

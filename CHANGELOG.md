@@ -27,10 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed the documentation website generator to mdBook ([#115] by [@Tostiman]).
 
+
 ## [0.5.0] - 2025.02.01
 ### Runtime:
 #### Added
-- Support for build 98 ([#64] by [@Tostiman]).
+- Added support for B98 ([#64], by [@Tostiman]).
+- Added support for B99 ([#97], by [@Tostiman]).
+- Added support for B99.2 ([#106], by [@Tostiman]).
  
 #### Fixed
 - Job booklets spawning under the station ([#45] by [@Tostiman]).
@@ -39,7 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The MapInfo.json would be found before the Info.json when installing maps, causing them to be uninstallable.
 - Auto-saving on custom maps didn't work ([#69] by [@Tostiman]).
 - Settings.ExtremelyVerboseLogging fixed ([#83] by [@Tostiman]).
-- Mod was incompatible with the newest DV update ([#97], [#106] by [@Tostiman]).
 
 ### Map Creation Package:
 #### Added

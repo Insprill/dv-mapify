@@ -232,6 +232,16 @@ namespace Mapify.Utils
             return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, vanillaObject.keepChildren, vanillaObject.rotationOffset);
         }
 
+        public static string GetLocalizedStationName(this Station station)
+        {
+            if(Locale.TryGetMapSpecificTranslation(Locale.STATION_PREFIX+station.stationID, out var localizedName))
+            {
+                return localizedName;
+            }
+
+            return station.stationName;
+        }
+
         #endregion
     }
 }

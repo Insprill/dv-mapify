@@ -2,7 +2,7 @@
     <Import Project="../UserProperties.props" Condition="Exists('../UserProperties.props')" />
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
-        <LangVersion>7.3</LangVersion>
+        <LangVersion>9</LangVersion>
         <RootNamespace>Mapify</RootNamespace>
         <PublicizerClearCacheOnClean>true</PublicizerClearCacheOnClean>
     </PropertyGroup>

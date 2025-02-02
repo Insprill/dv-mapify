@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Mapify.Editor
 {
+    [ExecuteInEditMode] //this is necessary for snapping to work
     [RequireComponent(typeof(BezierCurve))]
     public class Track : MonoBehaviour
     {
@@ -54,6 +55,17 @@ namespace Mapify.Editor
         public bool isOutSnapped { get; private set; }
         private BezierCurve _curve;
 
+#if UNITY_EDITOR
+        private bool snapShouldUpdate = true;
+        private Vector3 previousPositionFirstPoint;
+        private Vector3 previousPositionLastPoint;
+
+        //the track connected to the first point in our curve
+        private SnappedTrack snappedTrackBefore;
+        //the track connected to the last point in our curve
+        private SnappedTrack snappedTrackAfter;
+#endif
+
         public BezierCurve Curve {
             get {
                 if (_curve != null) return _curve;
@@ -79,6 +91,26 @@ namespace Mapify.Editor
                     ? $"[#] {name}"
                     : name
                 : $"[Y]_[{stationId}]_[{yardId}-{trackId:D2}-{trackType.LetterId()}]";
+
+#if UNITY_EDITOR
+
+        private void OnEnable()
+        {
+            snapShouldUpdate = true;
+        }
+
+        private void OnDisable()
+        {
+            snappedTrackBefore?.UnSnapped();
+            snappedTrackAfter?.UnSnapped();
+        }
+
+        private void OnDestroy()
+        {
+            snappedTrackBefore?.UnSnapped();
+            snappedTrackAfter?.UnSnapped();
+        }
+#endif
 
         private void OnValidate()
         {
@@ -112,6 +144,7 @@ namespace Mapify.Editor
                     break;
             }
         }
+
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
@@ -123,7 +156,22 @@ namespace Mapify.Editor
                 DrawDisconnectedIcon(Curve[0].position);
             if (!isOutSnapped)
                 DrawDisconnectedIcon(Curve.Last().position);
-            Snap();
+
+            //first or last point moved?
+            if (Curve[0].position != previousPositionFirstPoint ||
+                Curve.Last().position != previousPositionLastPoint)
+            {
+                snapShouldUpdate = true;
+
+                previousPositionFirstPoint = Curve[0].position;
+                previousPositionLastPoint = Curve.Last().position;
+            }
+
+            if (snapShouldUpdate)
+            {
+                Snap();
+                snapShouldUpdate = false;
+            }
         }
 
         internal void Snap()
@@ -175,48 +223,96 @@ namespace Mapify.Editor
 
         private void TrySnap(IEnumerable<BezierPoint> snapPoints, bool move, bool first)
         {
-            if (first) isInSnapped = false;
-            else isOutSnapped = false;
+            var mySnapPoint = first ? Curve[0] : Curve.Last();
+            var pos = mySnapPoint.transform.position;
+            var closestPosition = Vector3.zero;
+            var closestDistance = float.MaxValue;
 
-            BezierPoint point = first ? Curve[0] : Curve.Last();
-            Vector3 pos = point.transform.position;
-            Vector3 closestPos = Vector3.zero;
-            float closestDist = float.MaxValue;
-
-            Collider[] colliders = new Collider[1];
+            var colliders = new Collider[1];
             // Turntables will search for track within 0.05m, so set it a little lower to be safe.
             if (!IsSwitch && Physics.OverlapSphereNonAlloc(pos, 0.04f, colliders) != 0)
             {
-                Collider collider = colliders[0];
-                Track track = collider.GetComponent<Track>();
-                if (collider is CapsuleCollider capsule && track != null && track.IsTurntable)
+                var foundCollider = colliders[0];
+                var track = foundCollider.GetComponent<Track>();
+                if (foundCollider is CapsuleCollider capsule && track != null && track.IsTurntable)
                 {
                     Vector3 center = capsule.transform.TransformPoint(capsule.center);
-                    closestPos = pos + (Vector3.Distance(pos, center) - capsule.radius) * -(pos - center).normalized;
-                    closestPos.y = center.y;
-                    closestDist = Vector3.Distance(pos, closestPos);
+                    closestPosition = pos + (Vector3.Distance(pos, center) - capsule.radius) * -(pos - center).normalized;
+                    closestPosition.y = center.y;
+                    closestDistance = Vector3.Distance(pos, closestPosition);
+
+                    // no need to remember snapped turntables because they don't have the "Disconnected" indicator
+                    if (first)
+                    {
+                        snappedTrackBefore = null;
+                    }
+                    else
+                    {
+                        snappedTrackAfter = null;
+                    }
                 }
             }
 
-            if (closestDist >= float.MaxValue)
-                foreach (BezierPoint otherBp in snapPoints)
+            if (closestDistance >= float.MaxValue)
+            {
+                foreach (BezierPoint otherSnapPoint in snapPoints)
                 {
-                    if (otherBp.Curve() == point.Curve()) continue;
-                    Vector3 otherPos = otherBp.transform.position;
-                    float dist = Mathf.Abs(Vector3.Distance(otherPos, pos));
-                    if (dist > SNAP_RANGE || dist >= closestDist) continue;
-                    if (IsSwitch && otherBp.GetComponentInParent<Track>().IsSwitch) continue;
-                    closestPos = otherPos;
-                    closestDist = dist;
-                }
+                    //don't snap to itself
+                    if (otherSnapPoint.Curve() == mySnapPoint.Curve()) continue;
 
-            if (closestDist >= float.MaxValue)
+                    Vector3 otherPosition = otherSnapPoint.transform.position;
+                    float distance = Mathf.Abs(Vector3.Distance(otherPosition, pos));
+
+                    // too far away
+                    if (distance > SNAP_RANGE || distance >= closestDistance) continue;
+
+                    var otherTrack = otherSnapPoint.GetComponentInParent<Track>();
+
+                    // don't snap a switch to another switch
+                    if (IsSwitch && otherTrack.IsSwitch) continue;
+
+                    closestPosition = otherPosition;
+                    closestDistance = distance;
+
+                    otherTrack.Snapped(otherSnapPoint);
+
+                    //remember what track we snapped to
+                    if (first)
+                    {
+                        snappedTrackBefore = new SnappedTrack(otherTrack, otherSnapPoint);
+                    }
+                    else
+                    {
+                        snappedTrackAfter = new SnappedTrack(otherTrack, otherSnapPoint);
+                    }
+                }
+            }
+
+            // No snap target found
+            if (closestDistance >= float.MaxValue)
+            {
+                if (first)
+                {
+                    snappedTrackBefore?.UnSnapped();
+                    snappedTrackBefore = null;
+
+                    isInSnapped = false;
+                }
+                else
+                {
+                    snappedTrackAfter?.UnSnapped();
+                    snappedTrackAfter = null;
+
+                    isOutSnapped = false;
+                }
                 return;
+            }
 
             if (first) isInSnapped = true;
             else isOutSnapped = true;
-            if (move) point.transform.position = closestPos;
+            if (move) mySnapPoint.transform.position = closestPosition;
         }
+
 #endif
         internal void Snapped(BezierPoint point)
         {
@@ -224,6 +320,14 @@ namespace Mapify.Editor
                 isInSnapped = true;
             if (point == Curve.Last())
                 isOutSnapped = true;
+        }
+
+        internal void UnSnapped(BezierPoint point)
+        {
+            if (point == Curve[0])
+                isInSnapped = false;
+            if (point == Curve.Last())
+                isOutSnapped = false;
         }
 
         public static Track Find(string stationId, char yardId, byte trackId, TrackType trackType)

@@ -12,6 +12,12 @@ namespace Mapify.Editor.Tools
             Right
         }
 
+        public enum SwitchType
+        {
+            Vanilla,
+            Custom
+        }
+
         public enum SwitchPoint
         {
             Joint,

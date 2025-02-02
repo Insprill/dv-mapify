@@ -218,6 +218,91 @@ namespace Mapify.Utils
                 saveGameData.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
         }
 
+        public static RailTrack GetRailTrack(this RailTrackRegistry registry, string stationID, string yardID, byte trackNumber)
+        {
+            var query = $"[{stationID}]_[{yardID}-{trackNumber:D2}";
+
+            return registry.AllTracks.FirstOrDefault(track => track.name.Contains(query));
+        }
+
+        /// <summary>
+        /// Returns the subyard IDs of all subyards in the yard(station) with ID yardID
+        /// </summary>
+        public static IEnumerable<string> GetSubYardIDsOfYard(this RailTrackRegistry registry, string yardID)
+        {
+            return registry.AllTracks
+                .Select(railTrack => railTrack.logicTrack.ID)
+                .Where(ID => ID.yardId == yardID)
+                .Select(ID => ID.subYardId)
+                .Distinct();
+        }
+
+        /// <summary>
+        /// Returns the track numbers of all track in the subyard with ID subYardID in the yard(station) with yardID
+        /// </summary>
+        public static IEnumerable<int> GetTrackNumbersOfSubYard(this RailTrackRegistry registry, string yardID, string subYardID)
+        {
+            return registry.AllTracks
+                .Select(railTrack => railTrack.logicTrack.ID)
+                .Where(ID => ID.yardId == yardID &&
+                             ID.subYardId == subYardID)
+                .Select(ID => ID.orderNumber)
+                .Where(trackNumberString => trackNumberString != "")
+                .Select(int.Parse)
+                .Distinct();
+        }
+
+        public static void SwitchTo(this Junction junction, byte branchNumber, Junction.SwitchMode switchMode)
+        {
+            Mapify.LogDebug($"junction {junction.name} switch to {branchNumber}");
+
+            junction.selectedBranch = (byte) Misc.BetterModulo(branchNumber - 1, junction.outBranches.Count);
+            junction.Switch(switchMode);
+        }
+
+        public static Junction.Branch FindClosestBranch(this Junction junction, Vector3 fromPoint, float maxRange = 5f)
+        {
+            var closestDistance = float.PositiveInfinity;
+
+            RailTrack track = null;
+            var first = false;
+
+            foreach (var foundTrack in Resources.FindObjectsOfTypeAll<RailTrack>())
+            {
+                // skip the tracks in the junction
+                if(junction.outBranches.Any(branch => branch.track == foundTrack)) continue;
+
+                if (!foundTrack.curve || foundTrack.curve.pointCount < 2) continue;
+
+                var firstPoint = foundTrack.curve[0];
+
+                var distanceToFirst = Vector3.SqrMagnitude(fromPoint - firstPoint.position);
+                if (distanceToFirst < maxRange * (double) maxRange && distanceToFirst < (double) closestDistance)
+                {
+                    closestDistance = distanceToFirst;
+                    track = foundTrack;
+                    first = true;
+                }
+
+                var lastPoint = foundTrack.curve.Last();
+                var distanceToLast = Vector3.SqrMagnitude(fromPoint - lastPoint.position);
+                if (distanceToLast < maxRange * (double) maxRange && distanceToLast < (double) closestDistance)
+                {
+                    closestDistance = distanceToLast;
+                    track = foundTrack;
+                    first = false;
+                }
+            }
+
+            if (track == null)
+            {
+                Mapify.LogError($"Failed to find closest branch for {junction.name}");
+                return null;
+            }
+
+            return new Junction.Branch(track, first);
+        }
+
         #endregion
 
         #region Mapify

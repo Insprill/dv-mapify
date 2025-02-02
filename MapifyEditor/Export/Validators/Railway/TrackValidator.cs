@@ -31,8 +31,14 @@ namespace MapifyEditor.Export.Validators
                 if (PrefabUtility.IsPartOfPrefabInstance(track))
                     yield return Result.Warning("Track prefabs should be unpacked completely before being used", track);
 
-                if (track.trackType != TrackType.Road)
+                if (track.trackType == TrackType.Road)
                 {
+                    if (!string.IsNullOrWhiteSpace(track.stationId))
+                    {
+                        yield return Result.Warning($"Track {track.name} will not be assigned to specified station {track.stationId} because {nameof(track.trackType)} is set to {track.trackType}", track);
+                    }
+                }
+                else {
                     if (string.IsNullOrWhiteSpace(track.stationId))
                         yield return Result.Error("Station ID not specified", track);
                     else if (stations.All(station => station.stationID != track.stationId))

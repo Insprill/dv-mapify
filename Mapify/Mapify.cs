@@ -12,7 +12,7 @@ namespace Mapify
     public static class Mapify
     {
         private static UnityModManager.ModEntry ModEntry { get; set; }
-        private static Settings Settings;
+        public static Settings Settings { get; private set; }
         private const string LOCALE_FILE = "locale.csv";
 
         internal static Harmony Harmony { get; private set; }
@@ -57,10 +57,20 @@ namespace Mapify
 
         #region Logging
 
+        public static void LogDebugExtreme(object msg)
+        {
+            LogDebugExtreme(() => msg);
+        }
+
         public static void LogDebugExtreme(Func<object> resolver)
         {
             if (Settings.ExtremelyVerboseLogging)
                 LogDebug(resolver);
+        }
+
+        public static void LogDebug(object msg)
+        {
+            LogDebug(() => msg);
         }
 
         public static void LogDebug(Func<object> resolver)

@@ -1,3 +1,4 @@
+using System.Linq;
 using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -46,8 +47,7 @@ namespace Mapify.Editor.Tools
         public static SimpleBezier[] GetSwitchBeziers(Switch s, Vector3 attachPoint, Vector3 handlePosition, SwitchPoint connectingPoint)
         {
             // Create the original beziers.
-            SimpleBezier[] curves = new SimpleBezier[]
-            {
+            SimpleBezier[] curves = {
                 new SimpleBezier(
                     s.GetJointPoint().position,
                     s.GetJointPoint().globalHandle2,
@@ -121,6 +121,7 @@ namespace Mapify.Editor.Tools
 
         /// <summary>
         /// Returns the speed limit shown on track speed signs for a given radius.
+        /// source: DV.Signs.SignPlacer.GetMaxSpeedForRadius
         /// </summary>
         /// <returns>The speed in km/h.</returns>
         public static float GetMaxSpeedForRadiusGame(float radius)
@@ -196,7 +197,7 @@ namespace Mapify.Editor.Tools
 
             handle = newTarget + (handle - newTarget).normalized * length;
 
-            return new Vector3[] { attachPosition,
+            return new[] { attachPosition,
                 attachPosition + dir * length,
                 handle,
                 newTarget };
@@ -237,7 +238,7 @@ namespace Mapify.Editor.Tools
 
             length *= 1 + MathHelper.ArcToBezierHandleLength(angle * Mathf.Deg2Rad);
 
-            return new Vector3[] { attachPosition,
+            return new[] { attachPosition,
                 attachPosition + dir * length,
                 newTarget - dirNext * length,
                 newTarget };
@@ -264,7 +265,7 @@ namespace Mapify.Editor.Tools
             Vector3[] s = GetSmoothBezierToConnectSimple(attachPosition, attachHandle, newTarget);
             Vector3[] c = GetSmoothBezierToConnectComplex(attachPosition, attachHandle, newTarget);
 
-            return new Vector3[] {Vector3.Lerp(s[0], c[0], mix),
+            return new[] {Vector3.Lerp(s[0], c[0], mix),
                 Vector3.Lerp(s[1], c[1], mix),
                 Vector3.Lerp(s[2], c[2], mix),
                 Vector3.Lerp(s[3], c[3], mix) };
@@ -275,7 +276,7 @@ namespace Mapify.Editor.Tools
             Vector3[] s = GetSmoothBezierToConnectSimple(attachPosition, attachHandle, newTarget, maxAngle);
             Vector3[] c = GetSmoothBezierToConnectComplex(attachPosition, attachHandle, newTarget, maxAngle);
 
-            return new Vector3[] {Vector3.Lerp(s[0], c[0], mix),
+            return new[] {Vector3.Lerp(s[0], c[0], mix),
                 Vector3.Lerp(s[1], c[1], mix),
                 Vector3.Lerp(s[2], c[2], mix),
                 Vector3.Lerp(s[3], c[3], mix) };
@@ -337,7 +338,7 @@ namespace Mapify.Editor.Tools
         /// </summary>
         public static Vector3[] ReverseCurve(Vector3[] curve)
         {
-            return new Vector3[] { curve[3],
+            return new[] { curve[3],
                 curve[2],
                 curve[1],
                 curve[0] };

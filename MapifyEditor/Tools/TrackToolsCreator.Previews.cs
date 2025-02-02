@@ -77,6 +77,46 @@ namespace Mapify.Editor.Tools
                 };
             }
 
+            public static Vector3[][] PreviewCustomSwitch(Vector3 attachPoint, Vector3 handlePosition, int switchBranchesCount, int connectingPoint, float radius, float arc, float endGrade,
+                int samples = 8)
+            {
+                //TODO connectingPoint
+
+                var curves = new Vector3[switchBranchesCount][];
+                var length = radius * arc * Mathf.Deg2Rad;
+
+                for (int branchIndex = 0; branchIndex < switchBranchesCount; branchIndex++)
+                {
+                    if (switchBranchesCount % 2 == 1 && branchIndex == (switchBranchesCount-1) / 2)
+                    {
+                        //middle track
+                        curves[branchIndex] = PreviewStraight(attachPoint, handlePosition, length, endGrade, out _);
+                        continue;
+                    }
+
+                    TrackOrientation trackOrientation;
+                    float thisRadius;
+
+                    if (branchIndex < switchBranchesCount / 2.0)
+                    {
+                        //left of center
+                        trackOrientation = TrackOrientation.Left;
+                        thisRadius = (branchIndex + 1) * radius;
+                    }
+                    else
+                    {
+                        //right of center
+                        trackOrientation = TrackOrientation.Right;
+                        thisRadius = (switchBranchesCount - branchIndex) * radius;
+                    }
+
+                    var thisArc = length / thisRadius * Mathf.Rad2Deg;
+                    curves[branchIndex] = PreviewArcCurve(attachPoint, handlePosition, trackOrientation, thisRadius, thisArc, 360, endGrade, out _, samples);
+                }
+
+                return curves;
+            }
+
             public static Vector3[][] PreviewYard(Switch leftPrefab, Switch rightPrefab, Vector3 attachPoint, Vector3 handlePosition,
                 TrackOrientation orientation, float trackDistance, YardOptions yardOptions, int samples = 8)
             {

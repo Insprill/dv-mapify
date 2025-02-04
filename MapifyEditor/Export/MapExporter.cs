@@ -75,13 +75,6 @@ namespace Mapify.Editor
 
                 if (File.Exists(exportFilePath))
                 {
-                    File.Delete(exportFilePath);
-                }
-
-                ZipFile.CreateFromDirectory(mapExportFolder, exportFilePath, CompressionLevel.Fastest, true);
-
-                if (File.Exists(exportFilePath))
-                {
                     EditorFileUtil.MoveToTrash(exportFilePath);
                 }
 

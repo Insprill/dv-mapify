@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Reflection.Emit;
+﻿using DV.TerrainSystem;
+using DV.Utils;
 using HarmonyLib;
 using Mapify.Map;
-using Mapify.Utils;
 using UnityEngine;
 
 namespace Mapify.Patches
@@ -13,49 +12,28 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(BufferStop), nameof(BufferStop.OnTriggerEnter))]
     public static class BufferStop_OnTriggerEnter_Patch
     {
-        /// <summary>
-        ///     Replaces the logic removed in the Transpiler.
-        /// </summary>
-        /// <seealso cref="Transpiler" />
         private static bool Prefix(BufferStop __instance, Collider other)
         {
-            Rigidbody attachedRigidbody = other.attachedRigidbody;
-            float breakSpeed = Maps.IsDefaultMap
-                ? BufferStop.SQR_BREAK_BUFFER_VELOCITY_THRESHOLD
-                : __instance.GetComponent<Editor.BufferStop>().breakSpeed * 3.6f;
-            return attachedRigidbody != null && attachedRigidbody.velocity.sqrMagnitude <= breakSpeed * breakSpeed;
-        }
+            if(Maps.IsDefaultMap) return true; //execute original
 
-        /// <summary>
-        ///     Replaces the default mass with the mass.
-        /// </summary>
-        private static void Postfix(BufferStop __instance)
-        {
-            if (Maps.IsDefaultMap)
-                return;
-            Rigidbody rigidbody = __instance.gameObject.GetComponent<Rigidbody>();
-            if (rigidbody == null)
-                return;
-            rigidbody.mass = __instance.GetComponent<Editor.BufferStop>().massAfterBreak;
-        }
+            if (TutorialHelper.InRestrictedMode) return false;
 
-        /// <summary>
-        ///     Removes the velocity check, which is replaced in our Prefix patch.
-        /// </summary>
-        /// <seealso cref="Prefix" />
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
+            // break velocity
+            var breakVelocitySqr = __instance.GetComponent<Editor.BufferStop>().breakSpeed * 3.6f;
 
-            for (int i = 0; i < codes.Count; i++)
-                if (codes[i].opcode == OpCodes.Ldc_R4 && ((float)codes[i].operand).Eq(BufferStop.SQR_BREAK_BUFFER_VELOCITY_THRESHOLD))
-                {
-                    for (int j = i - 5; j <= i + 1; j++)
-                        codes[j].opcode = OpCodes.Nop;
-                    break;
-                }
+            var attachedRigidbody = other.attachedRigidbody;
+            if ((attachedRigidbody != null ? !attachedRigidbody.TryGetComponent(out TrainCar _) ? 1 : 0 : 1) != 0 || attachedRigidbody.velocity.sqrMagnitude <= (double) breakVelocitySqr) return false;
+            Object.Destroy(__instance.triggerCollider);
+            __instance.rb = __instance.gameObject.AddComponent<Rigidbody>();
 
-            return codes;
+            // mass after break
+            __instance.rb.mass = __instance.GetComponent<Editor.BufferStop>().massAfterBreak;
+
+            if (!(bool) (Object) SingletonBehaviour<TerrainGrid>.Instance) return false;
+            __instance.OnTerrainsMove();
+            SingletonBehaviour<TerrainGrid>.Instance.TerrainsMoved += __instance.OnTerrainsMove;
+
+            return false; // skip original
         }
     }
 }

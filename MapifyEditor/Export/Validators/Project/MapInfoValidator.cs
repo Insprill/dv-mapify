@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -28,6 +29,14 @@ namespace MapifyEditor.Export.Validators.Project
             if (mapInfo.name == Names.DEFAULT_MAP_NAME)
                 yield return Result.Error($"Your map name cannot be {Names.DEFAULT_MAP_NAME}");
 
+            //Loading Screen
+            //LoadingScreenImages will be null if the map was built with an older version of Mapify
+            if (mapInfo.LoadingScreenImages != null && mapInfo.LoadingScreenImages.Any(image => image == null))
+            {
+                yield return Result.Error("Loading screen image is null", mapInfo);
+            }
+
+            //World
             if (mapInfo.waterLevel < -1)
                 yield return Result.Error("Water level cannot be lower than -1", mapInfo);
 

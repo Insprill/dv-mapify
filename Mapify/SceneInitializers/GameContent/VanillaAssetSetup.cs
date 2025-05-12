@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Mapify.Editor;
-using Mapify.Editor.Utils;
+﻿using Mapify.Editor;
 using Mapify.Utils;
 using UnityEngine;
 

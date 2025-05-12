@@ -111,6 +111,11 @@ namespace Mapify.Map
             return availableMaps[basicMapInfo.name].Item3;
         }
 
+        public static string GetDirectory(MapInfo mapInfo)
+        {
+            return availableMaps[mapInfo.name].Item3;
+        }
+
         public static void RegisterLoadedMap(MapInfo mapInfo)
         {
             WorldMapSetup.ShowStationNamesOnMap = mapInfo.showStationNamesOnMap;

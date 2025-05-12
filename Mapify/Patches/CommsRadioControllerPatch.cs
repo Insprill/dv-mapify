@@ -1,7 +1,10 @@
 using System.Linq;
 using DV;
+using DV.Utils;
 using HarmonyLib;
+using Mapify.BuildMode;
 using Mapify.Map;
+using UnityEngine;
 
 namespace Mapify.Patches
 {
@@ -14,6 +17,9 @@ namespace Mapify.Patches
     {
         private static void Postfix(CommsRadioController __instance)
         {
+            //ensure it exists
+            var obj2 = SingletonBehaviour<BuildModeClass>.Instance;
+
             if (Maps.IsDefaultMap)
                 return;
             __instance.allModes = __instance.allModes.Where(mode => mode.GetType() != typeof(CommsRadioCrewVehicle)).ToList();

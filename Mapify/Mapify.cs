@@ -1,19 +1,20 @@
 ﻿using System;
 using System.IO;
-using DV.UI;
 using HarmonyLib;
+using Mapify.BuildMode;
 using Mapify.Map;
-using Mapify.Patches;
+using RuntimeHandle;
+using UnityEngine;
 using UnityModManagerNet;
-using Object = UnityEngine.Object;
 
 namespace Mapify
 {
     public static class Mapify
     {
-        private static UnityModManager.ModEntry ModEntry { get; set; }
-        private static Settings Settings;
+        public static UnityModManager.ModEntry ModEntry { get; set; }
+        public static Settings MySettings { get; private set; }
         private const string LOCALE_FILE = "locale.csv";
+        private static AssetBundle assetBundle;
 
         internal static Harmony Harmony { get; private set; }
 
@@ -21,22 +22,46 @@ namespace Mapify
         {
             ModEntry = modEntry;
 
-            Settings = Settings.Load<Settings>(ModEntry);
-            ModEntry.OnGUI = entry => Settings.Draw(entry);
-            ModEntry.OnSaveGUI = entry => Settings.Save(entry);
+            MySettings = Settings.Load<Settings>(ModEntry);
+            ModEntry.OnGUI = entry => MySettings.Draw(entry);
+            ModEntry.OnSaveGUI = entry => MySettings.Save(entry);
+            ModEntry.OnUnload = OnUnload;
 
             try
             {
                 LoadLocale();
                 Maps.Init();
+                LoadAssetBundles();
                 Patch();
             }
             catch (Exception ex)
             {
                 LogException("Failed to load", ex);
+                Harmony?.UnpatchAll(ModEntry.Info.Id);
                 return false;
             }
 
+            return true;
+        }
+
+        private static void LoadAssetBundles()
+        {
+            assetBundle = AssetBundle.LoadFromFile(Path.Combine(ModEntry.Path, Editor.Names.ASSET_BUNDLE_NAME));
+
+            if (assetBundle == null)
+            {
+                throw new Exception("Failed to load asset bundle");
+            }
+
+            var assetsFolderPath = Editor.Names.ASSETS_FOLDER_PATH.ToLower();
+            BuildModeClass.LoadAssets(assetBundle, assetsFolderPath);
+            RuntimeTransformHandle.LoadAssets(assetBundle, assetsFolderPath);
+        }
+
+        private static bool OnUnload(UnityModManager.ModEntry modEntry)
+        {
+            Harmony?.UnpatchAll(ModEntry.Info.Id);
+            assetBundle?.Unload(true);
             return true;
         }
 
@@ -59,13 +84,13 @@ namespace Mapify
 
         public static void LogDebugExtreme(Func<object> resolver)
         {
-            if (Settings.ExtremelyVerboseLogging)
+            if (MySettings.ExtremelyVerboseLogging)
                 LogDebug(resolver);
         }
 
         public static void LogDebug(Func<object> resolver)
         {
-            if (Settings.VerboseLogging)
+            if (MySettings.VerboseLogging)
                 ModEntry.Logger.Log($"[Debug] {resolver.Invoke()}");
         }
 

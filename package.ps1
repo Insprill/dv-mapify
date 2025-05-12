@@ -5,7 +5,7 @@ param (
 
 Set-Location "$PSScriptRoot"
 
-$FilesToInclude = "info.json","build/runtime/*","LICENSE","locale.csv"
+$FilesToInclude = "info.json","build/runtime/*", "build/assetbundles/mapifybundle","LICENSE","locale.csv"
 
 $modInfo = Get-Content -Raw -Path "info.json" | ConvertFrom-Json
 $modId = $modInfo.Id

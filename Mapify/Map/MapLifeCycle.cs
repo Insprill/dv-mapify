@@ -214,20 +214,11 @@ namespace Mapify.Map
             var randomScreenPicker = Object.FindObjectsOfType<RandomScreenPicker>().FirstOrDefault();
             if (randomScreenPicker is null)
             {
-                Mapify.LogError($"cant find {nameof(RandomScreenPicker)}");
+                Mapify.LogError($"can't find {nameof(RandomScreenPicker)}");
                 return;
             }
 
-            //set all inactive except the first
-            for (int i = 1; i < randomScreenPicker.screens.Length; i++)
-            {
-                randomScreenPicker.screens[i].SetActive(false);
-            }
-
-            //make the first one active and set the image
-            var screenshotObject = randomScreenPicker.screens[0];
-            screenshotObject.SetActive(true);
-            screenshotObject.GetComponent<CanvasRenderer>().SetTexture(customImage);
+            randomScreenPicker.displayComponent.texture = customImage;
         }
 
         private static void ShowLoadingScreenLogo(Texture2D loadingScreenLogo)

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using Mapify.Map;
 using UnityEngine;
 
@@ -14,12 +15,15 @@ namespace Mapify.Patches
         {
             if (Maps.IsDefaultMap) return;
 
-            __instance.breakVelocitySqr = __instance.GetComponent<Editor.BufferStop>().breakSpeed * 3.6f;
+            __instance.breakVelocitySqr = Mathf.Pow(__instance.GetComponent<Editor.BufferStop>().breakSpeed * 3.6f, 2);
         }
 
         private static void Postfix(BufferStop __instance)
         {
             if (Maps.IsDefaultMap) return;
+
+            // Only continue if the buffer stop actually breaks
+            if(!__instance.gameObject.GetComponent<Rigidbody>()) return;
 
             //the RigidBody is created in OnTriggerEnter so we have to set rb.mass in a Postfix
             __instance.rb.mass = __instance.GetComponent<Editor.BufferStop>().massAfterBreak;

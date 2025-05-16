@@ -27,7 +27,7 @@ namespace Mapify
         private static bool initializeAttempted;
         private static ReadOnlyDictionary<string, Dictionary<string, string>> mapifyTranslations;
         private static bool mapSpecificTranslationsLoaded = false;
-        private static ReadOnlyDictionary<string, Dictionary<string, string>> mapSpecificTranslations = new (new Dictionary<string, Dictionary<string, string>>());
+        private static ReadOnlyDictionary<string, Dictionary<string, string>> mapSpecificTranslations = new ReadOnlyDictionary<string, Dictionary<string, string>> (new Dictionary<string, Dictionary<string, string>>());
 
         public static bool LoadCSV(string modDir)
         {
@@ -60,7 +60,7 @@ namespace Mapify
 
         public static void UnloadMapCSV()
         {
-            mapSpecificTranslations = new (new Dictionary<string, Dictionary<string, string>>());
+            mapSpecificTranslations = new ReadOnlyDictionary<string, Dictionary<string, string>> (new Dictionary<string, Dictionary<string, string>>());
             mapSpecificTranslationsLoaded = false;
         }
 

@@ -60,7 +60,7 @@ namespace Mapify.Utils
                     if (kvp.Value[i].track == track)
                         kvp.Value.RemoveAt(i);
 
-            EquiPointSet railPointSet = track.GetPointSet();
+            EquiPointSet railPointSet = track.GetUnkinkedPointSet();
             foreach (EquiPointSet.Point point in railPointSet.points)
             {
                 TrackChunk trackChunk = spatialHash.Add(railPointSet, point);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CommandTerminal;
+using DV;
 using DV.JObjectExtstensions;
 using DV.PointSet;
 using DV.ThingTypes;
@@ -12,6 +13,7 @@ using Mapify.Editor.Utils;
 using Mapify.Map;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Mapify.Utils
 {
@@ -183,11 +185,68 @@ namespace Mapify.Utils
 
         public static IEnumerable<Vector2> GetCurvePositions(this RailTrack track, float resolution)
         {
-            EquiPointSet pointSet = track.GetPointSet();
+            EquiPointSet pointSet = track.GetUnkinkedPointSet();
             EquiPointSet simplified = EquiPointSet.ResampleEquidistant(pointSet, Mathf.Min(resolution, (float)pointSet.span / 3));
 
             foreach (EquiPointSet.Point point in simplified.points)
                 yield return new Vector2((float)point.position.x, (float)point.position.z);
+        }
+
+        // copied from B99.3 RailTrack class
+        public static void TryAlignHandles(this RailTrack track)
+        {
+            if (track.inIsConnected)
+                track.AlignInHandle();
+            if (!track.outIsConnected)
+                return;
+            track.AlignOutHandle();
+        }
+
+        // copied from B99.3 RailTrack class
+        public static void ApplyRailType(this RailTrack track)
+        {
+            if (!(bool) (Object) Globals.G.GameParams)
+            {
+                Debug.LogError("GameParams not found", track);
+                return;
+            }
+
+            var railType = Globals.G.GetRailType(track.age);
+            if (railType == null)
+            {
+                Debug.LogError("Type could not be retrieved from GameParams. Make sure there is at least one track type in it", track);
+            }
+            else
+            {
+                track.railType = railType.railType;
+                track.baseType = railType.baseType;
+            }
+        }
+
+        public static void ConnectInToClosestJunctionOrBranch(this RailTrack track)
+        {
+            var closestJunction = track.FindClosestJunction(track.curve[0].position);
+            if (closestJunction)
+            {
+                track.ConnectInToClosestJunction();
+            }
+            else
+            {
+                track.ConnectInToClosestBranch();
+            }
+        }
+
+        public static void ConnectOutToClosestJunctionOrBranch(this RailTrack track)
+        {
+            var closestJunction = track.FindClosestJunction(track.curve.Last().position);
+            if (closestJunction)
+            {
+                track.ConnectOutToClosestJunction();
+            }
+            else
+            {
+                track.ConnectOutToClosestBranch();
+            }
         }
 
         public static BasicMapInfo GetBasicMapInfo(this SaveGameManager saveGameManager)

@@ -24,8 +24,7 @@ namespace Mapify.SceneInitializers.Railway
                 Layer.Default.Apply(bufferStop.playerCollider);
                 BufferStop dvBufferStop = go.AddComponent<BufferStop>();
                 dvBufferStop.triggerCollider = bufferStop.GetComponent<BoxCollider>();
-                dvBufferStop.bufferCollider = bufferStop.playerCollider;
-                dvBufferStop.modelGO = new GameObject();
+                dvBufferStop.spawnOverlapCollider = bufferStop.playerCollider;
                 go.SetActive(true);
             }
         }

@@ -25,8 +25,63 @@ namespace Mapify.SceneInitializers.Railway
             Mapify.LogDebug(() => "Connecting tracks");
             ConnectTracks(tracks);
 
-            RailManager.AlignAllTrackEnds();
-            RailManager.TestConnections();
+            AlignAllTrackEnds();
+            TestConnections();
+        }
+
+        // copied from B99.3 RailManager class
+        private void AlignAllTrackEnds()
+        {
+            foreach (RailTrack railTrack in Object.FindObjectsOfType<RailTrack>())
+            {
+                if (!railTrack.dontChange)
+                    railTrack.TryAlignHandles();
+            }
+            Debug.Log((object) "Aligned all track ends");
+        }
+
+        // copied from B99.3 RailManager class
+        private void TestConnections()
+        {
+            var objectsOfType = Object.FindObjectsOfType<RailTrack>();
+            var flag = false;
+            foreach (var track1 in objectsOfType)
+            {
+                if ((bool) (Object) track1.inJunction && !track1.inJunction.HasBranch(new Junction.Branch(track1, true)))
+                {
+                    Debug.LogError($"Junction '{track1.inJunction.name}' doesn't have track '{track1.name}' assigned", track1.inJunction);
+                    flag = true;
+                }
+                if ((bool) (Object) track1.outJunction && !track1.outJunction.HasBranch(new Junction.Branch(track1, false)))
+                {
+                    Debug.LogError($"Junction '{track1.outJunction.name}' doesn't have track '{track1.name}' assigned", track1.outJunction);
+                    flag = true;
+                }
+                if (track1.inIsConnected && !(bool) (Object) track1.inJunction)
+                {
+                    var track2 = track1.inBranch.track;
+                    var branch = track1.inBranch.first ? track2.inBranch : track2.outBranch;
+                    if (!(branch.track == track1) || !branch.first)
+                    {
+                        Debug.LogError($"Track '{track2.name}'s IN is not connected to track {track1.name}. Manually set or reconnect branches", track2);
+                        flag = true;
+                    }
+                }
+                if (track1.outIsConnected && !(bool) (Object) track1.outJunction)
+                {
+                    var track3 = track1.outBranch.track;
+                    var branch = track1.outBranch.first ? track3.inBranch : track3.outBranch;
+                    if (!(branch.track == track1) || branch.first)
+                    {
+                        Debug.LogError($"Track '{track3.name}'s OUT is not connected to track {track1.name}. Manually set or reconnect branches", track3);
+                        flag = true;
+                    }
+                }
+            }
+            if (!flag)
+                Debug.Log("Checked all connections, no errors were found");
+            else
+                Debug.LogError("Problems found when checking connections, see errors above");
         }
 
         private static void CreateRailTracks(IEnumerable<Track> tracks)
@@ -71,29 +126,22 @@ namespace Mapify.SceneInitializers.Railway
                 foreach (Junction.Branch branch in junction.outBranches)
                     branch.track.generateColliders = true;
 
-                prefabClone.transform.SetParent(WorldData.Instance.TrackRootParent);
+                prefabClone.transform.SetParent(RailTrackRegistry.Instance.TrackRootParent);
                 prefabClone.SetActive(true);
             }
         }
 
         private static void ConnectTracks(IEnumerable<Track> tracks)
         {
-            // Ignore the warnings from not being able to find track, that's just a side effect of how we do things.
-            LogType type = Debug.unityLogger.filterLogType;
-            Debug.unityLogger.filterLogType = LogType.Error;
-
             foreach (Track track in tracks)
             {
                 RailTrack railTrack = track.GetComponent<RailTrack>();
                 if (railTrack.isJunctionTrack)
                     continue;
-                if (railTrack.ConnectInToClosestJunction() == null)
-                    railTrack.ConnectInToClosestBranch();
-                if (railTrack.ConnectOutToClosestJunction() == null)
-                    railTrack.ConnectOutToClosestBranch();
-            }
 
-            Debug.unityLogger.filterLogType = type;
+                railTrack.ConnectInToClosestJunctionOrBranch();
+                railTrack.ConnectOutToClosestJunctionOrBranch();
+            }
         }
     }
 }

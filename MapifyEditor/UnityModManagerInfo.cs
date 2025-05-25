@@ -11,5 +11,6 @@ namespace Mapify.Editor
         public string ManagerVersion;
         public string[] Requirements;
         public string HomePage;
+        public string Repository;
     }
 }

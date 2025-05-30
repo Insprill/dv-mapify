@@ -11,7 +11,7 @@ namespace Mapify.SceneInitializers.Vanilla.Railway
     {
         protected override IEnumerator<(VanillaAsset, GameObject)> ToSave(GameObject gameObject)
         {
-            if (gameObject.name != WorldData.RAILWAY_ROOT)
+            if (gameObject.name != RailTrackRegistryBase.RAILWAY_ROOT)
                 yield break;
 
             for (int i = 0; i < gameObject.transform.childCount; i++)

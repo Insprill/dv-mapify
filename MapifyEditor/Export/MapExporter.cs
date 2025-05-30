@@ -208,8 +208,9 @@ namespace Mapify.Editor
                     scenePaths.Add(assetPath);
                 }
                 else if (obj is MapInfo ||
-                         mapInfo.LoadingScreenImages.Contains(obj) ||
-                         obj == mapInfo.LoadingScreenMusic)
+                         (mapInfo.LoadingScreenImages != null && mapInfo.LoadingScreenImages.Contains(obj)) ||
+                          obj == mapInfo.LoadingScreenMusic ||
+                          obj == mapInfo.LoadingScreenLogo)
                 {
                     mapInfoPaths.Add(assetPath);
                 }
@@ -245,15 +246,15 @@ namespace Mapify.Editor
 
             for (int i = 0; i < sortedTerrain.Length; i++)
             {
-                string terrainName = AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData);
+                string terrainPath = AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData);
 
                 builds.Add(new AssetBundleBuild
                 {
                     assetBundleName = $"terraindata_{i}",
-                    assetNames = new[] { terrainName }
+                    assetNames = new[] { terrainPath }
                 });
 
-                EditorUtility.DisplayProgressBar(progressBarText, terrainName, i / (float)sortedTerrain.Length);
+                EditorUtility.DisplayProgressBar(progressBarText, terrainPath, i / (float)sortedTerrain.Length);
             }
 
             EditorUtility.ClearProgressBar();

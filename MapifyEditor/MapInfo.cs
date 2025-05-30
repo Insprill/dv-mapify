@@ -18,6 +18,7 @@ namespace Mapify.Editor
         [Header("Loading Screen")]
         public Texture2D[] LoadingScreenImages;
         public AudioClip LoadingScreenMusic;
+        public Texture2D LoadingScreenLogo;
 
         [Header("Loading Gauge")]
         [Tooltip("The height of the loading gauge, in meters")]

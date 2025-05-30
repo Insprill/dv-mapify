@@ -77,12 +77,9 @@ namespace Mapify.SceneInitializers.GameContent
                     return;
                 }
 
-                mapMaterial = mapObject.GetComponent<Renderer>().sharedMaterial; //todo
+                mapMaterial = mapObject.GetComponent<Renderer>().sharedMaterial;
                 if (defaultTexture == null)
                     defaultTexture = mapMaterial.mainTexture;
-
-                //todo useless check?
-                // material.mainTexture = Maps.IsDefaultMap ? defaultTexture : DrawTracksOnMap();
 
                 mapMaterial.mainTexture = DrawTracksOnMap();
                 modifiedMaterial = true;

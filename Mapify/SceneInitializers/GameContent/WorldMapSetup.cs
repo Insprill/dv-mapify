@@ -17,10 +17,14 @@ namespace Mapify.SceneInitializers.GameContent
         private static bool modifiedMaterial;
         private static Texture defaultTexture;
         public static bool ShowStationNamesOnMap;
+        private static Material mapMaterial;
 
         public override void Run()
         {
             MapLifeCycle.OnCleanup += () => modifiedMaterial = false;
+            //restore base map texture
+            MapLifeCycle.OnCleanup += () => mapMaterial.mainTexture = defaultTexture;
+
             Transform originShiftParent = WorldMover.OriginShiftParent;
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapPaperOffice"))
                 UpdateMap(transform);
@@ -73,10 +77,14 @@ namespace Mapify.SceneInitializers.GameContent
                     return;
                 }
 
-                Material material = mapObject.GetComponent<Renderer>().sharedMaterial;
+                mapMaterial = mapObject.GetComponent<Renderer>().sharedMaterial; //todo
                 if (defaultTexture == null)
-                    defaultTexture = material.mainTexture;
-                material.mainTexture = Maps.IsDefaultMap ? defaultTexture : DrawTracksOnMap();
+                    defaultTexture = mapMaterial.mainTexture;
+
+                //todo useless check?
+                // material.mainTexture = Maps.IsDefaultMap ? defaultTexture : DrawTracksOnMap();
+
+                mapMaterial.mainTexture = DrawTracksOnMap();
                 modifiedMaterial = true;
             }
 

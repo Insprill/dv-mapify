@@ -21,9 +21,8 @@ namespace Mapify.SceneInitializers.GameContent
 
         public override void Run()
         {
-            MapLifeCycle.OnCleanup += () => modifiedMaterial = false;
-            //restore base map texture
-            MapLifeCycle.OnCleanup += () => mapMaterial.mainTexture = defaultTexture;
+            //restore base map texture on exiting a custom map
+            MapLifeCycle.OnCleanup += () => modifiedMaterial = false; mapMaterial.mainTexture = defaultTexture;
 
             Transform originShiftParent = WorldMover.OriginShiftParent;
             foreach (Transform transform in originShiftParent.FindChildrenByName("MapPaperOffice"))

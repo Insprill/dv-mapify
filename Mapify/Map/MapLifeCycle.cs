@@ -27,8 +27,6 @@ namespace Mapify.Map
     {
         private static readonly Regex VANILLA_STREAMER_SCENE_PATTERN = new Regex("Far__x[0-9]+_z[0-9]+");
 
-        public static Action OnCleanup;
-
         private static bool isMapLoaded;
         private static List<AssetBundle> loadedAssetBundles;
         private static string originalRailwayScenePath;
@@ -338,7 +336,8 @@ namespace Mapify.Map
 
         private static void Cleanup()
         {
-            OnCleanup();
+            WorldMapSetup.Cleanup();
+
             Maps.UnregisterLoadedMap();
             SceneManager.sceneLoaded -= OnSceneLoad;
             WorldStreamingInit_Awake_Patch.CanInitialize = false;

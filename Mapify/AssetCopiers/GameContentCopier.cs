@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DV.Shops;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -93,28 +94,30 @@ namespace Mapify.SceneInitializers.Vanilla.GameContent
                 yield break;
             }
 
-            foreach (ScanItemCashRegisterModule module in shopsParent.GetComponentsInChildren<ScanItemCashRegisterModule>())
+            foreach (var module in shopsParent.GetComponentsInChildren<ScanItemCashRegisterModule>())
             {
                 string itemName = module.sellingItemSpec.name.Replace("_", "");
                 if (itemName.StartsWith("Key")) continue;
-                if (VanillaAsset.TryParse($"StoreItem{itemName}", true, out VanillaAsset asset))
+                if (Enum.TryParse($"StoreItem{itemName}", true, out VanillaAsset asset))
                     yield return (asset, module.gameObject);
                 else
                     Mapify.LogError($"Failed to find {nameof(VanillaAsset)} for shop item {itemName}");
             }
 
-            GameObject shop = shopsParent.FindChildByName("[ItemShop] Harbor");
-            if (shop == null)
+            var shop = shopsParent.GetComponentInChildren<Shop>(true);
+            if (!shop)
             {
-                Mapify.LogError("Failed to find '[ItemShop] Harbor'!");
+                Mapify.LogError(nameof(GameContentCopier)+": failed to find any shops!");
                 yield break;
             }
 
-            foreach (ScanItemCashRegisterModule module in shop.GetComponentsInChildren<ScanItemCashRegisterModule>())
+            foreach (var module in shop.GetComponentsInChildren<ScanItemCashRegisterModule>())
                 Object.Destroy(module.gameObject);
-            Object.Destroy(shop.FindChildByName("Stopwatch"));
 
-            yield return (VanillaAsset.Store, shop);
+            Object.Destroy(shop.transform.FindChildByName("Stopwatch"));
+            Object.Destroy(shop.transform.FindChildByName("PosterAnchor"));
+
+            yield return (VanillaAsset.StoreObject, shop.gameObject);
 
             foreach (Transform transform in shopsParent.transform.GetChildren())
                 Object.Destroy(transform.gameObject);

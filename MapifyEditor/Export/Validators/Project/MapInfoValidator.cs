@@ -30,7 +30,8 @@ namespace MapifyEditor.Export.Validators.Project
                 yield return Result.Error($"Your map name cannot be {Names.DEFAULT_MAP_NAME}");
 
             //Loading Screen
-            if (mapInfo.LoadingScreenImages.Any(image => image == null))
+            // mapInfo.LoadingScreenImages is null after upgrading from an older Mapify version that didn't support custom loading screens
+            if (mapInfo.LoadingScreenImages != null && mapInfo.LoadingScreenImages.Any(image => image == null))
             {
                 yield return Result.Error("Loading screen image is null", mapInfo);
             }

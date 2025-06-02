@@ -1,3 +1,7 @@
+using System;
+using System.Linq;
+using UnityEngine.Assertions;
+
 namespace Mapify.Editor
 {
     public enum VanillaAsset
@@ -73,10 +77,12 @@ namespace Mapify.Editor
 
         #region Stores
 
-        //TODO update this, add new items
-
-        Store = 80,
+        // store objects
+        StoreObject = 80,
         StoreMesh = 81,
+
+        // items
+        // Don't forget to update the ItemType enum to match this.
         StoreItemBoombox = 82,
         StoreItemCassetteAlbum01 = 83,
         StoreItemCassetteAlbum02 = 84,
@@ -115,6 +121,82 @@ namespace Mapify.Editor
         StoreItemLantern = 117,
         StoreItemFlashlight = 118,
         StoreItemEOTLantern = 119,
+
+        // keys
+        // StoreItemKey = 120,
+        // StoreItemKeyCaboose = 121,
+        // StoreItemKeyDE6Slug = 122,
+        // StoreItemKeyDM1U = 123,
+
+        // build 99
+        StoreItemHandheldGameConsole = 124,
+        StoreItemOiler = 125,
+        StoreItemHandDrill = 126,
+        StoreItemSolderingGun = 127,
+        StoreItemCrimpingTool = 128,
+        StoreItemFillerGun = 129,
+        StoreItemHammer = 130,
+        StoreItemDuctTape = 131,
+        StoreItemSolderingWireReel = 132,
+        StoreItemDistanceTracker = 133,
+        StoreItemAntiWheelslipComputer = 134,
+        StoreItemAutomaticTrainStop = 135,
+        StoreItemAmpLimiter = 136,
+        StoreItemWirelessMUController = 137,
+        StoreItemClinometer = 138,
+        StoreItemInfraredThermometer = 139,
+        StoreItemDigitalSpeedometer = 140,
+        StoreItemDigitalClock = 141,
+        StoreItemShelfSmall = 142,
+        StoreItemSteamEngineChecklist = 143,
+        StoreItemSwitchButton = 144,
+        StoreItemSwitchRotary = 145,
+        StoreItemSwitchAnalog = 146,
+        StoreItemMount70Long = 147,
+        StoreItemMount90Square = 148,
+        StoreItemMount90SquareLong = 149,
+        StoreItemMount90Wide = 150,
+        StoreItemMountLong = 151,
+        StoreItemMountSmall = 152,
+        StoreItemMountSquare = 153,
+        StoreItemMountSquareVeryLong = 154,
+        StoreItemMountVeryLong = 155,
+        StoreItemSwivelLight = 156,
+        StoreItemHeadlight = 157,
+        StoreItemBrakeCylinderLEDBar = 158,
+        StoreItemHanger = 159,
+        StoreItemStickyTape = 160,
+        StoreItemSunVisor = 161,
+        StoreItemFlagMarkerBlue = 162,
+        StoreItemFlagMarkerCyan = 163,
+        StoreItemFlagMarkerGreen = 164,
+        StoreItemFlagMarkerOrange = 165,
+        StoreItemFlagMarkerPurple = 166,
+        StoreItemFlagMarkerRed = 167,
+        StoreItemFlagMarkerWhite = 168,
+        StoreItemFlagMarkerYellow = 169,
+        StoreItemLightBarBlue = 170,
+        StoreItemLightBarCyan = 171,
+        StoreItemLightBarGreen = 172,
+        StoreItemLightBarOrange = 173,
+        StoreItemLightBarPurple = 174,
+        StoreItemLightBarRed = 175,
+        StoreItemLightBarWhite = 176,
+        StoreItemLightBarYellow = 177,
+        StoreItemPaintCan = 178,
+        StoreItemPaintCanMuseum = 179,
+        StoreItemPaintCanSand = 180,
+        StoreItemCrate = 181,
+        StoreItemCratePlastic = 182,
+        StoreItemPaperBox = 183,
+        StoreItemBeaconAmber = 184,
+        StoreItemBeaconRed = 185,
+        StoreItemBeaconBlue = 186,
+        StoreItemMount90SquareBig = 187,
+        StoreItemMountSquareBig = 188,
+        StoreItemOverheatingProtection = 189,
+        StoreItemSwitchSetter = 190,
+        StoreItemSwitchAlternating = 191
 
         #endregion
     }

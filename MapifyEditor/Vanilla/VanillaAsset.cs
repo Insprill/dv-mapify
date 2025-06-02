@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using UnityEngine.Assertions;
-
 namespace Mapify.Editor
 {
     public enum VanillaAsset
@@ -196,7 +192,33 @@ namespace Mapify.Editor
         StoreItemMountSquareBig = 188,
         StoreItemOverheatingProtection = 189,
         StoreItemSwitchSetter = 190,
-        StoreItemSwitchAlternating = 191
+        StoreItemSwitchAlternating = 191,
+
+        // build 99.4
+        StoreItemItemContainerBriefcase = 192,
+        StoreItemItemContainerFolder = 193,
+        StoreItemNameplate = 194,
+        StoreItemBrakeChecklist = 195,
+        StoreItemItemContainerToolbox = 196,
+        StoreItemShovelMount = 197,
+        StoreItemBatteryCharger = 198,
+        StoreItemItemContainerCrate = 199,
+        StoreItemLabelMaker = 200,
+        StoreItemMountStandBig = 201,
+        StoreItemTaillight = 202,
+        StoreItemDefectDetector = 203,
+        StoreItemModernHeadlightR = 204,
+        StoreItemModernHeadlightL = 205,
+        StoreItemModernTaillightR = 206,
+        StoreItemModernTaillightL = 207,
+        StoreItemRemoteSignalBooster = 208,
+        StoreItemProximitySensor = 209,
+        StoreItemProximityReader = 210,
+        StoreItemUniversalControlStand = 211,
+        StoreItemItemContainerFolderBlue = 212,
+        StoreItemItemContainerFolderRed = 213,
+        StoreItemItemContainerFolderYellow = 214,
+        StoreItemItemContainerRegistrator = 215
 
         #endregion
     }

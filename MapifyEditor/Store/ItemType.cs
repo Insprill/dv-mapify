@@ -116,6 +116,32 @@ namespace Mapify.Editor
         MountSquareBig = 188,
         OverheatingProtection = 189,
         SwitchSetter = 190,
-        SwitchAlternating = 191
+        SwitchAlternating = 191,
+
+        //build 99.4
+        ItemContainerBriefcase = 192,
+        ItemContainerFolder = 193,
+        Nameplate = 194,
+        BrakeChecklist = 195,
+        ItemContainerToolbox = 196,
+        ShovelMount = 197,
+        BatteryCharger = 198,
+        ItemContainerCrate = 199,
+        LabelMaker = 200,
+        MountStandBig = 201,
+        Taillight = 202,
+        DefectDetector = 203,
+        ModernHeadlightR = 204,
+        ModernHeadlightL = 205,
+        ModernTaillightR = 206,
+        ModernTaillightL = 207,
+        RemoteSignalBooster = 208,
+        ProximitySensor = 209,
+        ProximityReader = 210,
+        UniversalControlStand = 211,
+        ItemContainerFolderBlue = 212,
+        ItemContainerFolderRed = 213,
+        ItemContainerFolderYellow = 214,
+        ItemContainerRegistrator = 215
     }
 }

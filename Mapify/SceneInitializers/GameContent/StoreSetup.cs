@@ -58,6 +58,7 @@ namespace Mapify.SceneInitializers.GameContent
                     t.SetParent(store.moduleReference, false);
                     store.PositionThing(store.moduleReference, t, i);
                     shop.scanItemResourceModules[i] = t.GetComponent<ScanItemCashRegisterModule>();
+                    shop.scanItemResourceModules[i].shop = shop;
                     optimizer.gameObjectsToDisable.Add(t.gameObject);
                 }
 

@@ -39,7 +39,7 @@ namespace Mapify.SceneInitializers.Vanilla.GameContent
             yield return (VanillaAsset.CareerManager, GameObject.Instantiate(gameObject.FindChildByName("CareerManager")));
             yield return (VanillaAsset.JobValidator, GameObject.Instantiate(gameObject.FindChildByName("JobValidator")));
             yield return (VanillaAsset.TrashCan, GameObject.Instantiate(gameObject.FindChildByName("JobTrashBin")));
-            yield return (VanillaAsset.Dumpster, gameObject.FindChildByName("ItemDumpster"));
+            yield return (VanillaAsset.Dumpster, gameObject.FindChildByName("SkipDumpster"));
             yield return (VanillaAsset.LostAndFoundShed, gameObject.FindChildByName("OldShed"));
             yield return (VanillaAsset.WarehouseMachine, gameObject.FindChildByName("WarehouseMachineHMB"));
 

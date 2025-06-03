@@ -14,19 +14,16 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(StreamedObjectInit), nameof(StreamedObjectInit.Start))]
     public static class StreamedObjectInitPatch
     {
-        private static bool streamersSet = false;
         private static Streamer[] streamers;
 
         private static void Postfix(StreamedObjectInit __instance)
         {
-            if (!streamersSet)
+            if (streamers == null)
             {
                 streamers = GameObject.FindGameObjectsWithTag(Streamer.STREAMERTAG)
                     .Select(go => go.GetComponent<Streamer>())
                     .Where(s => s != null)
                     .ToArray();
-
-                streamersSet = true;
             }
 
             Streamer streamer = Array.Find(streamers, s => s.sceneCollection.names.Contains(__instance.sceneName));
@@ -41,7 +38,6 @@ namespace Mapify.Patches
 
         public static void ResetStreamers()
         {
-            streamersSet = false;
             streamers = null;
         }
     }

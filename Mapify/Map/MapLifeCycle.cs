@@ -50,9 +50,12 @@ namespace Mapify.Map
             loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, 0);
             yield return null;
 
+            // Register translations
+            string mapDir = Maps.GetDirectory(basicMapInfo);
+            Locale.LoadMapCSV(mapDir+"/../");
+
             // Load asset bundles
             loadedAssetBundles = new List<AssetBundle>();
-            string mapDir = Maps.GetDirectory(basicMapInfo);
 
             // Register mapinfo
             Mapify.LogDebug(() => $"Loading AssetBundle '{Names.MAP_INFO_ASSET_BUNDLE}'");
@@ -357,6 +360,7 @@ namespace Mapify.Map
             }
 
             loadedAssetBundles = null;
+            Locale.UnloadMapCSV();
             isMapLoaded = false;
         }
     }

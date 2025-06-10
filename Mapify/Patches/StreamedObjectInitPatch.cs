@@ -19,10 +19,12 @@ namespace Mapify.Patches
         private static void Postfix(StreamedObjectInit __instance)
         {
             if (streamers == null)
+            {
                 streamers = GameObject.FindGameObjectsWithTag(Streamer.STREAMERTAG)
                     .Select(go => go.GetComponent<Streamer>())
                     .Where(s => s != null)
                     .ToArray();
+            }
 
             Streamer streamer = Array.Find(streamers, s => s.sceneCollection.names.Contains(__instance.sceneName));
             if (streamer == null)
@@ -32,6 +34,11 @@ namespace Mapify.Patches
             }
 
             streamer.AddSceneGO(__instance.sceneName, __instance.gameObject);
+        }
+
+        public static void ResetStreamers()
+        {
+            streamers = null;
         }
     }
 }

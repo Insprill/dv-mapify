@@ -337,7 +337,7 @@ namespace Mapify.Map
         private static void Cleanup()
         {
             WorldMapSetup.Cleanup();
-
+            StreamedObjectInitPatch.ResetStreamers();
             Maps.UnregisterLoadedMap();
             SceneManager.sceneLoaded -= OnSceneLoad;
             WorldStreamingInit_Awake_Patch.CanInitialize = false;

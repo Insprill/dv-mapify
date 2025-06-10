@@ -23,7 +23,7 @@ namespace Mapify.Patches
             if (Maps.IsDefaultMap) return;
 
             // Only continue if the buffer stop actually breaks
-            if(!__instance.gameObject.GetComponent<Rigidbody>()) return;
+            if(!__instance.rb) return;
 
             //the RigidBody is created in OnTriggerEnter so we have to set rb.mass in a Postfix
             __instance.rb.mass = __instance.GetComponent<Editor.BufferStop>().massAfterBreak;

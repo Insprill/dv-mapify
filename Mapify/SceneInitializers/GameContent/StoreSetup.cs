@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DV.CashRegister;
 using DV.Printers;
@@ -8,6 +9,7 @@ using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Utils;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Mapify.SceneInitializers.GameContent
 {
@@ -20,10 +22,13 @@ namespace Mapify.SceneInitializers.GameContent
             GlobalShopController gsc = SingletonBehaviour<GlobalShopController>.Instance;
             gsc.globalShopList = new List<Shop>();
 
+            var allItemTypes = Enum.GetValues(typeof(Editor.ItemType)).Cast<Editor.ItemType>().ToArray();
+
             foreach (Store store in Object.FindObjectsOfType<Store>())
             {
-                Transform shopTransform = AssetCopier.Instantiate(VanillaAsset.Store).transform;
-                PlayerDistanceMultipleGameObjectsOptimizer optimizer = shopTransform.GetComponent<PlayerDistanceMultipleGameObjectsOptimizer>();
+                Transform shopTransform = AssetCopier.Instantiate(VanillaAsset.StoreObject, active:false).transform;
+
+                var optimizer = shopTransform.GetComponent<PlayerDistanceMultipleGameObjectsOptimizer>();
                 optimizer.gameObjectsToDisable = new List<GameObject>();
 
                 foreach (Transform child in store.cashRegister.GetChildren())
@@ -44,13 +49,16 @@ namespace Mapify.SceneInitializers.GameContent
                 shop.itemSpawnTransform = store.itemSpawnReference;
                 gsc.globalShopList.Add(shop);
 
-                shop.scanItemResourceModules = new ScanItemCashRegisterModule[store.itemTypes.Length];
-                for (int i = 0; i < store.itemTypes.Length; i++)
+                var itemTypes = store.SpecifyItems ? store.itemTypes : allItemTypes;
+
+                shop.scanItemResourceModules = new ScanItemCashRegisterModule[itemTypes.Length];
+                for (int i = 0; i < itemTypes.Length; i++)
                 {
-                    Transform t = AssetCopier.Instantiate((VanillaAsset)store.itemTypes[i]).transform;
+                    Transform t = AssetCopier.Instantiate((VanillaAsset)itemTypes[i]).transform;
                     t.SetParent(store.moduleReference, false);
                     store.PositionThing(store.moduleReference, t, i);
                     shop.scanItemResourceModules[i] = t.GetComponent<ScanItemCashRegisterModule>();
+                    shop.scanItemResourceModules[i].shop = shop;
                     optimizer.gameObjectsToDisable.Add(t.gameObject);
                 }
 
@@ -62,6 +70,8 @@ namespace Mapify.SceneInitializers.GameContent
                 optimizer.gameObjectsToDisable.Add(shopTransform.FindChildByName("ScannerAnchor").gameObject);
 
                 store.gameObject.Replace(meshTransform.gameObject).SetActive(true);
+
+                shopTransform.gameObject.SetActive(true);
             }
 
             gsc.gameObject.SetActive(true);

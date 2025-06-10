@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Publicize Include="Assembly-CSharp" />
+        <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.RailTrack" IncludeCompilerGeneratedMembers="false" />

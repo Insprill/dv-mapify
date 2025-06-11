@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DV.CashRegister;
+using DV.Localization;
 using DV.Utils;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -44,18 +45,15 @@ namespace Mapify.Map
             WorldStreamingInit wsi = SingletonBehaviour<WorldStreamingInit>.Instance;
             DisplayLoadingInfo loadingInfo = Object.FindObjectOfType<DisplayLoadingInfo>();
 
-            string loadingMapLogMsg = Locale.Get(Locale.LOADING__LOADING_MAP, basicMapInfo.name);
+            string loadingMapLogMsg = LocalizationAPI.L(Locale.LOADING__LOADING_MAP, basicMapInfo.name);
             loadingInfo.UpdateLoadingStatus(loadingMapLogMsg, 0);
             yield return null;
-
-            // Register translations
-            string mapDir = Maps.GetDirectory(basicMapInfo);
-            Locale.LoadMapCSV(mapDir+"/../");
 
             // Load asset bundles
             loadedAssetBundles = new List<AssetBundle>();
 
             // Register mapinfo
+            string mapDir = Maps.GetDirectory(basicMapInfo);
             Mapify.LogDebug(() => $"Loading AssetBundle '{Names.MAP_INFO_ASSET_BUNDLE}'");
             AssetBundleCreateRequest mapInfoRequest = AssetBundle.LoadFromFileAsync(Maps.GetMapAsset(Names.MAP_INFO_ASSET_BUNDLE, mapDir));
             do
@@ -339,6 +337,7 @@ namespace Mapify.Map
 
         private static void Cleanup()
         {
+            Locale.Reset();
             WorldMapSetup.Cleanup();
             StreamedObjectInitPatch.ResetStreamers();
             Maps.UnregisterLoadedMap();
@@ -358,7 +357,6 @@ namespace Mapify.Map
             }
 
             loadedAssetBundles = null;
-            Locale.UnloadMapCSV();
             isMapLoaded = false;
         }
     }

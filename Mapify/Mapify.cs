@@ -1,17 +1,13 @@
 ﻿using System;
-using System.IO;
-using DV.UI;
 using HarmonyLib;
 using Mapify.Map;
-using Mapify.Patches;
 using UnityModManagerNet;
-using Object = UnityEngine.Object;
 
 namespace Mapify
 {
     public static class Mapify
     {
-        private static UnityModManager.ModEntry ModEntry { get; set; }
+        public static UnityModManager.ModEntry ModEntry { get; private set; }
         private static Settings Settings;
 
         internal static Harmony Harmony { get; private set; }
@@ -26,7 +22,7 @@ namespace Mapify
 
             try
             {
-                if (!Locale.LoadCSV(ModEntry.Path))
+                if (!Locale.Setup())
                 {
                     return false;
                 }

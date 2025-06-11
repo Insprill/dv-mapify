@@ -11,6 +11,13 @@ namespace Mapify.Editor
         [Header("Station Info")]
         [Tooltip("The display name of the station")]
         public string stationName;
+
+        [Tooltip("Station name translations")]
+        [SerializeField]
+        public List<TranslationSet> stationNameTranslations;
+        [HideInNormalInspector]
+        public int stationNameTranslationsCount;
+
         [Tooltip("The 2-3 character ID of the station (e.g. HB for Harbor, SM for Steel Mill, etc)")]
         public string stationID;
         [Tooltip("The color of the station shown on job booklets")]

@@ -5,6 +5,7 @@ using System.Reflection;
 using CommandTerminal;
 using DV;
 using DV.JObjectExtstensions;
+using DV.Localization;
 using DV.PointSet;
 using DV.ThingTypes;
 using HarmonyLib;
@@ -293,12 +294,14 @@ namespace Mapify.Utils
 
         public static string GetLocalizedStationName(this Station station)
         {
-            if(Locale.TryGetMapSpecificTranslation(Locale.STATION_PREFIX+station.stationID, out var localizedName))
-            {
-                return localizedName;
-            }
+            var localized = LocalizationAPI.L(station.GetStationLocalizationKey());
+            //if there is no translation, don't translate
+            return localized == Locale.MISSING_TRANSLATION ? station.stationName : localized;
+        }
 
-            return station.stationName;
+        public static string GetStationLocalizationKey(this Station station)
+        {
+            return "station/" + station.stationID;
         }
 
         #endregion

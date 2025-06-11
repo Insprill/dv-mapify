@@ -31,8 +31,7 @@ namespace Mapify.SceneInitializers.GameContent
                 GameObject stationObject = station.gameObject;
                 StationController stationController = stationObject.GetComponent<StationController>();
 
-                // Station info
-                stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color, Locale.STATION_PREFIX+station.stationID);
+                SetupStationInfo(station, stationController);
 
                 // Station tracks
                 stationController.storageRailtracksGONames = station.storageTrackNames;
@@ -49,6 +48,20 @@ namespace Mapify.SceneInitializers.GameContent
 
             stations.SetActive(true);
             SingletonBehaviour<LogicController>.Instance.gameObject.SetActive(true);
+        }
+
+        private void SetupStationInfo(Station station, StationController stationController)
+        {
+            var locaKey = station.GetStationLocalizationKey();
+            stationController.stationInfo = new StationInfo(station.stationName, " ", station.stationID, station.color, locaKey);
+
+            var mbs = station.GetComponents<TranslationSetBehaviour>();
+            station.stationNameTranslations = mbs.Take(station.stationNameTranslationsCount).Select(mb => mb.ToOriginal()).ToList();
+
+            foreach (var translationSet in station.stationNameTranslations)
+            {
+                Locale.AddTranslation(locaKey, translationSet.language, translationSet.translation);
+            }
         }
 
         private static void SetupJobBookletSpawnSurface(Station station, StationController stationController)

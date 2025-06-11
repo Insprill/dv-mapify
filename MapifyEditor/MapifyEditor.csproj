@@ -21,6 +21,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Reference Include="DVLangHelper.Data" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Reference Include="BezierCurves" />
         <Reference Include="UnityEngine" />
         <Reference Include="UnityEngine.AssetBundleModule" />

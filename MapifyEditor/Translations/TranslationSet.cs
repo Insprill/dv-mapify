@@ -1,5 +1,4 @@
 ﻿using System;
-using DVLangHelper.Data;
 using UnityEngine;
 
 namespace Mapify.Editor
@@ -7,7 +6,7 @@ namespace Mapify.Editor
     [Serializable]
     public class TranslationSet
     {
-        public DVLanguage language;
+        public LanguageEnum language;
         public string translation;
 
         public TranslationSetBehaviour ToMonoBehaviour(GameObject gameObject)

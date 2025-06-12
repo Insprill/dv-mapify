@@ -60,7 +60,7 @@ namespace Mapify.SceneInitializers.GameContent
 
             foreach (var translationSet in station.stationNameTranslations)
             {
-                Locale.AddTranslation(locaKey, translationSet.language, translationSet.translation);
+                Locale.AddTranslation(locaKey, translationSet.GetLanguageAsDVLanguage(), translationSet.translation);
             }
         }
 

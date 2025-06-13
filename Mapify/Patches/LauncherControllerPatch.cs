@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DV.Common;
+using DV.Localization;
 using DV.UI;
 using DV.UI.PresetEditors;
 using DV.UIFramework;
@@ -71,7 +72,7 @@ namespace Mapify.Patches
             Popup okPopupPrefab = __instance.GetComponentInParent<InitialScreenController>().continueLoadNewController.career.okPopupPrefab;
 
             Popup popup = popupManager.ShowPopup(okPopupPrefab);
-            popup.labelTMPro.text = Locale.Get(Locale.LAUNCHER__SESSION_MAP_NOT_INSTALLED, basicMapInfo.name);
+            popup.labelTMPro.text = LocalizationAPI.L(Locale.LAUNCHER__SESSION_MAP_NOT_INSTALLED, basicMapInfo.name);
             return false;
         }
     }

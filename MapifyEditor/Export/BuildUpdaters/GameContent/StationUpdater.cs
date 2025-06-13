@@ -46,6 +46,13 @@ namespace Mapify.Editor.StateUpdaters
                 station.outputCargoGroups.ForEach(set => set.ToMonoBehaviour(station.gameObject));
 
                 #endregion
+
+                #region Translations
+
+                station.stationNameTranslationsCount = station.stationNameTranslations.Count;
+                station.stationNameTranslations.ForEach(set => set.ToMonoBehaviour(station.gameObject));
+
+                #endregion
             }
         }
 

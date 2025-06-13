@@ -305,40 +305,6 @@ namespace Mapify.Utils
             return "station/" + station.stationID;
         }
 
-        public static DVLanguage GetLanguageAsDVLanguage(this TranslationSet languageSet)
-        {
-            switch (languageSet.language)
-            {
-                case LanguageEnum.English: return DVLanguage.English;
-                case LanguageEnum.Czech: return DVLanguage.Czech;
-                case LanguageEnum.Danish: return DVLanguage.Danish;
-                case LanguageEnum.German: return DVLanguage.German;
-                case LanguageEnum.Spanish: return DVLanguage.Spanish;
-                case LanguageEnum.Finnish: return DVLanguage.Finnish;
-                case LanguageEnum.French: return DVLanguage.French;
-                case LanguageEnum.Hindi: return DVLanguage.Hindi;
-                case LanguageEnum.Hungarian: return DVLanguage.Hungarian;
-                case LanguageEnum.Italian: return DVLanguage.Italian;
-                case LanguageEnum.Japanese: return DVLanguage.Japanese;
-                case LanguageEnum.Korean: return DVLanguage.Korean;
-                case LanguageEnum.Norwegian: return DVLanguage.Norwegian;
-                case LanguageEnum.Dutch: return DVLanguage.Dutch;
-                case LanguageEnum.Polish: return DVLanguage.Polish;
-                case LanguageEnum.Portuguese: return DVLanguage.Portuguese;
-                case LanguageEnum.Portuguese_BR: return DVLanguage.Portuguese_BR;
-                case LanguageEnum.Romanian: return DVLanguage.Romanian;
-                case LanguageEnum.Russian: return DVLanguage.Russian;
-                case LanguageEnum.Slovak: return DVLanguage.Slovak;
-                case LanguageEnum.Swedish: return DVLanguage.Swedish;
-                case LanguageEnum.Turkish: return DVLanguage.Turkish;
-                case LanguageEnum.Ukrainian: return DVLanguage.Ukrainian;
-                case LanguageEnum.Chinese_Simple: return DVLanguage.Chinese_Simple;
-                case LanguageEnum.Chinese_Trad: return DVLanguage.Chinese_Trad;
-                default: throw new ArgumentOutOfRangeException();
-            }
-        }
-
-
         #endregion
     }
 }

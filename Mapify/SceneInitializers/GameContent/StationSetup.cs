@@ -4,6 +4,7 @@ using System.Reflection;
 using DV.Teleporters;
 using DV.ThingTypes;
 using DV.Utils;
+using DVLangHelper.Data;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Map;
@@ -60,7 +61,7 @@ namespace Mapify.SceneInitializers.GameContent
 
             foreach (var translationSet in station.stationNameTranslations)
             {
-                Locale.AddTranslation(locaKey, translationSet.GetLanguageAsDVLanguage(), translationSet.translation);
+                Locale.AddTranslation(locaKey, (DVLanguage)translationSet.language, translationSet.translation);
             }
         }
 

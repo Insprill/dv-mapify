@@ -105,11 +105,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -93468, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   visualPrefab: {fileID: 5536209503347960931, guid: 49d01553f32197ce484bc6554f0a5ae7,
     type: 3}
-  itemTypes: 6f000000730000007500000074000000
+  SpecifyItems: 0
+  itemTypes:
   isCustom: 0
   moduleReference: {fileID: 3253326061405677832}
   flipModuleDirection: 0
@@ -126,9 +127,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 1200406428, guid: 13c033ded6118febca8709ffe3c1bbcf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   asset: 80
+  keepChildren: 1
+  rotationOffset: {x: 0, y: 0, z: 0}
 --- !u!33 &6729686202412099250
 MeshFilter:
   m_ObjectHideFlags: 0

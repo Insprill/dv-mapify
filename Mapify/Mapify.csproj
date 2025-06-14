@@ -12,23 +12,30 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Publicize Include="Assembly-CSharp" />
+        <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DV.RailTrack" IncludeCompilerGeneratedMembers="false" />
     </ItemGroup>
 
     <!-- Derail Valley -->
     <ItemGroup>
         <Reference Include="Assembly-CSharp" />
         <Reference Include="CommandTerminal" />
+        <Reference Include="DV.BuildInfo" />
         <Reference Include="DV.Common" />
+        <Reference Include="DV.DistantTerrain" />
         <Reference Include="DV.Interaction" />
         <Reference Include="DV.Inventory" />
         <Reference Include="DV.Localization" />
+        <Reference Include="DV.LayeredAudio" />
+        <Reference Include="DV.MeshX" />
         <Reference Include="DV.PointSet" />
+        <Reference Include="DV.SignPlacer" />
         <Reference Include="DV.TerrainSystem" />
         <Reference Include="DV.TerrainTools" />
         <Reference Include="DV.ThingTypes" />
+        <Reference Include="DV.RailTrack" />
         <Reference Include="DV.UI" />
         <Reference Include="DV.UIFramework" />
         <Reference Include="DV.UserManagement" />
@@ -50,6 +57,7 @@
         <Reference Include="net.smkd.vector3d" />
         <Reference Include="Newtonsoft.Json" />
         <Reference Include="sc.posteffects.runtime" />
+        <Reference Include="WorldStreamer" />
     </ItemGroup>
 
     <!-- Unity -->
@@ -59,6 +67,7 @@
         <Reference Include="Unity.TextMeshPro" />
         <Reference Include="UnityEngine"/>
         <Reference Include="UnityEngine.AssetBundleModule"/>
+        <Reference Include="UnityEngine.AudioModule"/>
         <Reference Include="UnityEngine.CoreModule"/>
         <Reference Include="UnityEngine.ImageConversionModule"/>
         <Reference Include="UnityEngine.IMGUIModule"/>
@@ -66,6 +75,7 @@
         <Reference Include="UnityEngine.PhysicsModule"/>
         <Reference Include="UnityEngine.TerrainModule"/>
         <Reference Include="UnityEngine.UI" />
+        <Reference Include="UnityEngine.UIModule" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

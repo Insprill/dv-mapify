@@ -1,36 +1,39 @@
-﻿using HarmonyLib;
-using Mapify.Components;
-using Mapify.Map;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
+using HarmonyLib;
 
 namespace Mapify.Patches
 {
     //The base game has a limit of 30 job generation attempts per station. These patches remove this limitation and instead base the attempts count on the stations job capacity.
 
-    [HarmonyPatch(typeof(StationProceduralJobsController), nameof(StationProceduralJobsController.Awake))]
+    [HarmonyPatch(typeof(StationProceduralJobsController), nameof(StationProceduralJobsController.GenerateProceduralJobsCoro))]
     public static class StationProceduralJobsController_Awake_Patch
     {
-        private static void Postfix(StationProceduralJobsController __instance)
+        private static readonly FieldInfo field_generationRuleset = typeof(StationProceduralJobsController).GetField(nameof(StationProceduralJobsController.generationRuleset));
+        private static readonly FieldInfo field_jobsCapacity = typeof(StationProceduralJobsRuleset).GetField(nameof(StationProceduralJobsRuleset.jobsCapacity));
+
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            if(Maps.IsDefaultMap) return;
-
-            var customJobsController = __instance.gameObject.AddComponent<CustomJobsController>();
-            customJobsController.Setup(__instance);
-        }
-    }
-
-    [HarmonyPatch(typeof(StationProceduralJobsController), nameof(StationProceduralJobsController.TryToGenerateJobs))]
-    public static class StationProceduralJobsController_TryToGenerateJobs_Patch
-    {
-        private static bool Prefix(StationProceduralJobsController __instance)
-        {
-            if(Maps.IsDefaultMap) return true;
-
-            var customJobsController = __instance.gameObject.GetComponent<CustomJobsController>();
-
-            __instance.StopJobGeneration();
-            __instance.generationCoro = __instance.StartCoroutine(customJobsController.GenerateProceduralJobsCoro());
-
-            return false;
+            foreach (var code in instructions)
+            {
+                if (code.opcode == OpCodes.Ldc_I4_S && (byte)code.operand == 30) // generateJobsAttempts < 30
+                {
+                    yield return new CodeInstruction(OpCodes.Ldloc_1);
+                    yield return new CodeInstruction(OpCodes.Ldfld, field_generationRuleset);
+                    yield return new CodeInstruction(OpCodes.Ldfld, field_jobsCapacity);
+                    continue;
+                }
+                if (code.opcode == OpCodes.Ldc_I4_S && (byte)code.operand == 10) // generateJobsAttempts > 10
+                {
+                    yield return new CodeInstruction(OpCodes.Ldloc_1);
+                    yield return new CodeInstruction(OpCodes.Ldfld, field_generationRuleset);
+                    yield return new CodeInstruction(OpCodes.Ldfld, field_jobsCapacity);
+                    yield return new CodeInstruction(OpCodes.Div, 3);
+                    continue;
+                }
+                yield return code;
+            }
         }
     }
 }

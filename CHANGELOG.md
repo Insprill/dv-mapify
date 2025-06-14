@@ -9,31 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Runtime:
 #### Added
-- More in-game translations (Dutch, Chinese(Simplified), Chinese(Traditional), German, Italian, French, Russian, Hungarian, Spanish) ([#108] by [@Tostiman], 我叫无聊 My Name Is BorING, kev & Coookie, tablesidecat02, Corpet, Louvet & Cie, RaY, Dank_memey and The72)
+- More in-game translations (Dutch, Chinese(Simplified), Chinese(Traditional), German, Italian, French, Russian, Hungarian, Spanish) ([#123] by [@Tostiman], 我叫无聊 My Name Is BorING, kev & Coookie, tablesidecat02, Corpet, Louvet & Cie, RaY, Dank_memey and The72)
+- The ability to have stations generate ridiculous amounts of jobs ([#126] by [@Tostiman])
 
 #### Fixed
-- Game would freeze when reloading a map ([#81] by [@Tostiman]).
-- "Failed to find locale language" warning (it reported the wrong language) ([#108] by [@Tostiman]).
+
+- "Failed to find locale language" warning (it reported the wrong language) ([#123] by [@Tostiman]).
 
 ### Map Creation Package:
 #### Added
-- Option to add custom screenshots, music and logo on the loading screen ([#80] by [@Tostiman]). 
-- Ability to translate station names ([#108] by [@Tostiman]).
 
-#### Fixed
-- Framerate in editor with many tracks was extremely low. Now it's just regular low ([#78] by [@Tostiman]).
+- Ability to translate station names ([#123] by [@Tostiman]).
 
 ### Documentation:
 
 - Changed the documentation website generator to mdBook ([#115] by [@Tostiman]).
 
 
-## [0.5.0] - 2025.02.01
+## [0.5.0] - 2025.??.??
 ### Runtime:
 #### Added
 - Added support for B98 ([#64], by [@Tostiman]).
 - Added support for B99 ([#97], by [@Tostiman]).
 - Added support for B99.2 ([#106], by [@Tostiman]).
+- Added support for B99.4 ([#121], by [@Tostiman]).
  
 #### Fixed
 - Job booklets spawning under the station ([#45] by [@Tostiman]).
@@ -42,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The MapInfo.json would be found before the Info.json when installing maps, causing them to be uninstallable.
 - Auto-saving on custom maps didn't work ([#69] by [@Tostiman]).
 - Settings.ExtremelyVerboseLogging fixed ([#83] by [@Tostiman]).
+- Game would freeze when reloading a map ([#81] by [@Tostiman]).
+- Shops did not work ([#129] by [@Tostiman]).
+- After switching from one map to another, the map of the previous map would be shown still ([#124] by [@Tostiman]).
 
 ### Map Creation Package:
 #### Added
@@ -49,12 +51,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The S060 to the vanilla rolling stock list.
 - An option to show station names instead of IDs on the world map ([#32] by [@Tostiman]).
 - An option to use an existing texture for the world map instead of procedurally generating one ([#34] by [@Tostiman]).
+- Option to add custom screenshots, music and logo on the loading screen ([#80] by [@Tostiman]).
 
 #### Fixed
 - Maps not exporting if they're over 4GB ([#30] by [@Tostiman]).
 - Dumpsters and water towers being rotated incorrectly ([#33] by [@Tostiman]).
 - Station colors being transparent by default ([#49] by [@Tostiman]).
 - Overwriting a release zip not working ([#63] by [@Tostiman]).
+- Framerate in editor with many tracks was extremely low. Now it's just regular low ([#78] by [@Tostiman]).
+- Fixed the dumpster ([#130] by [@Tostiman]).
 
 #### Changed
 - Clarified the error message when warehouse machine validation failed ([#36] by [@Tostiman]).
@@ -201,8 +206,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#78]: https://github.com/Insprill/dv-mapify/pull/78
 [#80]: https://github.com/Insprill/dv-mapify/pull/80
 [#81]: https://github.com/Insprill/dv-mapify/pull/81
-[#108]: https://github.com/Insprill/dv-mapify/pull/108
+[#123]: https://github.com/Insprill/dv-mapify/pull/123
 [#115]: https://github.com/Insprill/dv-mapify/pull/115
+[#130]: https://github.com/Insprill/dv-mapify/pull/130
+[#129]: https://github.com/Insprill/dv-mapify/pull/129
+[#124]: https://github.com/Insprill/dv-mapify/pull/124
+[#121]: https://github.com/Insprill/dv-mapify/pull/121
+
 
 
 

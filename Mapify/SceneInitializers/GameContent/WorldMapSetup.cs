@@ -62,11 +62,12 @@ namespace Mapify.SceneInitializers.GameContent
                 name.FindChildByName("Color").GetComponent<Image>().color = station.color;
                 name.FindChildByName("IndustryCode").GetComponent<TMP_Text>().text = station.stationID;
                 name.FindChildByName("OriginalName").GetComponent<TMP_Text>().text = station.stationName;
-                GameObject localizedName = name.FindChildByName("LocalizedName");
-                localizedName.GetComponent<TMP_Text>().text = station.stationName;
-                foreach (Localize i2Localize in localizedName.GetComponents<Localize>())
+                GameObject localizedNameObject = name.FindChildByName("LocalizedName");
+                localizedNameObject.GetComponent<TMP_Text>().text = station.GetLocalizedStationName();
+
+                foreach (Localize i2Localize in localizedNameObject.GetComponents<Localize>())
                     Object.DestroyImmediate(i2Localize);
-                Object.DestroyImmediate(localizedName.GetComponent<DV.Localization.Localize>());
+                Object.DestroyImmediate(localizedNameObject.GetComponent<DV.Localization.Localize>());
             }
 
             Object.Destroy(listItemPrefab.gameObject);
@@ -128,7 +129,7 @@ namespace Mapify.SceneInitializers.GameContent
                 TMP_Text tmp = name.GetComponent<TMP_Text>();
                 tmp.rectTransform.localPosition = station.YardCenter.position.ToXZ().Scale(0, Maps.LoadedMap.worldSize, -0.175f, 0.175f);
 
-                tmp.text = ShowStationNamesOnMap ? station.stationName : station.stationID;
+                tmp.text = ShowStationNamesOnMap ? station.GetLocalizedStationName() : station.stationID;
             }
 
             Object.Destroy(namePrefab);

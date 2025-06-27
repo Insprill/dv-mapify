@@ -202,6 +202,11 @@ namespace Mapify.Editor.Utils
             return curve;
         }
 
+        public static BezierPoint First(this BezierCurve curve)
+        {
+            return curve[0];
+        }
+
         public static BezierPoint[] GetFirstAndLastPoints(this BezierCurve curve)
         {
             return new[] { curve[0], curve.Last() };

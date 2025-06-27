@@ -1,11 +1,8 @@
 ﻿using System;
 using System.IO;
-using DV.UI;
 using HarmonyLib;
 using Mapify.Map;
-using Mapify.Patches;
 using UnityModManagerNet;
-using Object = UnityEngine.Object;
 
 namespace Mapify
 {
@@ -65,8 +62,13 @@ namespace Mapify
 
         public static void LogDebug(Func<object> resolver)
         {
+            LogDebug(resolver.Invoke());
+        }
+
+        public static void LogDebug(object message)
+        {
             if (Settings.VerboseLogging)
-                ModEntry.Logger.Log($"[Debug] {resolver.Invoke()}");
+                ModEntry.Logger.Log($"[Debug] {message}");
         }
 
         public static void Log(object msg)

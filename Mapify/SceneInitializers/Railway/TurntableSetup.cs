@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
+using Mapify.Components;
 using Mapify.Editor;
 using Mapify.Utils;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Mapify.SceneInitializers.Railway
 {
     public class TurntableSetup : SceneSetup
     {
-        private static readonly FieldInfo TurntableRailTrack_Field__track = AccessTools.DeclaredField(typeof(TurntableRailTrack), "_track");
-
         public override void Run()
         {
             Mapify.LogDebug(() => "Creating turntables");
             foreach (Turntable turntable in Object.FindObjectsOfType<Turntable>())
             {
                 (TurntableController controller, bool usingDefaultTrack) = SetupVanillaObjects(turntable);
-                TurntableRailTrack turntableTrack = SetupTurntableTrack(turntable, usingDefaultTrack);
+                var turntableTrack = SetupTurntableTrack(turntable, usingDefaultTrack);
                 SetupTurntableController(controller, turntableTrack);
             }
         }
@@ -39,7 +39,20 @@ namespace Mapify.SceneInitializers.Railway
                         vanillaObject.Replace();
                         break;
                     case VanillaAsset.TurntableControlPanel:
-                        controller = vanillaObject.Replace(false).GetComponent<TurntableController>();
+                        var originalObj = vanillaObject.Replace(false);
+                        var originalController = originalObj.GetComponent<TurntableController>();
+
+                        if (turntable is TransferTable _)
+                        {
+                            var temp = originalObj.AddComponent<TransferTableController>();
+                            temp.CopyValues(originalController);
+                            Object.Destroy(originalController);
+                            controller = temp;
+                        }
+                        else
+                        {
+                            controller = originalController;
+                        }
                         break;
                 }
             }
@@ -50,10 +63,22 @@ namespace Mapify.SceneInitializers.Railway
         private static TurntableRailTrack SetupTurntableTrack(Turntable turntable, bool usingDefaultTrack)
         {
             Track track = turntable.Track;
-            TurntableRailTrack turntableTrack = track.gameObject.AddComponent<TurntableRailTrack>();
+            TurntableRailTrack turntableTrack;
+
+            if (turntable is TransferTable transferTable)
+            {
+                var temp = track.gameObject.AddComponent<TransferTableRailTrack>();
+                temp.TransferTableWidth = transferTable.Pit.GetComponent<MeshRenderer>().bounds.size.x; //todo assumption
+                turntableTrack = temp;
+            }
+            else
+            {
+                turntableTrack = track.gameObject.AddComponent<TurntableRailTrack>();
+            }
+
             RailTrack railTrack = track.GetComponent<RailTrack>();
             railTrack.generateMeshes = !usingDefaultTrack;
-            TurntableRailTrack_Field__track.SetValue(turntableTrack, railTrack);
+            turntableTrack._track = railTrack;
             turntableTrack.uniqueID = $"{turntableTrack.transform.position.GetHashCode()}";
             turntableTrack.trackEnds = turntableTrack.FindTrackEnds();
             turntableTrack.visuals = turntable.bridge;

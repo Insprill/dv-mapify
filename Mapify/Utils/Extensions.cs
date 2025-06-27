@@ -183,6 +183,19 @@ namespace Mapify.Utils
             DisplayLoadingInfo_Method_OnLoadingStatusChanged.Invoke(loadingInfo, new object[] { message, false, percentLoaded });
         }
 
+        /// <summary>
+        /// Move the points in the set by @movementDelta
+        /// </summary>
+        /// <param name="pointSet">this</param>
+        /// <param name="movementDelta">how much to move the points (in world space)</param>
+        public static void Translate(this EquiPointSet pointSet, Vector3 movementDelta)
+        {
+            for (var index = 0; index < pointSet.points.Length; ++index)
+            {
+                pointSet.points[index].position += new Vector3d(movementDelta);
+            }
+        }
+
         public static IEnumerable<Vector2> GetCurvePositions(this RailTrack track, float resolution)
         {
             EquiPointSet pointSet = track.GetUnkinkedPointSet();

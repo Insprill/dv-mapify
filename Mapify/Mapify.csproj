@@ -30,6 +30,7 @@
         <Reference Include="DV.Localization" />
         <Reference Include="DV.LayeredAudio" />
         <Reference Include="DV.MeshX" />
+        <Reference Include="DV.OriginShiftInfo" />
         <Reference Include="DV.PointSet" />
         <Reference Include="DV.SignPlacer" />
         <Reference Include="DV.TerrainSystem" />
@@ -53,7 +54,9 @@
     <ItemGroup>
         <Reference Include="AwesomeTechnologies.VegetationStudioPro.Runtime" />
         <Reference Include="BezierCurves" />
+        <Reference Include="Bolt.Flow.Runtime" />
         <Reference Include="I2.Localization" />
+        <Reference Include="Ludiq.Graphs.Runtime" />
         <Reference Include="net.smkd.vector3d" />
         <Reference Include="Newtonsoft.Json" />
         <Reference Include="sc.posteffects.runtime" />

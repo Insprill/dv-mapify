@@ -32,8 +32,18 @@ namespace Mapify.Utils
 
             RecreateTrack(track);
             UpdateSpatialHash(track);
+            UpdateCarsOnTrack(track);
 
             RailwayMeshGenerator_Field_prevCellId.SetValue(railwayMeshGenerator, new Vector2Int(int.MinValue, int.MaxValue));
+        }
+
+        private static void UpdateCarsOnTrack(RailTrack track)
+        {
+            foreach (var onTrackBogey in track.BogiesOnTrack())
+            {
+                onTrackBogey.Car.ForceOptimizationState(false);
+                onTrackBogey.RefreshBogiePoints();
+            }
         }
 
         private static void RecreateTrack(RailTrack track)

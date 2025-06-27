@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Mapify.Editor
 {
     // I can't with Unity man...
+    [ExecuteInEditMode]
     public class CargoSetMonoBehaviour : MonoBehaviour
     {
         public List<Cargo> cargoTypes;
@@ -15,6 +16,12 @@ namespace Mapify.Editor
                 cargoTypes = cargoTypes,
                 stations = stations
             };
+        }
+
+        private void OnEnable()
+        {
+            //hide this script in the editor
+            hideFlags = HideFlags.HideInInspector;
         }
     }
 }

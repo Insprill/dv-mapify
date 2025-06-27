@@ -1,3 +1,4 @@
+using DV.Localization;
 using HarmonyLib;
 
 namespace Mapify.Patches
@@ -44,7 +45,7 @@ namespace Mapify.Patches
             }
 
             string formattedWhat = string.IsNullOrWhiteSpace(what) ? "" : $" {what}";
-            __instance.percentageLoadedTMP.text = Locale.Get(Locale.LOADING__PLEASE_WAIT, formattedWhat, percentageLoaded.ToString("F0"));
+            __instance.percentageLoadedTMP.text = LocalizationAPI.L(Locale.LOADING__PLEASE_WAIT, formattedWhat, percentageLoaded.ToString("F0"));
 
             if (!Bootstrap.bootstrapped)
                 return false;

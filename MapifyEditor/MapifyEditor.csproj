@@ -33,6 +33,10 @@
         <Reference Include="UnityEngine.TerrainModule" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Tools\TrackTools\" />
+    </ItemGroup>
+
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <!-- Build the runtime version, without any UnityEditor references. This is super sketchy, but I couldn't find a better way to do it. -->
         <Exec Condition="'$(IsEditor)' == 'true'" Command="dotnet build -c $(Configuration) -p:IsEditor='false'" />

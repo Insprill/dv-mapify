@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mapify.Editor.Tools;
 using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -49,6 +51,9 @@ namespace Mapify.Editor
         [Header("Editor Visualization")]
         [SerializeField]
         private bool showLoadingGauge;
+
+        private List<GameObject> visualObjects =  new List<GameObject>();
+        // private bool shouldUpdateVisuals = false;
 #endif
 
         public bool isInSnapped { get; private set; }
@@ -97,20 +102,20 @@ namespace Mapify.Editor
         private void OnEnable()
         {
             snapShouldUpdate = true;
+            // PleaseVisualize();
         }
 
         private void OnDisable()
         {
             snappedTrackBefore?.UnSnapped();
             snappedTrackAfter?.UnSnapped();
+            VisualCleanup();
         }
 
         private void OnDestroy()
         {
-            snappedTrackBefore?.UnSnapped();
-            snappedTrackAfter?.UnSnapped();
+            OnDisable();
         }
-#endif
 
         private void OnValidate()
         {
@@ -143,9 +148,113 @@ namespace Mapify.Editor
                     Curve.drawColor = COLOR_PASSENGER_LOADING;
                     break;
             }
+
+            PleaseVisualize();
         }
 
-#if UNITY_EDITOR
+        // public void PleaseVisualize()
+        // {
+        //     shouldUpdateVisuals = true;
+        // }
+
+        private void Update()
+        {
+            // if(shouldUpdateVisuals || transform.hasChanged) Visualize();
+            Visualize();
+        }
+
+        private void Visualize()
+        {
+            var settings = VisualSettings.Instance;
+            if(!settings.EnableTrackVisuals || !settings.TrackPreviewPrefab) return;
+
+            // shouldUpdateVisuals = false;
+            var curve = Curve;
+
+            var segmentLength = 0.5f;
+            var segmentsInCurve = curve.length / segmentLength;
+
+
+            for (var i = 0; i < Curve.pointCount - 1; ++i)
+            {
+                var fromPoint = Curve[i];
+                var toPoint = Curve[i + 1];
+
+                var pointToPointLength = BezierCurve.ApproximateLength(p1, p1Handle2, p2, p2Handle1, 3);
+
+
+
+                var numberOfPoints = BezierCurve.GetNumPoints(fromPoint, toPoint, Curve.resolution);
+                var interpolatedPointPositions = BezierCurve.Interpolate(fromPoint.position, fromPoint.globalHandle2, toPoint.position, toPoint.globalHandle1, numberOfPoints);
+
+                var fromPosition = interpolatedPointPositions[0];
+                visualObjects[0] =
+
+                for (var index = 1; index < interpolatedPointPositions.Length; ++index)
+                {
+                    var toPosition = interpolatedPointPositions[index];
+                    var direction = (toPosition - fromPosition).normalized;
+                    // var rotation = Quaternion.LookRotation(direction, Vector3.up); //todo up??
+                    var rotation = Quaternion.FromToRotation(Vector3.forward, direction);
+
+
+
+                    fromPosition = toPosition;
+                }
+            }
+
+
+
+
+
+            //too many
+            while (visualObjects.Count > segmentsInCurve)
+            {
+                DestroyImmediate(visualObjects.Last());
+            }
+
+            //too few
+            while (visualObjects.Count < segmentsInCurve)
+            {
+                var newObj = Instantiate(settings.TrackPreviewPrefab, transform);
+                newObj.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
+                // newObj.hideFlags = HideFlags.HideInHierarchy;
+                visualObjects.Add(newObj);
+            }
+
+            for (var i = 0; i < curve.pointCount; i++)
+            {
+                var visualTransform = visualObjects[i].transform;
+                visualTransform.position = curve[i].position;
+                visualTransform.rotation = Quaternion.FromToRotation(Vector3.forward, (curve[i].globalHandle2 - curve[i].position).normalized);
+            }
+        }
+
+        public static Vector3[] Interpolate(
+            Vector3 p1,
+            Vector3 p1Handle2,
+            Vector3 p2,
+            Vector3 p2Handle1,
+            int numPoints)
+        {
+            var vector3Array = new Vector3[numPoints + 1];
+            vector3Array[0] = p1;
+            vector3Array[vector3Array.Length - 1] = p2;
+            var num = (float) numPoints;
+            for (var index = 1; index < vector3Array.Length - 1; ++index)
+                vector3Array[index] = BezierCurve.GetPoint(p1, p1Handle2, p2, p2Handle1, index / num);
+            return vector3Array;
+        }
+
+        public void VisualCleanup()
+        {
+            foreach (var obj in visualObjects)
+            {
+                DestroyImmediate(obj);
+            }
+            visualObjects = new List<GameObject>();
+        }
+
         private void OnDrawGizmos()
         {
             if (showLoadingGauge)
@@ -176,9 +285,9 @@ namespace Mapify.Editor
 
         internal void Snap()
         {
-            BezierPoint[] points = FindObjectsOfType<BezierCurve>().SelectMany(curve => new[] { curve[0], curve.Last() }).ToArray();
-            GameObject[] selectedObjects = Selection.gameObjects;
-            bool isSelected = !IsSwitch && !IsTurntable && (selectedObjects.Contains(gameObject) || selectedObjects.Contains(Curve[0].gameObject) || selectedObjects.Contains(Curve.Last().gameObject));
+            var points = FindObjectsOfType<BezierCurve>().SelectMany(curve => new[] { curve[0], curve.Last() }).ToArray();
+            var selectedObjects = Selection.gameObjects;
+            var isSelected = !IsSwitch && !IsTurntable && (selectedObjects.Contains(gameObject) || selectedObjects.Contains(Curve[0].gameObject) || selectedObjects.Contains(Curve.Last().gameObject));
             TrySnap(points, isSelected, true);
             TrySnap(points, isSelected, false);
         }
@@ -188,10 +297,10 @@ namespace Mapify.Editor
             Handles.color = Color.red;
             Handles.Label(position, "Disconnected", EditorStyles.whiteBoldLabel);
             const float size = 0.25f;
-            Transform cameraTransform = Camera.current.transform;
-            Vector3 cameraForward = cameraTransform.forward;
-            Vector3 cameraUp = cameraTransform.up;
-            Quaternion rotation = Quaternion.LookRotation(cameraForward, cameraUp);
+            var cameraTransform = Camera.current.transform;
+            var cameraForward = cameraTransform.forward;
+            var cameraUp = cameraTransform.up;
+            var rotation = Quaternion.LookRotation(cameraForward, cameraUp);
             Handles.DrawLine(position - rotation * Vector3.one * size, position + rotation * Vector3.one * size);
             Handles.DrawLine(position - rotation * new Vector3(size, -size, 0f), position + rotation * new Vector3(size, -size, 0f));
         }
@@ -199,21 +308,21 @@ namespace Mapify.Editor
         private void DrawLoadingGauge()
         {
             Gizmos.color = Curve.drawColor;
-            MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
-            for (int i = 0; i < Curve.pointCount - 1; ++i)
+            var mapInfo = EditorAssets.FindAsset<MapInfo>();
+            for (var i = 0; i < Curve.pointCount - 1; ++i)
             {
-                BezierPoint p1 = Curve[i];
-                BezierPoint p2 = Curve[i + 1];
-                int resolution = BezierCurve.GetNumPoints(p1, p2, Curve.resolution);
-                Vector3[] vector3Array = BezierCurve.Interpolate(p1.position, p1.globalHandle2, p2.position, p2.globalHandle1, resolution);
-                Vector3 from = vector3Array[0];
-                for (int index = 1; index < vector3Array.Length; ++index)
+                var p1 = Curve[i];
+                var p2 = Curve[i + 1];
+                var resolution = BezierCurve.GetNumPoints(p1, p2, Curve.resolution);
+                var vector3Array = BezierCurve.Interpolate(p1.position, p1.globalHandle2, p2.position, p2.globalHandle1, resolution);
+                var from = vector3Array[0];
+                for (var index = 1; index < vector3Array.Length; ++index)
                 {
-                    Vector3 to = vector3Array[index];
-                    Vector3 center = Vector3.Lerp(from, to, 0.5f);
+                    var to = vector3Array[index];
+                    var center = Vector3.Lerp(from, to, 0.5f);
                     center.y += mapInfo.loadingGaugeHeight / 2;
-                    Vector3 direction = to - from;
-                    Quaternion rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+                    var direction = to - from;
+                    var rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
                     Gizmos.matrix = Matrix4x4.TRS(center, rotation, Vector3.one);
                     Gizmos.DrawWireCube(Vector3.zero, new Vector3(mapInfo.loadingGaugeWidth, mapInfo.loadingGaugeHeight, Mathf.Abs(direction.magnitude)));
                     from = to;
@@ -236,7 +345,7 @@ namespace Mapify.Editor
                 var track = foundCollider.GetComponent<Track>();
                 if (foundCollider is CapsuleCollider capsule && track != null && track.IsTurntable)
                 {
-                    Vector3 center = capsule.transform.TransformPoint(capsule.center);
+                    var center = capsule.transform.TransformPoint(capsule.center);
                     closestPosition = pos + (Vector3.Distance(pos, center) - capsule.radius) * -(pos - center).normalized;
                     closestPosition.y = center.y;
                     closestDistance = Vector3.Distance(pos, closestPosition);
@@ -255,13 +364,13 @@ namespace Mapify.Editor
 
             if (closestDistance >= float.MaxValue)
             {
-                foreach (BezierPoint otherSnapPoint in snapPoints)
+                foreach (var otherSnapPoint in snapPoints)
                 {
                     //don't snap to itself
                     if (otherSnapPoint.Curve() == mySnapPoint.Curve()) continue;
 
-                    Vector3 otherPosition = otherSnapPoint.transform.position;
-                    float distance = Mathf.Abs(Vector3.Distance(otherPosition, pos));
+                    var otherPosition = otherSnapPoint.transform.position;
+                    var distance = Mathf.Abs(Vector3.Distance(otherPosition, pos));
 
                     // too far away
                     if (distance > SNAP_RANGE || distance >= closestDistance) continue;

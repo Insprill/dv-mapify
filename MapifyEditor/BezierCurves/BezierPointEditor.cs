@@ -7,6 +7,7 @@
 */
 
 #if UNITY_EDITOR
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,6 +26,8 @@ namespace Mapify.Editor.BezierCurves
         private delegate void HandleFunction(BezierPoint p);
 
         private readonly HandleFunction[] handlers = { HandleConnected, HandleBroken, HandleAbsent };
+
+        public bool Dirty = false;
 
         private void OnEnable()
         {

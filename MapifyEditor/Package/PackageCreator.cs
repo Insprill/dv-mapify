@@ -8,7 +8,7 @@ namespace Mapify.Editor
     public static class PackageCreator
     {
         private const string UNITY_PACKAGE_EXT_NAME = "unitypackage";
-        private const string EXPORT_ASSET_PATH = "Assets/Mapify";
+        public const string EXPORT_ASSET_PATH = "Assets/Mapify";
         private const string LAST_EXPORTED_KEY = "Mapify.Package.LastExportPath";
         private const string LAST_IMPORTED_KEY = "Mapify.Package.LastImportPath";
 

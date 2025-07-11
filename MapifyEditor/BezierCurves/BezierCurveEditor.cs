@@ -16,6 +16,16 @@ namespace Mapify.Editor.BezierCurves
     public class BezierCurveEditor : UnityEditor.Editor
     {
         private BezierCurve curve;
+        private Track _track;
+
+        private Track Track
+        {
+            get{
+                if (_track == null) _track = curve.gameObject.GetComponent<Track>();
+                return _track;
+            }
+        }
+
         private SerializedProperty resolutionProp;
         private SerializedProperty closeProp;
         private SerializedProperty pointsProp;
@@ -38,7 +48,9 @@ namespace Mapify.Editor.BezierCurves
             serializedObject.Update();
 
             // These shouldn't be changed by the user, so don't even draw them
-            resolutionProp.floatValue = 0.5f;
+            resolutionProp.floatValue = 0.5f; //todo
+
+            // EditorGUILayout.PropertyField(resolutionProp);
             closeProp.boolValue = false;
 
             EditorGUILayout.PropertyField(colorProp);
@@ -249,6 +261,11 @@ namespace Mapify.Editor.BezierCurves
             foreach (BezierPoint p in curve.GetAnchorPoints())
                 if (p != caller)
                     DrawPointSceneGUI(p);
+        }
+
+        private void OnValidate()
+        {
+            Track.PleaseVisualize();
         }
     }
 }

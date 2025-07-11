@@ -28,7 +28,7 @@ namespace Mapify.Components
 
         private void FixedUpdate()
         {
-            foreach (var car in railTrack.onTrackBogies.Select(bogie => bogie._car))
+            foreach (var car in railTrack.BogiesOnTrack().Select(bogie => bogie._car))
             {
                 if(car.GetAbsSpeed() <= maxSpeed) { return; }
 

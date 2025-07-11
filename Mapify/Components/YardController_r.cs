@@ -20,7 +20,7 @@ namespace Mapify.Components
         private string stationID;
         private string yardID;
 
-        private Dictionary<byte, string> trackNumberToCarID = new();
+        private Dictionary<byte, string> trackNumberToCarID = new Dictionary<byte, string>();
 
         private bool hasBeenSetup = false;
 
@@ -60,7 +60,7 @@ namespace Mapify.Components
 
         private void Update()
         {
-            var detectedCar = detectorTrack.onTrackBogies.Select(bogie => bogie._car).FirstOrDefault();
+            var detectedCar = detectorTrack.BogiesOnTrack().Select(bogie => bogie._car).FirstOrDefault();
             if(!detectedCar) return;
 
             var carTypeID = detectedCar.carLivery.parentType.id;

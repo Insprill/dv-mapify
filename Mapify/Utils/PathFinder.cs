@@ -45,7 +45,7 @@ namespace Mapify.Utils
             {
                 if (!cameFrom.ContainsKey(current))
                 {
-                    Mapify.LogError($"cameFrom does not contain current {current.logicTrack.ID.FullID}");
+                    Mapify.LogError($"cameFrom does not contain current {current.LogicTrack().ID.FullID}");
                     return null;
                 }
 
@@ -81,7 +81,7 @@ namespace Mapify.Utils
 
                 cameFrom.TryGetValue(current, out var prev);
 
-                var debug = $"ID: {current.logicTrack.ID.FullID} Prev: {prev?.logicTrack.ID.FullID}";
+                var debug = $"ID: {current.LogicTrack().ID.FullID} Prev: {prev?.LogicTrack().ID.FullID}";
 
                 var neighbors = new List<RailTrack>();
 
@@ -105,12 +105,12 @@ namespace Mapify.Utils
                     //if we could go through junction directly (without reversing)
                     if (!current.CanGoToDirectly(prev, neighbor))
                     {
-                        Mapify.LogDebugExtreme($"{neighbor.logicTrack.ID.FullID} reverse needed");
+                        Mapify.LogDebugExtreme($"{neighbor.LogicTrack().ID.FullID} reverse needed");
                         continue;
                     }
 
                     // compute exact cost
-                    var newCost = costSoFar[current] + neighbor.logicTrack.length;
+                    var newCost = costSoFar[current] + neighbor.LogicTrack().length;
 
 // If there's no cost assigned to the neighbor yet, or if the new
 // cost is lower than the assigned one, add newCost for this neighbor
@@ -123,7 +123,7 @@ namespace Mapify.Utils
                         cameFrom.Remove(neighbor);
                     }
 
-                    Mapify.LogDebugExtreme($"neighbor {neighbor.logicTrack.ID.FullID} update {newCost}");
+                    Mapify.LogDebugExtreme($"neighbor {neighbor.LogicTrack().ID.FullID} update {newCost}");
 
                     costSoFar.Add(neighbor, newCost);
                     cameFrom.Add(neighbor, current);

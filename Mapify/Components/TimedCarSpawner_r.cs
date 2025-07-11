@@ -51,14 +51,14 @@ namespace Mapify.Components
         {
             while (true)
             {
-                while (spawnTrack.onTrackBogies.Any())
+                while (spawnTrack.BogiesOnTrack().Any())
                 {
                     yield return null;
                 }
 
                 yield return new WaitForSeconds(SpawnInterval);
 
-                while (spawnTrack.onTrackBogies.Any())
+                while (spawnTrack.BogiesOnTrack().Any())
                 {
                     yield return null;
                 }

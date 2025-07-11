@@ -277,7 +277,7 @@ namespace Mapify.Utils
                 saveGameData.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
         }
 
-        public static RailTrack GetRailTrack(this RailTrackRegistry registry, string stationID, string yardID, byte trackNumber)
+        public static RailTrack GetRailTrack(this RailTrackRegistryBase registry, string stationID, string yardID, byte trackNumber)
         {
             var query = $"[{stationID}]_[{yardID}-{trackNumber:D2}";
 
@@ -287,10 +287,10 @@ namespace Mapify.Utils
         /// <summary>
         /// Returns the subyard IDs of all subyards in the yard(station) with ID yardID
         /// </summary>
-        public static IEnumerable<string> GetSubYardIDsOfYard(this RailTrackRegistry registry, string yardID)
+        public static IEnumerable<string> GetSubYardIDsOfYard(this RailTrackRegistryBase registry, string yardID)
         {
             return registry.AllTracks
-                .Select(railTrack => railTrack.logicTrack.ID)
+                .Select(railTrack => railTrack.LogicTrack().ID)
                 .Where(ID => ID.yardId == yardID)
                 .Select(ID => ID.subYardId)
                 .Distinct();
@@ -299,10 +299,10 @@ namespace Mapify.Utils
         /// <summary>
         /// Returns the track numbers of all track in the subyard with ID subYardID in the yard(station) with yardID
         /// </summary>
-        public static IEnumerable<int> GetTrackNumbersOfSubYard(this RailTrackRegistry registry, string yardID, string subYardID)
+        public static IEnumerable<int> GetTrackNumbersOfSubYard(this RailTrackRegistryBase registry, string yardID, string subYardID)
         {
             return registry.AllTracks
-                .Select(railTrack => railTrack.logicTrack.ID)
+                .Select(railTrack => railTrack.LogicTrack().ID)
                 .Where(ID => ID.yardId == yardID &&
                              ID.subYardId == subYardID)
                 .Select(ID => ID.orderNumber)

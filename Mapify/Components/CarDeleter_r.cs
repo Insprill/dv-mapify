@@ -15,9 +15,9 @@ namespace Mapify.Components
 
         private void Update()
         {
-            if(!railTrack.onTrackBogies.Any()) return;
+            if(!railTrack.BogiesOnTrack().Any()) return;
 
-            var carToDelete = railTrack.onTrackBogies.Select(bogie => bogie._car).First();
+            var carToDelete = railTrack.BogiesOnTrack().Select(bogie => bogie._car).First();
 
             Mapify.LogDebug($"{nameof(CarDeleter_r)}: Deleting {carToDelete.name}");
 

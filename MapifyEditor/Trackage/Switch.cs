@@ -11,7 +11,7 @@ namespace Mapify.Editor
 {
     [ExecuteInEditMode] //this is necessary for snapping to work
     [RequireComponent(typeof(VanillaObject))]
-    public class Switch : MonoBehaviour
+    public class Switch : SwitchBase
     {
         public enum StandSide
         {
@@ -50,6 +50,7 @@ namespace Mapify.Editor
         public Track DivergingTrack => transform.Find("[track diverging]").GetComponent<Track>();
         public bool IsLeft => DivergingTrack.Curve.Last().localPosition.x < 0;
 
+        //TODO snap in switchbase
 #if UNITY_EDITOR
 
         private void OnEnable()
@@ -201,5 +202,9 @@ namespace Mapify.Editor
         }
 
 #endif
+        public BezierPoint GetJointPoint() => ThroughTrack.Curve[0];
+        public BezierPoint GetThroughPoint() => ThroughTrack.Curve[1];
+        public BezierPoint GetDivergingPoint() => DivergingTrack.Curve[1];
+        public BezierPoint GetDivergeJoinPoint() => DivergingTrack.Curve[0];
     }
 }

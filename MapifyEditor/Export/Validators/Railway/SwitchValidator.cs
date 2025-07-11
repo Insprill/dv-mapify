@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using System.Linq;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Editor.Validators;
@@ -10,14 +11,25 @@ namespace MapifyEditor.Export.Validators
     {
         protected override IEnumerator<Result> Validate(Scenes scenes)
         {
-            foreach (Switch sw in scenes.railwayScene.GetAllComponents<Switch>())
+            foreach (var switch_ in scenes.railwayScene.GetAllComponents<SwitchBase>())
             {
-                Track divergingTrack = sw.DivergingTrack;
-                Track throughTrack = sw.ThroughTrack;
-                divergingTrack.Snap();
-                throughTrack.Snap();
-                if (!divergingTrack.isInSnapped || !divergingTrack.isOutSnapped || !throughTrack.isInSnapped || !throughTrack.isOutSnapped)
-                    yield return Result.Error("Switches must have a track attached to all points", sw);
+                var switchTracks = switch_.GetTracks();
+                if (switchTracks.Length < 2)
+                {
+                    yield return Result.Error("Switches must have at least 2 branches", switch_);
+                }
+
+                foreach (var track in switchTracks)
+                {
+                    track.Snap();
+
+                    if (track.isInSnapped && track.isOutSnapped) continue;
+
+                    yield return Result.Error("Switches must have a track attached to all points", switch_);
+                    break;
+                }
+
+                //TODO valideer dat de tracks met de [0] aan elkaar zitten
             }
         }
     }

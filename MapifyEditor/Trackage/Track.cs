@@ -3,6 +3,7 @@ using System.Linq;
 using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Mapify.Editor
 {
@@ -73,16 +74,8 @@ namespace Mapify.Editor
             }
         }
 
-        private Switch _parentSwitch;
-
-        private Switch ParentSwitch {
-            get {
-                if (_parentSwitch) return _parentSwitch;
-                return _parentSwitch = GetComponentInParent<Switch>();
-            }
-        }
-
-        public bool IsSwitch => ParentSwitch != null;
+        public bool IsSwitch => GetComponentInParent<SwitchBase>() != null;
+        public bool IsVanillaSwitch => GetComponentInParent<Switch>() != null;
         public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
         public string LogicName =>

@@ -1,3 +1,4 @@
+using System;
 using Mapify.Editor.Tools.OptionData;
 using Mapify.Editor.Utils;
 using UnityEditor;
@@ -43,7 +44,11 @@ namespace Mapify.Editor.Tools
         private bool _changeArc = false;
 
         // Switches.
-        private SwitchPoint _connectingPoint = SwitchPoint.Joint;
+        private SwitchType _switchType = SwitchType.Vanilla;
+        private int _switchBranchesCount = 2;
+        private SwitchPoint _connectingPointVanilla = SwitchPoint.Joint;
+        // 0 -> joint point, 1 - ∞ -> branch point
+        private int _connectingPointCustom = 0;
 
         // Yards.
         private YardOptions _yardOptions = YardOptions.DefaultOptions;
@@ -297,9 +302,12 @@ namespace Mapify.Editor.Tools
                 new GUIContent($"{TrackToolsHelper.CalculateHeightDifference(0, _endGrade, _length):F3}m"));
         }
 
-        private void DrawCurveOptions()
+        private void DrawCurveOptions(bool CustomSwitchBranch = false)
         {
-            DrawOrientationGUI("Which side the curve turns to");
+            if (!CustomSwitchBranch)
+            {
+                DrawOrientationGUI("Which side the curve turns to");
+            }
 
             EditorGUILayout.BeginHorizontal();
 
@@ -309,27 +317,38 @@ namespace Mapify.Editor.Tools
             if (GUILayout.Button(new GUIContent("Use switch radius", "Sets the radius to the one of switch curves"),
                 GUILayout.MaxWidth(140)))
             {
-                if (LeftSwitch)
+                if (CustomSwitchBranch)
                 {
-                    _radius = TrackToolsHelper.CalculateSwitchRadius(LeftSwitch);
-                }
-                else if (RightSwitch)
-                {
-                    _radius = TrackToolsHelper.CalculateSwitchRadius(RightSwitch);
+                    _radius = TrackToolsHelper.DefaultSwitchRadius;
                 }
                 else
                 {
-                    _radius = TrackToolsHelper.DefaultSwitchRadius;
+                    if (LeftSwitch)
+                    {
+                        _radius = TrackToolsHelper.CalculateSwitchRadius(LeftSwitch);
+                    }
+                    else if (RightSwitch)
+                    {
+                        _radius = TrackToolsHelper.CalculateSwitchRadius(RightSwitch);
+                    }
+                    else
+                    {
+                        _radius = TrackToolsHelper.DefaultSwitchRadius;
+                    }
                 }
             }
 
             EditorGUILayout.EndHorizontal();
 
             _arc = EditorGUILayout.Slider(new GUIContent("Arc", "Angle of the curve"),
-                _arc, 0.0f, 180.0f);
-            _maxArcPerPoint = EditorGUILayout.Slider(new GUIContent("Max arc per point",
-                "How big an arc can be before the curve is split."),
-                _maxArcPerPoint, 0.0f, 90.0f);
+                _arc, 0.1f, 180.0f);
+            if (!CustomSwitchBranch)
+            {
+                _maxArcPerPoint = EditorGUILayout.Slider(new GUIContent("Max arc per point",
+                        "How big an arc can be before the curve is split."),
+                    _maxArcPerPoint, 0.0f, 90.0f);
+            }
+
             _endGrade = EditorGUILayout.FloatField(
                 new GUIContent("End grade", "How steep should the track's other end be"),
                 _endGrade * 100.0f) / 100.0f;
@@ -343,17 +362,20 @@ namespace Mapify.Editor.Tools
             float length = EditorGUILayout.FloatField(new GUIContent("Approx. length",
                 "Approximated total length of the curve"),
                 _radius * _arc * Mathf.Deg2Rad);
+            //length of zero makes no sense and will cause exceptions
+            if(length < 0.1f) length = 0.1f;
+
             bool changed = EditorGUI.EndChangeCheck();
 
             _changeArc = EditorGUILayout.ToggleLeft(new GUIContent("Change arc",
                 "Change the arc of the curve instead of the radius to match the length"),
-                _changeArc, GUILayout.MaxWidth(100));
+                _changeArc, GUILayout.MaxWidth(140));
 
             if (changed)
             {
                 if (_changeArc)
                 {
-                    _arc = (length / _radius) * Mathf.Rad2Deg;
+                    _arc = length / _radius * Mathf.Rad2Deg;
                 }
                 else
                 {
@@ -369,14 +391,21 @@ namespace Mapify.Editor.Tools
 
         private void DrawSwitchOptions()
         {
-            if (!Require(LeftSwitch, "Left switch prefab") ||
-                !Require(RightSwitch, "Right switch prefab"))
-            {
-                return;
-            }
+            _switchType = (SwitchType)EditorGUILayout.EnumPopup(new GUIContent("Switch type",
+                    "Vanilla switch (like in the base game) or a custom switch (create your own shape)"),
+                _switchType);
 
-            DrawOrientationGUI("Which side the diverging track turns to");
-            DrawSwitchPointGUI();
+            switch (_switchType)
+            {
+                case SwitchType.Vanilla:
+                    DrawVanillaSwitchOptions();
+                    break;
+                case SwitchType.Custom:
+                    DrawCustomSwitchOptions();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void DrawYardOptions()
@@ -535,9 +564,9 @@ namespace Mapify.Editor.Tools
             }
 
             DrawOrientationGUI("Choose which side the track diverges to");
-            DrawSwitchPointGUI();
+            DrawVanillaSwitchPointGUI();
 
-            if (_connectingPoint == SwitchPoint.Through)
+            if (_connectingPointVanilla == SwitchPoint.Through)
             {
                 EditorGUILayout.HelpBox("The selected point has no connection with " +
                     "the track, you should select one of the others.", MessageType.Warning);

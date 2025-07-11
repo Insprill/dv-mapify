@@ -15,8 +15,8 @@ namespace Mapify.Editor.Validators
 
             foreach (Store store in stores)
             {
-                if (store.itemTypes.Length == 0)
-                    yield return Result.Error("Stores must have at least one item type", store);
+                if (store.SpecifyItems && store.itemTypes.Length == 0)
+                    yield return Result.Error($"Stores must have at least one item type when {nameof(Store.SpecifyItems)} is true.", store);
 
                 var duplicateItemTypes = store.itemTypes.GroupBy(e => e)
                     .Where(g => g.Count() > 1)

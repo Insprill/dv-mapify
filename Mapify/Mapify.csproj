@@ -16,6 +16,7 @@
         <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.RailTrack" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DVLangHelper.Data" />
     </ItemGroup>
 
     <!-- Derail Valley -->
@@ -47,6 +48,12 @@
     <ItemGroup>
         <PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
         <PackageReference Include="UnityModManager" Version="0.27.2" />
+    </ItemGroup>
+
+    <!-- DV mods -->
+    <ItemGroup>
+        <Reference Include="DVLangHelper.Data" />
+        <Reference Include="DVLangHelper.Runtime" />
     </ItemGroup>
 
     <!-- Third-party -->

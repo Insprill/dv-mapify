@@ -1,19 +1,14 @@
 ﻿using System;
-using System.IO;
-using DV.UI;
 using HarmonyLib;
 using Mapify.Map;
-using Mapify.Patches;
 using UnityModManagerNet;
-using Object = UnityEngine.Object;
 
 namespace Mapify
 {
     public static class Mapify
     {
-        private static UnityModManager.ModEntry ModEntry { get; set; }
+        public static UnityModManager.ModEntry ModEntry { get; private set; }
         private static Settings Settings;
-        private const string LOCALE_FILE = "locale.csv";
 
         internal static Harmony Harmony { get; private set; }
 
@@ -27,7 +22,10 @@ namespace Mapify
 
             try
             {
-                LoadLocale();
+                if (!Locale.Setup())
+                {
+                    return false;
+                }
                 Maps.Init();
                 Patch();
             }
@@ -38,13 +36,6 @@ namespace Mapify
             }
 
             return true;
-        }
-
-        private static void LoadLocale()
-        {
-            string localePath = Path.Combine(ModEntry.Path, LOCALE_FILE);
-            if (!Locale.Load(localePath))
-                LogError($"Failed to find locale file at {localePath}! Please make sure it's there.");
         }
 
         private static void Patch()
@@ -63,10 +54,20 @@ namespace Mapify
                 LogDebug(resolver);
         }
 
+        public static void LogDebugExtreme(object msg)
+        {
+            LogDebugExtreme(() => msg);
+        }
+
         public static void LogDebug(Func<object> resolver)
         {
             if (Settings.VerboseLogging)
                 ModEntry.Logger.Log($"[Debug] {resolver.Invoke()}");
+        }
+
+        public static void LogDebug(object msg)
+        {
+            LogDebug(() => msg);
         }
 
         public static void Log(object msg)

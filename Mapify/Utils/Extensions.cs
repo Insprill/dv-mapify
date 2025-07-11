@@ -5,8 +5,10 @@ using System.Reflection;
 using CommandTerminal;
 using DV;
 using DV.JObjectExtstensions;
+using DV.Localization;
 using DV.PointSet;
 using DV.ThingTypes;
+using DVLangHelper.Data;
 using HarmonyLib;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
@@ -289,6 +291,18 @@ namespace Mapify.Utils
         public static GameObject Replace(this VanillaObject vanillaObject, bool active = true, bool originShift = true, Type[] preserveTypes = null)
         {
             return vanillaObject.gameObject.Replace(AssetCopier.Instantiate(vanillaObject.asset, active, originShift), preserveTypes, vanillaObject.keepChildren, vanillaObject.rotationOffset);
+        }
+
+        public static string GetLocalizedStationName(this Station station)
+        {
+            var localized = LocalizationAPI.L(station.GetStationLocalizationKey());
+            //if there is no translation, don't translate
+            return localized == Locale.MISSING_TRANSLATION ? station.stationName : localized;
+        }
+
+        public static string GetStationLocalizationKey(this Station station)
+        {
+            return "station/" + station.stationID;
         }
 
         #endregion

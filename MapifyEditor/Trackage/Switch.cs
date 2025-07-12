@@ -49,6 +49,11 @@ namespace Mapify.Editor
         public Track DivergingTrack => transform.Find("[track diverging]").GetComponent<Track>();
         public bool IsLeft => DivergingTrack.Curve.Last().localPosition.x < 0;
 
+        public override BezierPoint GetJointPoint() => ThroughTrack.Curve[0];
+        public BezierPoint GetThroughPoint() => ThroughTrack.Curve[1];
+        public BezierPoint GetDivergingPoint() => DivergingTrack.Curve[1];
+        public BezierPoint GetDivergeJoinPoint() => DivergingTrack.Curve[0];
+
 #if UNITY_EDITOR
 
         //TODO working? Custom switch snap too?
@@ -200,11 +205,6 @@ namespace Mapify.Editor
                 transform.position = closestPosition + (transform.position - reference.position);
             }
         }
-
-        public override BezierPoint GetJointPoint() => ThroughTrack.Curve[0];
-        public BezierPoint GetThroughPoint() => ThroughTrack.Curve[1];
-        public BezierPoint GetDivergingPoint() => DivergingTrack.Curve[1];
-        public BezierPoint GetDivergeJoinPoint() => DivergingTrack.Curve[0];
 #endif
     }
 }

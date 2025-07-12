@@ -8,12 +8,16 @@ namespace Mapify.Editor
         private const float STORE_MODULE_X_OFFSET = 0.6f;
 
         [Header("Store")]
-        [Tooltip("What items are sold at this shop")]
+
+        [Tooltip("Manually specify what items are sold at this shop. If you leave this at False, the shop will have all the base game items.")]
+        public bool SpecifyItems = false;
+
+        [Tooltip("What items are sold at this shop. Only used if "+nameof(SpecifyItems)+" is true.")]
         public ItemType[] itemTypes;
 
         [Header("Custom")]
         [Tooltip("Whether this is a custom shop, or a vanilla one.")]
-        public bool isCustom = true;
+        public bool isCustom = false;
         [Tooltip("The reference point for generating item modules")]
         public Transform moduleReference;
         [Tooltip("Whether item modules should be generated on the -X axis instead of X")]

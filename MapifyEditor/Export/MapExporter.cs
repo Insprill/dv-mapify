@@ -10,7 +10,6 @@ using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 using Object = UnityEngine.Object;
 
@@ -118,7 +117,7 @@ namespace Mapify.Editor
         private static bool Export(string rootExportDir, bool uncompressed)
         {
             MapInfo mapInfo = EditorAssets.FindAsset<MapInfo>();
-            mapInfo.mapifyVersion = File.ReadLines("Assets/Mapify/version.txt").First().Trim();
+            mapInfo.mapifyVersion = File.ReadLines(Names.MAPIFY_VERSION_FILE).First().Trim();
 
             string mapExportDir = Path.Combine(rootExportDir, mapInfo.name);
 
@@ -180,10 +179,11 @@ namespace Mapify.Editor
             var builds = CreateTerrainBuilds();
 
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            List<string> assetPaths = new List<string>(allAssetPaths.Length - builds.Count);
-            List<string> scenePaths = new List<string>();
+            var miscAssetsPaths = new List<string>(allAssetPaths.Length - builds.Count);
+            var scenePaths = new List<string>();
+            var mapInfoPaths = new List<string>();
 
-            var mapInfoPath = AssetDatabase.GetAssetPath(EditorAssets.FindAsset<MapInfo>());
+            var mapInfo = EditorAssets.FindAsset<MapInfo>();
 
             for (var i = 0; i < allAssetPaths.Length; i++)
             {
@@ -200,13 +200,16 @@ namespace Mapify.Editor
                 {
                     scenePaths.Add(assetPath);
                 }
-                else if (assetPath == mapInfoPath)
+                else if (obj is MapInfo ||
+                         (mapInfo.LoadingScreenImages != null && mapInfo.LoadingScreenImages.Contains(obj)) ||
+                          obj == mapInfo.LoadingScreenMusic ||
+                          obj == mapInfo.LoadingScreenLogo)
                 {
-                    CreateMapInfoBuild(assetPath, ref builds);
+                    mapInfoPaths.Add(assetPath);
                 }
                 else
                 {
-                    assetPaths.Add(assetPath);
+                    miscAssetsPaths.Add(assetPath);
                 }
 
                 EditorUtility.DisplayProgressBar("Gathering assets", assetPath, i / (float)allAssetPaths.Length);
@@ -214,14 +217,17 @@ namespace Mapify.Editor
 
             EditorUtility.ClearProgressBar();
 
+            CreateMapInfoBuild(mapInfoPaths, ref builds);
             CreateSceneBuilds(scenePaths, ref builds);
-            CreateAssetsBuilds(assetPaths, ref builds);
+            CreateMiscAssetsBuilds(miscAssetsPaths, ref builds);
 
             return builds.ToArray();
         }
 
         private static List<AssetBundleBuild> CreateTerrainBuilds()
         {
+            const string progressBarText = "Building terrain scene";
+            EditorUtility.DisplayProgressBar(progressBarText, "", 0);
             var terrainScene = EditorSceneManager.GetSceneByPath(Scenes.TERRAIN);
 
             Terrain[] sortedTerrain = terrainScene.GetAllComponents<Terrain>()
@@ -233,22 +239,27 @@ namespace Mapify.Editor
 
             for (int i = 0; i < sortedTerrain.Length; i++)
             {
+                string terrainPath = AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData);
+
                 builds.Add(new AssetBundleBuild
                 {
                     assetBundleName = $"terraindata_{i}",
-                    assetNames = new[] { AssetDatabase.GetAssetPath(sortedTerrain[i].terrainData) }
+                    assetNames = new[] { terrainPath }
                 });
+
+                EditorUtility.DisplayProgressBar(progressBarText, terrainPath, i / (float)sortedTerrain.Length);
             }
 
+            EditorUtility.ClearProgressBar();
             return builds;
         }
 
-        private static void CreateMapInfoBuild(string mapInfoPath, ref List<AssetBundleBuild> builds)
+        private static void CreateMapInfoBuild(List<string> mapInfoAssetPaths, ref List<AssetBundleBuild> builds)
         {
             builds.Add(new AssetBundleBuild
             {
                 assetBundleName = Names.MAP_INFO_ASSET_BUNDLE,
-                assetNames = new[] { mapInfoPath }
+                assetNames = mapInfoAssetPaths.ToArray()
             });
         }
 
@@ -260,7 +271,7 @@ namespace Mapify.Editor
             });
         }
 
-        private static void CreateAssetsBuilds(List<string> assetPaths, ref List<AssetBundleBuild> builds)
+        private static void CreateMiscAssetsBuilds(List<string> assetPaths, ref List<AssetBundleBuild> builds)
         {
             //put big assets in their own assetbundle to avoid the combined assetbundle getting too big.
             //Unity cannot load assetbundles larger then 4GB.
@@ -285,7 +296,7 @@ namespace Mapify.Editor
                 if (assetBundleSize > 0 && assetBundleSize + fileSize > maxBundleSize)
                 {
                     builds.Add(new AssetBundleBuild {
-                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+'_'+assetBundleNumber,
+                        assetBundleName = Names.MISC_ASSETS_ASSET_BUNDLES_PREFIX+'_'+assetBundleNumber,
                         assetNames = asssetBundleFiles.ToArray()
                     });
 
@@ -301,14 +312,12 @@ namespace Mapify.Editor
                 if(assetBundleSize > 0 && i >= assetPaths.Count-1)
                 {
                     builds.Add(new AssetBundleBuild {
-                        assetBundleName = Names.ASSETS_ASSET_BUNDLES_PREFIX+'_'+assetBundleNumber,
+                        assetBundleName = Names.MISC_ASSETS_ASSET_BUNDLES_PREFIX+'_'+assetBundleNumber,
                         assetNames = asssetBundleFiles.ToArray()
                     });
                 }
             }
         }
-
-
 
         private static void CreateMapInfo(string filePath, MapInfo mapInfo)
         {
@@ -323,7 +332,8 @@ namespace Mapify.Editor
                 DisplayName = mapInfo.name,
                 ManagerVersion = "0.27.13",
                 Requirements = new[] { "Mapify" },
-                HomePage = mapInfo.homePage
+                HomePage = mapInfo.homePage,
+                Repository = mapInfo.repository
             };
             File.WriteAllText(filePath, JsonUtility.ToJson(modInfo));
         }

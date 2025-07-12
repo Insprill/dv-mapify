@@ -127,16 +127,16 @@ namespace Mapify.SceneInitializers.Railway
             var vanillaAsset = customSwitch.standSide == CustomSwitch.StandSide.LEFT ? VanillaAsset.SwitchRightOuterSign : VanillaAsset.SwitchRight;
 
             var prefabClone = AssetCopier.Instantiate(vanillaAsset);
-            prefabClone.transform.SetPositionAndRotation(customSwitch.transform.position, customSwitch.transform.rotation);
+            prefabClone.transform.position = customSwitch.transform.position;
 
             //Junction
             var inJunction = prefabClone.GetComponentInChildren<Junction>();
             inJunction.transform.position = customSwitch.GetJointPoint().transform.position;
             inJunction.selectedBranch = customSwitch.defaultBranch;
 
+            SetupStalk(prefabClone, customSwitch.GetJointPoint());
             DestroyPrefabTracks(prefabClone);
             CreateSwitchTracks(customSwitch, prefabClone, inJunction);
-            SetupStalk(prefabClone);
 
             foreach (var track in customSwitch.GetTracks())
             {
@@ -146,11 +146,11 @@ namespace Mapify.SceneInitializers.Railway
 
         private static void DestroyPrefabTracks(GameObject prefabClone)
         {
-            // must be destroyed inmediately to prevent:
+            // must be destroyed immediately to prevent:
             // "Junction 'in_junction' doesn't have track '[track diverging]' assigned"
             // from RailManager.TestConnections
-            Object.DestroyImmediate(prefabClone.FindChildByName("[track through]"));
-            Object.DestroyImmediate(prefabClone.FindChildByName("[track diverging]"));
+            Object.DestroyImmediate(prefabClone.FindChildByName(Switch.THROUGH_TRACK_NAME));
+            Object.DestroyImmediate(prefabClone.FindChildByName(Switch.DIVERGING_TRACK_NAME));
         }
 
         private static void CreateSwitchTracks(CustomSwitch customSwitch, GameObject prefabClone, Junction switchJunction)
@@ -197,29 +197,58 @@ namespace Mapify.SceneInitializers.Railway
             }
         }
 
-        private static void SetupStalk(GameObject prefabClone)
+        private static void SetupStalk(GameObject prefabClone, BezierPoint joinPoint)
         {
-            var graphical = prefabClone.FindChildByName("Graphical");
+            //visual objects
+            var graphical = prefabClone.FindChildByName("Graphical").transform;
             string[] toDelete = {"ballast", "anchors", "sleepers", "rails_static", "rails_moving"};
 
-            foreach (var child in graphical.transform.GetChildren())
+            foreach (var child in graphical.GetChildren())
             {
                 if (!toDelete.Contains(child.name)) continue;
                 Object.Destroy(child.gameObject);
             }
 
-            var switch_base = graphical.transform.FindChildByName("switch_base");
+            var graphicalY = graphical.localPosition.y;
+
+            var switch_base = graphical.FindChildByName("switch_base");
             if (!switch_base)
             {
-                Mapify.LogError("Could not determine switch offset");
+                Mapify.LogError("Could not find switch_base");
                 return;
             }
 
-            var offsetZ = switch_base.localPosition.z;
-            // Mapify.LogDebug($"offsetZ: {offsetZ}");
-            graphical.transform.localPosition -= new Vector3(0f, 0f, offsetZ);
-            var switchTrigger = prefabClone.FindChildByName("SwitchTrigger");
-            switchTrigger.transform.localPosition -= new Vector3(0f, 0f, offsetZ);
+            //interactable objects
+            var switchTrigger = prefabClone.FindChildByName("SwitchTrigger").transform;
+            if (!switchTrigger)
+            {
+                Mapify.LogError("Could not find SwitchTrigger");
+                return;
+            }
+
+            //position
+            var transformHelper = new GameObject("transformHelper").transform;
+            transformHelper.SetParent(prefabClone.transform, false);
+
+            transformHelper.position = switch_base.position;
+            graphical.SetParent(transformHelper, true);
+            switchTrigger.SetParent(transformHelper, true);
+            transformHelper.position = joinPoint.position;
+
+            transformHelper.localPosition += new Vector3(0, graphicalY, 0);
+
+            //rotation
+            var trackDirection = (joinPoint.globalHandle2 - joinPoint.position).normalized;
+            var rotationDelta = Quaternion.FromToRotation(transformHelper.forward, trackDirection);
+            transformHelper.Rotate(0, rotationDelta.eulerAngles.y, 0); //the stalk will sometimes flip upside down if we apply all axis
+
+            //next to the track
+            graphical.localPosition = new Vector3(0, graphical.localPosition.y, graphical.localPosition.z);
+
+            //get rid of the helper object
+            graphical.SetParent(prefabClone.transform, true);
+            switchTrigger.SetParent(prefabClone.transform, true);
+            GameObject.Destroy(transformHelper.gameObject);
         }
 
         private static void CreateVanillaSwitches()

@@ -11,6 +11,10 @@ namespace Mapify.Editor
     [RequireComponent(typeof(VanillaObject))]
     public class Switch : SwitchBase
     {
+        //must match DV.RailTrack.RailTrack.JUNCTION_DIVERGING_TRACK_NAME / JUNCTION_THROUGH_TRACK_NAME
+        public const string THROUGH_TRACK_NAME = "[track through]";
+        public const string DIVERGING_TRACK_NAME = "[track diverging]";
+
         public enum StandSide
         {
             THROUGH,
@@ -30,23 +34,8 @@ namespace Mapify.Editor
             DIVERGING
         }
 
-#if UNITY_EDITOR
-        private bool snapShouldUpdate = true;
-
-        private Vector3 previousPositionSwitchFirstPoint;
-        private Vector3 previousPositionThroughTrackLastPoint;
-        private Vector3 previousPositionDivergingTrackLastPoint;
-
-
-        private SnappedTrack snappedTrackBeforeSwitch;
-        //the track connected to the through track
-        private SnappedTrack snappedTrackAfterThrough;
-        //the track connected to the diverging track
-        private SnappedTrack snappedTrackAfterDiverging;
-#endif
-
-        public Track ThroughTrack => transform.Find("[track through]").GetComponent<Track>();
-        public Track DivergingTrack => transform.Find("[track diverging]").GetComponent<Track>();
+        public Track ThroughTrack => transform.Find(THROUGH_TRACK_NAME).GetComponent<Track>();
+        public Track DivergingTrack => transform.Find(DIVERGING_TRACK_NAME).GetComponent<Track>();
         public bool IsLeft => DivergingTrack.Curve.Last().localPosition.x < 0;
 
         public override BezierPoint GetJointPoint() => ThroughTrack.Curve[0];
@@ -55,6 +44,17 @@ namespace Mapify.Editor
         public BezierPoint GetDivergeJoinPoint() => DivergingTrack.Curve[0];
 
 #if UNITY_EDITOR
+        private bool snapShouldUpdate = true;
+
+        private Vector3 previousPositionSwitchFirstPoint;
+        private Vector3 previousPositionThroughTrackLastPoint;
+        private Vector3 previousPositionDivergingTrackLastPoint;
+
+        private SnappedTrack snappedTrackBeforeSwitch;
+        //the track connected to the through track
+        private SnappedTrack snappedTrackAfterThrough;
+        //the track connected to the diverging track
+        private SnappedTrack snappedTrackAfterDiverging;
 
         //TODO working? Custom switch snap too?
 

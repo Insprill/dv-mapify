@@ -12,10 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false"/>
         <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DV.ThingTypes" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.RailTrack" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DV.ThingTypes" IncludeCompilerGeneratedMembers="false" />
     </ItemGroup>
 
     <!-- Derail Valley -->
@@ -43,16 +45,18 @@
         <Reference Include="DV.WeatherSystem" />
     </ItemGroup>
 
-    <!-- Mod Loader -->
+    <!-- Nuget -->
     <ItemGroup>
         <PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
         <PackageReference Include="UnityModManager" Version="0.27.2" />
+        <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
     </ItemGroup>
 
     <!-- Third-party -->
     <ItemGroup>
         <Reference Include="AwesomeTechnologies.VegetationStudioPro.Runtime" />
         <Reference Include="BezierCurves" />
+        <Reference Include="CommsRadioAPI" />
         <Reference Include="I2.Localization" />
         <Reference Include="net.smkd.vector3d" />
         <Reference Include="Newtonsoft.Json" />
@@ -66,11 +70,13 @@
         <Reference Include="Unity.Postprocessing.Runtime" />
         <Reference Include="Unity.TextMeshPro" />
         <Reference Include="UnityEngine"/>
+        <Reference Include="UnityEngine.AnimationModule"/>
         <Reference Include="UnityEngine.AssetBundleModule"/>
         <Reference Include="UnityEngine.AudioModule"/>
         <Reference Include="UnityEngine.CoreModule"/>
         <Reference Include="UnityEngine.ImageConversionModule"/>
         <Reference Include="UnityEngine.IMGUIModule"/>
+        <Reference Include="UnityEngine.InputLegacyModule"/>
         <Reference Include="UnityEngine.JSONSerializeModule"/>
         <Reference Include="UnityEngine.PhysicsModule"/>
         <Reference Include="UnityEngine.TerrainModule"/>
@@ -81,6 +87,7 @@
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <!-- Copy to build folder -->
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="../build/runtime" />
+        <Copy SourceFiles="$(TargetDir)/PriorityQueue.dll" DestinationFolder="../build/runtime" />
 
         <!-- Copy to game install folder -->
         <Exec Condition="Exists('$(DvInstallDir)')" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(DvInstallDir)/Mods')&quot;" />

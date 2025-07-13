@@ -12,6 +12,12 @@ namespace Mapify.Editor.Tools
             Right
         }
 
+        public enum SwitchType
+        {
+            Vanilla, //switches like in the base game
+            Custom   //more flexible type of switches, can have more than 2 branches and any shape
+        }
+
         public enum SwitchPoint
         {
             Joint,

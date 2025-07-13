@@ -1,5 +1,6 @@
 using System.Reflection;
 using HarmonyLib;
+using Mapify.Editor;
 using Mapify.Utils;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace Mapify.Patches
                 return false;
             BoxCollider collider = handle.GetComponent<BoxCollider>();
             if (collider != null)
-                TurntableController_Field_PUSH_HANDLE_HALF_EXTENTS.SetValue(null, collider.size.Add(0.05f));
+                TurntableController_Field_PUSH_HANDLE_HALF_EXTENTS.SetValue(null, collider.size.Add(Track.TURNTABLE_SEARCH_RANGE));
             return true;
         }
     }

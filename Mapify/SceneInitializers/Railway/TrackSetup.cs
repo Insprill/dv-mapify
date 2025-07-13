@@ -243,7 +243,8 @@ namespace Mapify.SceneInitializers.Railway
             transformHelper.Rotate(0, rotationDelta.eulerAngles.y, 0); //the stalk will sometimes flip upside down if we apply all axis
 
             //next to the track
-            graphical.localPosition = new Vector3(0, graphical.localPosition.y, graphical.localPosition.z);
+            switchTrigger.localPosition -= new Vector3(graphical.localPosition.x, 0, 0);
+            graphical.localPosition -= new Vector3(graphical.localPosition.x, 0, 0);
 
             //get rid of the helper object
             graphical.SetParent(prefabClone.transform, true);

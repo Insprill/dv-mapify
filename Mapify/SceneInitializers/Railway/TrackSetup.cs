@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using DV;
-using Mapify.Components;
 using Mapify.Editor;
 using Mapify.Editor.Utils;
 using Mapify.Utils;
@@ -17,18 +15,19 @@ namespace Mapify.SceneInitializers.Railway
 
         public override void Run()
         {
-            Track[] tracks = Object.FindObjectsOfType<Track>().Where(t => !t.IsSwitch).ToArray();
+            var allTracks = Object.FindObjectsOfType<Track>();
+            var nonSwitchTracks = allTracks.Where(t => !t.IsSwitch).ToArray();
 
             Mapify.LogDebug(() => "Creating RailTracks");
-            CreateRailTracks(tracks, false);
+            CreateRailTracks(nonSwitchTracks, false);
 
             Mapify.LogDebug(() => "Creating Junctions");
             CreateJunctions();
 
-            tracks.SetActive(true);
+            nonSwitchTracks.SetActive(true);
 
             Mapify.LogDebug(() => "Connecting tracks");
-            ConnectTracks(tracks);
+            ConnectTracks(allTracks);
 
             AlignAllTrackEnds();
             TestConnections();
@@ -143,33 +142,38 @@ namespace Mapify.SceneInitializers.Railway
             var vanillaAsset = customSwitch.standSide == CustomSwitch.StandSide.LEFT ? VanillaAsset.SwitchRightOuterSign : VanillaAsset.SwitchRight;
 
             var prefabClone = AssetCopier.Instantiate(vanillaAsset);
-            prefabClone.transform.SetPositionAndRotation(customSwitch.transform.position, customSwitch.transform.rotation);
+            prefabClone.transform.position = customSwitch.transform.position;
 
             //Junction
             var inJunction = prefabClone.GetComponentInChildren<Junction>();
-            inJunction.transform.position = customSwitch.JointPoint.transform.position;
+            inJunction.transform.position = customSwitch.GetJointPoint().transform.position;
             inJunction.selectedBranch = customSwitch.defaultBranch;
 
+            SetupStalk(prefabClone, customSwitch.GetJointPoint());
             DestroyPrefabTracks(prefabClone);
             CreateSwitchTracks(customSwitch, prefabClone, inJunction);
-            SetupStalk(prefabClone);
+
+            foreach (var track in customSwitch.GetTracks())
+            {
+                track.gameObject.SetActive(true);
+            }
 
             YardControllerSetup(prefabClone, customSwitch, inJunction);
         }
 
         private static void DestroyPrefabTracks(GameObject prefabClone)
         {
-            // must be destroyed inmediately to prevent:
+            // must be destroyed immediately to prevent:
             // "Junction 'in_junction' doesn't have track '[track diverging]' assigned"
             // from RailManager.TestConnections
-            Object.DestroyImmediate(prefabClone.FindChildByName("[track through]"));
-            Object.DestroyImmediate(prefabClone.FindChildByName("[track diverging]"));
+            Object.DestroyImmediate(prefabClone.FindChildByName(Switch.THROUGH_TRACK_NAME));
+            Object.DestroyImmediate(prefabClone.FindChildByName(Switch.DIVERGING_TRACK_NAME));
         }
 
         private static void CreateSwitchTracks(CustomSwitch customSwitch, GameObject prefabClone, Junction switchJunction)
         {
             var railTracksInSwitch = CreateRailTracks(
-                customSwitch.GetTracks(), true
+                customSwitch.GetTracks(), false
             );
 
             if (!railTracksInSwitch.Any())
@@ -180,15 +184,15 @@ namespace Mapify.SceneInitializers.Railway
 
             switchJunction.outBranches = new List<Junction.Branch>();
 
-            foreach (var t in railTracksInSwitch)
+            foreach (var trackInSwitch in railTracksInSwitch)
             {
-                t.transform.SetParent(prefabClone.transform, true);
+                trackInSwitch.transform.SetParent(prefabClone.transform, true);
 
-                t.inBranch = new Junction.Branch();
-                t.inBranch.track = null;
-                t.inJunction = switchJunction;
+                trackInSwitch.inBranch = new Junction.Branch();
+                trackInSwitch.inBranch.track = null;
+                trackInSwitch.inJunction = switchJunction;
 
-                switchJunction.outBranches.Add(new Junction.Branch(t, true));
+                switchJunction.outBranches.Add(new Junction.Branch(trackInSwitch, true));
             }
 
             //track before the switch
@@ -210,29 +214,59 @@ namespace Mapify.SceneInitializers.Railway
             }
         }
 
-        private static void SetupStalk(GameObject prefabClone)
+        private static void SetupStalk(GameObject prefabClone, BezierPoint joinPoint)
         {
-            var graphical = prefabClone.FindChildByName("Graphical");
+            //visual objects
+            var graphical = prefabClone.FindChildByName("Graphical").transform;
             string[] toDelete = {"ballast", "anchors", "sleepers", "rails_static", "rails_moving"};
 
-            foreach (var child in graphical.transform.GetChildren())
+            foreach (var child in graphical.GetChildren())
             {
                 if (!toDelete.Contains(child.name)) continue;
                 Object.Destroy(child.gameObject);
             }
 
-            var switch_base = graphical.transform.FindChildByName("switch_base");
+            var graphicalY = graphical.localPosition.y;
+
+            var switch_base = graphical.FindChildByName("switch_base");
             if (!switch_base)
             {
-                Mapify.LogError("Could not determine switch offset");
+                Mapify.LogError("Could not find switch_base");
                 return;
             }
 
-            var offsetZ = switch_base.localPosition.z;
-            Mapify.LogDebug($"offsetZ: {offsetZ}");
-            graphical.transform.localPosition -= new Vector3(0f, 0f, offsetZ);
-            var switchTrigger = prefabClone.FindChildByName("SwitchTrigger");
-            switchTrigger.transform.localPosition -= new Vector3(0f, 0f, offsetZ);
+            //interactable objects
+            var switchTrigger = prefabClone.FindChildByName("SwitchTrigger").transform;
+            if (!switchTrigger)
+            {
+                Mapify.LogError("Could not find SwitchTrigger");
+                return;
+            }
+
+            //position
+            var transformHelper = new GameObject("transformHelper").transform;
+            transformHelper.SetParent(prefabClone.transform, false);
+
+            transformHelper.position = switch_base.position;
+            graphical.SetParent(transformHelper, true);
+            switchTrigger.SetParent(transformHelper, true);
+            transformHelper.position = joinPoint.position;
+
+            transformHelper.localPosition += new Vector3(0, graphicalY, 0);
+
+            //rotation
+            var trackDirection = (joinPoint.globalHandle2 - joinPoint.position).normalized;
+            var rotationDelta = Quaternion.FromToRotation(transformHelper.forward, trackDirection);
+            transformHelper.Rotate(0, rotationDelta.eulerAngles.y, 0); //the stalk will sometimes flip upside down if we apply all axis
+
+            //next to the track
+            switchTrigger.localPosition -= new Vector3(graphical.localPosition.x, 0, 0);
+            graphical.localPosition -= new Vector3(graphical.localPosition.x, 0, 0);
+
+            //get rid of the helper object
+            graphical.SetParent(prefabClone.transform, true);
+            switchTrigger.SetParent(prefabClone.transform, true);
+            GameObject.Destroy(transformHelper.gameObject);
         }
 
         private static void CreateVanillaSwitches()
@@ -281,12 +315,23 @@ namespace Mapify.SceneInitializers.Railway
         {
             foreach (Track track in tracks)
             {
-                RailTrack railTrack = track.GetComponent<RailTrack>();
-                if (railTrack.isJunctionTrack)
-                    continue;
+                //vanilla switches are connected elsewhere
+                if(track.IsVanillaSwitch) continue;
 
-                railTrack.ConnectInToClosestJunctionOrBranch();
-                railTrack.ConnectOutToClosestJunctionOrBranch();
+                RailTrack railTrack = track.GetComponent<RailTrack>();
+
+                if (track.IsCustomSwitch)
+                {
+                    railTrack.ConnectOutToClosestBranch();
+
+                    if (railTrack.outBranch != null) continue;
+                    Mapify.LogError($"{nameof(ConnectTracks)}: {nameof(railTrack.outBranch)} is null for custom switch track {track.name}");
+                }
+                else
+                {
+                    railTrack.ConnectInToClosestJunctionOrBranch();
+                    railTrack.ConnectOutToClosestJunctionOrBranch();
+                }
             }
         }
     }

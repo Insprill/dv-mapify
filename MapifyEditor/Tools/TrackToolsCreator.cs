@@ -298,16 +298,14 @@ namespace Mapify.Editor.Tools
         /// <summary>
         /// Creates a switch without the limitations of the base game switches
         /// </summary>
-        public static CustomSwitch CreateCustomSwitch(Transform parent, Vector3 attachPoint, Vector3 handlePosition, int switchBranchesCount,
-            int connectingPoint, float radius, float arc, float endGrade)
+        public static CustomSwitch CreateCustomSwitch(Transform parent, Vector3 attachPoint, Vector3 handlePosition, int switchBranchesCount, float radius, float arc, float endGrade)
         {
-            //TODO connectingPoint
-
             var switchObject = new GameObject($"[Switch w/ {switchBranchesCount} branches]");
             switchObject.transform.position = attachPoint;
+            switchObject.transform.parent = parent;
 
             var switchComponent = switchObject.AddComponent<CustomSwitch>();
-            //TODO
+
             switchComponent.defaultBranch = 0;
             switchComponent.standSide = CustomSwitch.StandSide.LEFT;
 

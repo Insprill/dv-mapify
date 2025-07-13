@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 namespace Mapify.Editor
 {
@@ -10,7 +14,28 @@ namespace Mapify.Editor
             RIGHT
         }
 
-        public BezierPoint JointPoint => Tracks[0].Curve[0];
+        public override BezierPoint GetJointPoint() => Tracks[0].Curve[0];
+
+        public BezierPoint GetOutPoint(int branchIndex)
+        {
+            if (branchIndex >= Tracks.Length)
+            {
+                throw new IndexOutOfRangeException($"Branch index {branchIndex} is out of range. Switch has {Tracks.Length} tracks.");
+            }
+            return Tracks[branchIndex].Curve.Last();
+        }
+
+        public List<BezierPoint> GetOutPoints()
+        {
+            return Tracks.Select(track => track.Curve.Last()).ToList();
+        }
+
+        public override List<BezierPoint> GetPoints()
+        {
+            var points = new List<BezierPoint>{ GetJointPoint() };
+            points.AddRange(GetOutPoints());
+            return points;
+        }
 
         [Tooltip("Which way the switch should be flipped by default")]
         public byte defaultBranch = 0;

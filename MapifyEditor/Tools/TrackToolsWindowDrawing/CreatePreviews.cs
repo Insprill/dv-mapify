@@ -126,7 +126,7 @@ namespace Mapify.Editor.Tools
                             {
                                 cache.Lines = TrackToolsCreator.Previews.PreviewSwitch(GetCurrentSwitchPrefab(),
                                     cache.Attach.Position, cache.Attach.Handle,
-                                    _connectingPointVanilla, _sampleCount);
+                                    _connectingPoint, _sampleCount);
                             }
                         }
 
@@ -141,7 +141,7 @@ namespace Mapify.Editor.Tools
                             foreach (var cache in caches)
                             {
                                 cache.Lines = TrackToolsCreator.Previews.PreviewCustomSwitch(
-                                    cache.Attach.Position, cache.Attach.Handle, _switchBranchesCount, _connectingPointCustom, _radius, _arc, _endGrade, _sampleCount);
+                                    cache.Attach.Position, cache.Attach.Handle, _switchBranchesCount, _radius, _arc, _endGrade, _sampleCount);
                             }
                         }
 

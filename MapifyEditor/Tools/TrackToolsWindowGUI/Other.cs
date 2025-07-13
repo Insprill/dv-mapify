@@ -172,9 +172,9 @@ namespace Mapify.Editor.Tools
         private void DrawVanillaSwitchPointGUI()
         {
             EditorGUILayout.BeginHorizontal();
-            _connectingPointVanilla = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
+            _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
                     "Which of the 3 switch points should connect to the current track"),
-                _connectingPointVanilla);
+                _connectingPoint);
 
             if (GUILayout.Button(new GUIContent("Next point", "Swaps between the 3 switch points."), GUILayout.MaxWidth(140)))
             {
@@ -218,6 +218,14 @@ namespace Mapify.Editor.Tools
             }
 
             EditorGUILayout.EndHorizontal();
+
+            DrawCurveOptions(true);
+        }
+
+        private void DrawCustomSwitchOptions()
+        {
+            _switchBranchesCount = EditorGUILayout.IntField(new GUIContent("Branches", "How many branches the switch has (at least 2)"), _switchBranchesCount);
+            if (_switchBranchesCount < 2) _switchBranchesCount = 2;
 
             DrawCurveOptions(true);
         }

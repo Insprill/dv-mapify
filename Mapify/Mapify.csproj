@@ -17,6 +17,7 @@
         <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.ThingTypes" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.RailTrack" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DV.ThingTypes" IncludeCompilerGeneratedMembers="false" />
     </ItemGroup>
 
     <!-- Derail Valley -->

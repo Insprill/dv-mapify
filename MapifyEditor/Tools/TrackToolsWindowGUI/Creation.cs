@@ -46,9 +46,7 @@ namespace Mapify.Editor.Tools
         // Switches.
         private SwitchType _switchType = SwitchType.Vanilla;
         private int _switchBranchesCount = 2;
-        private SwitchPoint _connectingPointVanilla = SwitchPoint.Joint;
-        // 0 -> joint point, 1 - ∞ -> branch point
-        private int _connectingPointCustom = 0;
+        private SwitchPoint _connectingPoint = SwitchPoint.Joint;
 
         // Yards.
         private YardOptions _yardOptions = YardOptions.DefaultOptions;

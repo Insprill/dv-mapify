@@ -164,13 +164,13 @@ namespace Mapify.Editor.Tools
         private void DrawVanillaSwitchPointGUI()
         {
             EditorGUILayout.BeginHorizontal();
-            _connectingPointVanilla = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
+            _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
                     "Which of the 3 switch points should connect to the current track"),
-                _connectingPointVanilla);
+                _connectingPoint);
 
             if (GUILayout.Button(new GUIContent("Next point", "Swaps between the 3 switch points."), GUILayout.MaxWidth(140)))
             {
-                _connectingPointVanilla = NextPoint(_connectingPointVanilla);
+                _connectingPoint = NextPoint(_connectingPoint);
             }
 
             EditorGUILayout.EndHorizontal();

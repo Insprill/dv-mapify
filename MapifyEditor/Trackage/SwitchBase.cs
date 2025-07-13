@@ -24,24 +24,22 @@ namespace Mapify.Editor
 
         private Vector3[] previousPositionsPoints;
         private SnappedTrack[] snappedTracks;
-        private bool started = false;
-
-        private void Start()
-        {
-            var pointsCount = GetTracks().Count()+1;
-            previousPositionsPoints = new Vector3[pointsCount];
-            snappedTracks = new SnappedTrack[pointsCount];
-            started = true;
-        }
+        private bool init = false;
 
         private void OnEnable()
         {
             snapShouldUpdate = true;
+
+            var pointsCount = GetTracks().Count()+1;
+            previousPositionsPoints = new Vector3[pointsCount];
+            snappedTracks = new SnappedTrack[pointsCount];
+            init = true;
         }
 
         private void OnDisable()
         {
             UnsnapConnectedTracks();
+            init = false;
         }
 
         private void OnDestroy()
@@ -51,7 +49,7 @@ namespace Mapify.Editor
 
         private void OnDrawGizmos()
         {
-            if(!started) return;
+            if(!init) return;
             if (transform.DistToSceneCamera() >= Track.SNAP_UPDATE_RANGE_SQR)
             {
                 return;

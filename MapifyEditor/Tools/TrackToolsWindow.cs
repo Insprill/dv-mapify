@@ -400,7 +400,7 @@ namespace Mapify.Editor.Tools
             }
             if (all || _currentPiece == TrackPiece.Switch)
             {
-                _connectingPointVanilla = SwitchPoint.Joint;
+                _connectingPoint = SwitchPoint.Joint;
             }
             if (all || _currentPiece == TrackPiece.Yard)
             {

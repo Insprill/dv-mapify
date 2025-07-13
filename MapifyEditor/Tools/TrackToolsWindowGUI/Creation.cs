@@ -564,7 +564,7 @@ namespace Mapify.Editor.Tools
             DrawOrientationGUI("Choose which side the track diverges to");
             DrawVanillaSwitchPointGUI();
 
-            if (_connectingPointVanilla == SwitchPoint.Through)
+            if (_connectingPoint == SwitchPoint.Through)
             {
                 EditorGUILayout.HelpBox("The selected point has no connection with " +
                     "the track, you should select one of the others.", MessageType.Warning);

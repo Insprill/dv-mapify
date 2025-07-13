@@ -277,7 +277,7 @@ namespace Mapify.Utils
                 saveGameData.SetJObject(SAVE_KEY_NAME, JObject.FromObject(basicMapInfo));
         }
 
-        public static RailTrack GetRailTrack(this RailTrackRegistry registry, string stationID, string yardID, byte trackNumber)
+        public static RailTrack GetRailTrack(this RailTrackRegistryBase registry, string stationID, string yardID, byte trackNumber)
         {
             var query = $"[{stationID}]_[{yardID}-{trackNumber:D2}";
 

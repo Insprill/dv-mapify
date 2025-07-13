@@ -178,48 +178,10 @@ namespace Mapify.Editor.Tools
 
             if (GUILayout.Button(new GUIContent("Next point", "Swaps between the 3 switch points."), GUILayout.MaxWidth(140)))
             {
-                _connectingPointVanilla = NextPoint(_connectingPointVanilla);
+                _connectingPoint = NextPoint(_connectingPoint);
             }
 
             EditorGUILayout.EndHorizontal();
-        }
-
-        private void DrawCustomSwitchOptions()
-        {
-            _switchBranchesCount = EditorGUILayout.IntField(new GUIContent("Branches", "How many branches the switch has (at least 2)"), _switchBranchesCount);
-            if (_switchBranchesCount < 2) _switchBranchesCount = 2;
-
-            EditorGUILayout.BeginHorizontal();
-
-            var displayedOptions = new GUIContent[_switchBranchesCount + 1];
-            displayedOptions[0] = new GUIContent("Joint point");
-            for (int i = 0; i < _switchBranchesCount; i++)
-            {
-                displayedOptions[i+1] = new GUIContent($"Branch out {i}");
-            }
-
-            var optionValues = new int[displayedOptions.Length];
-            for (int i = 0; i < displayedOptions.Length; i++)
-            {
-                optionValues[i] = i;
-            }
-
-            _connectingPointCustom = EditorGUILayout.IntPopup(
-                new GUIContent("Connecting point", "Which of the switch points should connect to the current track"),
-                _connectingPointCustom,
-                displayedOptions,
-                optionValues,
-                EditorStyles.popup
-            );
-
-            if (GUILayout.Button(new GUIContent("Next point", "Swaps between the switch points."), GUILayout.MaxWidth(120)))
-            {
-                _connectingPointCustom = (_connectingPointCustom+1) % (_switchBranchesCount+1);
-            }
-
-            EditorGUILayout.EndHorizontal();
-
-            DrawCurveOptions(true);
         }
 
         private void DrawCustomSwitchOptions()

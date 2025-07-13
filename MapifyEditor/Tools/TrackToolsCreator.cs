@@ -306,7 +306,6 @@ namespace Mapify.Editor.Tools
 
             var switchComponent = switchObject.AddComponent<CustomSwitch>();
 
-            //TODO maybe make this configurable? not important
             switchComponent.defaultBranch = 0;
             switchComponent.standSide = CustomSwitch.StandSide.LEFT;
 

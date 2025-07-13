@@ -59,24 +59,14 @@ namespace Mapify
 
         public static void LogDebugExtreme(Func<object> resolver)
         {
-            LogDebugExtreme(resolver.Invoke());
-        }
-
-        public static void LogDebugExtreme(object msg)
-        {
             if (Settings.ExtremelyVerboseLogging)
-                LogDebug(msg);
+                LogDebug(resolver);
         }
 
         public static void LogDebug(Func<object> resolver)
         {
-            LogDebug(resolver.Invoke());
-        }
-
-        public static void LogDebug(object msg)
-        {
             if (Settings.VerboseLogging)
-                ModEntry.Logger.Log($"[Debug] {msg}");
+                ModEntry.Logger.Log($"[Debug] {resolver.Invoke()}");
         }
 
         public static void Log(object msg)

@@ -12,6 +12,7 @@ namespace Mapify.SceneInitializers.Railway
     public class TrackSetup : SceneSetup
     {
         private const string IN_JUNCTION_NAME = "in_junction";
+        private static readonly string[] stalkObjectsToDelete = {"ballast", "anchors", "sleepers", "rails_static", "rails_moving"};
 
         public override void Run()
         {
@@ -201,11 +202,10 @@ namespace Mapify.SceneInitializers.Railway
         {
             //visual objects
             var graphical = prefabClone.FindChildByName("Graphical").transform;
-            string[] toDelete = {"ballast", "anchors", "sleepers", "rails_static", "rails_moving"};
 
             foreach (var child in graphical.GetChildren())
             {
-                if (!toDelete.Contains(child.name)) continue;
+                if (!stalkObjectsToDelete.Contains(child.name)) continue;
                 Object.Destroy(child.gameObject);
             }
 

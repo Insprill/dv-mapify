@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using HarmonyLib;
+using Mapify.Utils;
 using UnityEngine;
 
 namespace Mapify.Patches
@@ -18,12 +19,12 @@ namespace Mapify.Patches
         {
             if (__instance.junction.outBranches.Count <= 2) return true;
 
-            if (!(bool)(Object)__instance.animator) return false;
+            if (!__instance.animator) return false;
 
             __instance.EnableAnimator();
 
             var previousTime = __instance.animator.GetCurrentAnimatorStateInfo(ANIMATION_LAYER).normalizedTime;
-            var newTime = map(
+            var newTime = MathUtils.Map(
                 __instance.junction.selectedBranch,
                 0, __instance.junction.outBranches.Count - 1,
                 0, 1
@@ -66,10 +67,6 @@ namespace Mapify.Patches
             animator.SetFloat(Speed, 0);
 
             Mapify.Log($"{nameof(Pause)} {animator.GetCurrentAnimatorStateInfo(ANIMATION_LAYER).normalizedTime} PAUSED");
-        }
-
-        private static float map(float value, float in_min, float in_max, float out_min, float out_max) {
-            return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
         }
     }
 }

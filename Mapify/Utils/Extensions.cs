@@ -291,7 +291,7 @@ namespace Mapify.Utils
             RailTrack track = null;
             var first = false;
 
-            foreach (var foundTrack in Resources.FindObjectsOfTypeAll<RailTrack>())
+            foreach (var foundTrack in Resources.FindObjectsOfTypeAll<RailTrack>()) //todo use RailTrackRegistry?
             {
                 // skip the tracks in the junction
                 if(junction.outBranches.Any(branch => branch.track == foundTrack)) continue;

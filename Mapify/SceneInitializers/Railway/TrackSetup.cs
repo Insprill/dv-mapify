@@ -89,9 +89,9 @@ namespace Mapify.SceneInitializers.Railway
                 Debug.LogError("Problems found when checking connections, see errors above");
         }
 
-        private static List<RailTrack> CreateRailTracks(IEnumerable<Track> tracks, bool setActive)
+        private static RailTrack[] CreateRailTracks(IEnumerable<Track> tracks, bool setActive)
         {
-            return tracks.Select(track => CreateRailTrack(track, setActive)).ToList();
+            return tracks.Select(track => CreateRailTrack(track, setActive)).ToArray();
         }
 
         private static RailTrack CreateRailTrack(Track track, bool setActive)
@@ -116,13 +116,14 @@ namespace Mapify.SceneInitializers.Railway
 
         private static void CreateCustomSwitches()
         {
+            var railTracksCache = Resources.FindObjectsOfTypeAll<RailTrack>().ToList();
             foreach (var customSwitch in Object.FindObjectsOfType<CustomSwitch>())
             {
-                CreateCustomSwitch(customSwitch);
+                CreateCustomSwitch(customSwitch, railTracksCache);
             }
         }
 
-        private static void CreateCustomSwitch(CustomSwitch customSwitch)
+        private static void CreateCustomSwitch(CustomSwitch customSwitch, List<RailTrack> railTracksCache)
         {
             // we use SwitchRight because with SwitchLeft the animation would be mirrored
             var vanillaAsset = customSwitch.standSide == CustomSwitch.StandSide.LEFT ? VanillaAsset.SwitchRightOuterSign : VanillaAsset.SwitchRight;
@@ -137,7 +138,7 @@ namespace Mapify.SceneInitializers.Railway
 
             SetupStalk(prefabClone, customSwitch.GetJointPoint());
             DestroyPrefabTracks(prefabClone);
-            CreateSwitchTracks(customSwitch, prefabClone, inJunction);
+            CreateSwitchTracks(customSwitch, prefabClone, inJunction, railTracksCache);
 
             foreach (var track in customSwitch.GetTracks())
             {
@@ -154,11 +155,13 @@ namespace Mapify.SceneInitializers.Railway
             Object.DestroyImmediate(prefabClone.FindChildByName(Switch.DIVERGING_TRACK_NAME));
         }
 
-        private static void CreateSwitchTracks(CustomSwitch customSwitch, GameObject prefabClone, Junction switchJunction)
+        private static void CreateSwitchTracks(CustomSwitch customSwitch, GameObject prefabClone, Junction switchJunction, List<RailTrack> railTracksCache)
         {
             var railTracksInSwitch = CreateRailTracks(
                 customSwitch.GetTracks(), false
             );
+
+            railTracksCache.AddRange(railTracksInSwitch);
 
             if (!railTracksInSwitch.Any())
             {
@@ -180,7 +183,7 @@ namespace Mapify.SceneInitializers.Railway
             }
 
             //track before the switch
-            switchJunction.inBranch = switchJunction.FindClosestBranch(railTracksInSwitch[0].curve[0].transform.position);
+            switchJunction.inBranch = switchJunction.FindClosestBranch(railTracksInSwitch[0].curve[0].transform.position, railTracksCache);
 
             //connect the track before the switch to the switch
             if (switchJunction.inBranch.first)

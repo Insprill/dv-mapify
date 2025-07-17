@@ -280,51 +280,50 @@ namespace Mapify.Utils
         public static RailTrack GetRailTrack(this RailTrackRegistry registry, string stationID, string yardID, byte trackNumber)
         {
             var query = $"[{stationID}]_[{yardID}-{trackNumber:D2}";
-
             return registry.AllTracks.FirstOrDefault(track => track.name.Contains(query));
         }
 
-        public static Junction.Branch FindClosestBranch(this Junction junction, Vector3 fromPoint, float maxRange = 5f)
+        public static Junction.Branch FindClosestBranch(this Junction junction, Vector3 fromPoint, List<RailTrack> tracksCache, float maxRange = 5f)
         {
             var closestDistance = float.PositiveInfinity;
 
-            RailTrack track = null;
+            RailTrack branchTrack = null;
             var first = false;
 
-            foreach (var foundTrack in Resources.FindObjectsOfTypeAll<RailTrack>()) //todo use RailTrackRegistry?
+            foreach (var aTrack in tracksCache)
             {
                 // skip the tracks in the junction
-                if(junction.outBranches.Any(branch => branch.track == foundTrack)) continue;
+                if(junction.outBranches.Any(branch => branch.track == aTrack)) continue;
 
-                if (!foundTrack.curve || foundTrack.curve.pointCount < 2) continue;
+                if (!aTrack.curve || aTrack.curve.pointCount < 2) continue;
 
-                var firstPoint = foundTrack.curve[0];
+                var firstPoint = aTrack.curve[0];
 
-                var distanceToFirst = Vector3.SqrMagnitude(fromPoint - firstPoint.position);
-                if (distanceToFirst < maxRange * (double) maxRange && distanceToFirst < (double) closestDistance)
+                var distanceToFirst = Vector3.Distance(fromPoint, firstPoint.position);
+                if (distanceToFirst < maxRange && distanceToFirst < closestDistance)
                 {
                     closestDistance = distanceToFirst;
-                    track = foundTrack;
+                    branchTrack = aTrack;
                     first = true;
                 }
 
-                var lastPoint = foundTrack.curve.Last();
-                var distanceToLast = Vector3.SqrMagnitude(fromPoint - lastPoint.position);
-                if (distanceToLast < maxRange * (double) maxRange && distanceToLast < (double) closestDistance)
+                var lastPoint = aTrack.curve.Last();
+                var distanceToLast = Vector3.Distance(fromPoint, lastPoint.position);
+                if (distanceToLast < maxRange && distanceToLast < closestDistance)
                 {
                     closestDistance = distanceToLast;
-                    track = foundTrack;
+                    branchTrack = aTrack;
                     first = false;
                 }
             }
 
-            if (track == null)
+            if (branchTrack == null)
             {
                 Mapify.LogError($"Failed to find closest branch for {junction.name}");
                 return null;
             }
 
-            return new Junction.Branch(track, first);
+            return new Junction.Branch(branchTrack, first);
         }
 
         #endregion

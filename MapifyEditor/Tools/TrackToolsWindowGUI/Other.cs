@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Mapify.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -147,12 +149,23 @@ namespace Mapify.Editor.Tools
             EditorGUILayout.EndHorizontal();
         }
 
+        private void DrawVanillaSwitchOptions()
+        {
+            if (!Require(LeftSwitch, "Left switch prefab") ||
+                !Require(RightSwitch, "Right switch prefab"))
+            {
+                return;
+            }
+            DrawOrientationGUI("Which side the diverging track turns to");
+            DrawVanillaSwitchPointGUI();
+        }
+
         // SwitchPoint enum dropdown with a button to swap options easily.
-        private void DrawSwitchPointGUI()
+        private void DrawVanillaSwitchPointGUI()
         {
             EditorGUILayout.BeginHorizontal();
             _connectingPoint = (SwitchPoint)EditorGUILayout.EnumPopup(new GUIContent("Connecting point",
-                "Which of the 3 switch points should connect to the current track"),
+                    "Which of the 3 switch points should connect to the current track"),
                 _connectingPoint);
 
             if (GUILayout.Button(new GUIContent("Next point", "Swaps between the 3 switch points."), GUILayout.MaxWidth(140)))
@@ -161,6 +174,14 @@ namespace Mapify.Editor.Tools
             }
 
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawCustomSwitchOptions()
+        {
+            _switchBranchesCount = EditorGUILayout.IntField(new GUIContent("Branches", "How many branches the switch has (at least 2)"), _switchBranchesCount);
+            if (_switchBranchesCount < 2) _switchBranchesCount = 2;
+
+            DrawCurveOptions(true);
         }
 
         // Orientation enum dropdown with a button to swap options easily.

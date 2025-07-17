@@ -13,6 +13,7 @@ namespace Mapify.Editor
         public const float SNAP_RANGE = 1.0f;
         public const float SNAP_UPDATE_RANGE_SQR = 250000;
         public const float SNAP_RANGE_SQR = SNAP_RANGE * SNAP_RANGE;
+        public const float TURNTABLE_SEARCH_RANGE = 0.05f;
 
         // ReSharper disable MemberCanBePrivate.Global
         public static readonly Color32 COLOR_ROAD = new Color32(255, 255, 255, 255);
@@ -73,16 +74,9 @@ namespace Mapify.Editor
             }
         }
 
-        private Switch _parentSwitch;
-
-        private Switch ParentSwitch {
-            get {
-                if (_parentSwitch) return _parentSwitch;
-                return _parentSwitch = GetComponentInParent<Switch>();
-            }
-        }
-
-        public bool IsSwitch => ParentSwitch != null;
+        public bool IsSwitch => GetComponentInParent<SwitchBase>() != null;
+        public bool IsVanillaSwitch => GetComponentInParent<Switch>() != null;
+        public bool IsCustomSwitch => GetComponentInParent<CustomSwitch>() != null;
         public bool IsTurntable => GetComponentInParent<Turntable>() != null;
 
         public string LogicName =>
@@ -178,9 +172,9 @@ namespace Mapify.Editor
         {
             BezierPoint[] points = FindObjectsOfType<BezierCurve>().SelectMany(curve => new[] { curve[0], curve.Last() }).ToArray();
             GameObject[] selectedObjects = Selection.gameObjects;
-            bool isSelected = !IsSwitch && !IsTurntable && (selectedObjects.Contains(gameObject) || selectedObjects.Contains(Curve[0].gameObject) || selectedObjects.Contains(Curve.Last().gameObject));
-            TrySnap(points, isSelected, true);
-            TrySnap(points, isSelected, false);
+            bool shouldMove = !IsSwitch && !IsTurntable && (selectedObjects.Contains(gameObject) || selectedObjects.Contains(Curve[0].gameObject) || selectedObjects.Contains(Curve.Last().gameObject));
+            TrySnap(points, shouldMove, true);
+            TrySnap(points, shouldMove, false);
         }
 
         private static void DrawDisconnectedIcon(Vector3 position)
@@ -230,7 +224,7 @@ namespace Mapify.Editor
 
             var colliders = new Collider[1];
             // Turntables will search for track within 0.05m, so set it a little lower to be safe.
-            if (!IsSwitch && Physics.OverlapSphereNonAlloc(pos, 0.04f, colliders) != 0)
+            if (!IsSwitch && Physics.OverlapSphereNonAlloc(pos, TURNTABLE_SEARCH_RANGE-0.01f, colliders) != 0)
             {
                 var foundCollider = colliders[0];
                 var track = foundCollider.GetComponent<Track>();

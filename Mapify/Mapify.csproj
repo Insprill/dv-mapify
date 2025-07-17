@@ -16,6 +16,7 @@
         <Publicize Include="DV.UI" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.TerrainSystem" IncludeCompilerGeneratedMembers="false" />
         <Publicize Include="DV.RailTrack" IncludeCompilerGeneratedMembers="false" />
+        <Publicize Include="DV.ThingTypes" IncludeCompilerGeneratedMembers="false" />
     </ItemGroup>
 
     <!-- Derail Valley -->
@@ -66,6 +67,7 @@
         <Reference Include="Unity.Postprocessing.Runtime" />
         <Reference Include="Unity.TextMeshPro" />
         <Reference Include="UnityEngine"/>
+        <Reference Include="UnityEngine.AnimationModule"/>
         <Reference Include="UnityEngine.AssetBundleModule"/>
         <Reference Include="UnityEngine.AudioModule"/>
         <Reference Include="UnityEngine.CoreModule"/>

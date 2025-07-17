@@ -207,8 +207,16 @@ namespace Mapify.Editor.Tools
                     Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Curve");
                     break;
                 case TrackPiece.Switch:
-                    go = TrackToolsCreator.CreateSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
-                        _orientation, _connectingPoint).gameObject;
+                    if (_switchType == SwitchType.Vanilla)
+                    {
+                        go = TrackToolsCreator.CreateVanillaSwitch(LeftSwitch, RightSwitch, _currentParent, position, handle,
+                            _orientation, _connectingPoint).gameObject;
+                    }
+                    else
+                    {
+                        go = TrackToolsCreator.CreateCustomSwitch(_currentParent, position, handle, _switchBranchesCount, _radius, _arc, _endGrade).gameObject;
+                    }
+
                     SelectGameObject(go);
                     Undo.RegisterCreatedObjectUndo(go, "Created Switch");
                     break;
@@ -256,7 +264,7 @@ namespace Mapify.Editor.Tools
                     break;
                 case SpecialTrackPiece.SwitchCurve:
                     t = TrackToolsCreator.CreateSwitchCurve(LeftSwitch, RightSwitch, _currentParent, attachPoint, handlePosition,
-                        _orientation, _connectingPoint);
+                        _orientation, (SwitchPoint)_connectingPoint);
                     ApplySettingsToTrack(t);
                     SelectTrack(t);
                     Undo.RegisterCreatedObjectUndo(t.gameObject, "Created Switch Curve");
@@ -437,6 +445,7 @@ namespace Mapify.Editor.Tools
                         return false;
                     }
 
+                    //TODO bug: this check sometimes gives a false positive
                     if (!CheckGrade(isBehind ? CurrentTrack.GetGradeAtStart() : CurrentTrack.GetGradeAtEnd()))
                     {
                         tooltip = "Grade too steep for creation";

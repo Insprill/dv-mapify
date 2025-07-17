@@ -30,39 +30,39 @@ namespace Mapify.SceneInitializers.Railway
             Mapify.LogDebug(() => "Connecting tracks");
             ConnectTracks(allTracks);
 
-            AlignAllTrackEnds();
-            TestConnections();
+            var allRailTracks = Object.FindObjectsOfType<RailTrack>();
+            AlignAllTrackEnds(allRailTracks);
+            TestConnections(allRailTracks);
         }
 
         // copied from B99.3 RailManager class
-        private void AlignAllTrackEnds()
+        private static void AlignAllTrackEnds(RailTrack[] allRailTracks)
         {
-            foreach (RailTrack railTrack in Object.FindObjectsOfType<RailTrack>())
+            foreach (var railTrack in allRailTracks)
             {
                 if (!railTrack.dontChange)
                     railTrack.TryAlignHandles();
             }
-            Debug.Log((object) "Aligned all track ends");
+            Debug.Log("Aligned all track ends");
         }
 
         // copied from B99.3 RailManager class
-        private void TestConnections()
+        private static void TestConnections(RailTrack[] allRailTracks)
         {
-            var objectsOfType = Object.FindObjectsOfType<RailTrack>();
             var flag = false;
-            foreach (var track1 in objectsOfType)
+            foreach (var track1 in allRailTracks)
             {
-                if ((bool) (Object) track1.inJunction && !track1.inJunction.HasBranch(new Junction.Branch(track1, true)))
+                if (track1.inJunction && !track1.inJunction.HasBranch(new Junction.Branch(track1, true)))
                 {
                     Debug.LogError($"Junction '{track1.inJunction.name}' doesn't have track '{track1.name}' assigned", track1.inJunction);
                     flag = true;
                 }
-                if ((bool) (Object) track1.outJunction && !track1.outJunction.HasBranch(new Junction.Branch(track1, false)))
+                if (track1.outJunction && !track1.outJunction.HasBranch(new Junction.Branch(track1, false)))
                 {
                     Debug.LogError($"Junction '{track1.outJunction.name}' doesn't have track '{track1.name}' assigned", track1.outJunction);
                     flag = true;
                 }
-                if (track1.inIsConnected && !(bool) (Object) track1.inJunction)
+                if (track1.inIsConnected && !track1.inJunction)
                 {
                     var track2 = track1.inBranch.track;
                     var branch = track1.inBranch.first ? track2.inBranch : track2.outBranch;
@@ -72,7 +72,7 @@ namespace Mapify.SceneInitializers.Railway
                         flag = true;
                     }
                 }
-                if (track1.outIsConnected && !(bool) (Object) track1.outJunction)
+                if (track1.outIsConnected && !track1.outJunction)
                 {
                     var track3 = track1.outBranch.track;
                     var branch = track1.outBranch.first ? track3.inBranch : track3.outBranch;
@@ -116,7 +116,7 @@ namespace Mapify.SceneInitializers.Railway
 
         private static void CreateCustomSwitches()
         {
-            var railTracksCache = Resources.FindObjectsOfTypeAll<RailTrack>().ToList();
+            var railTracksCache = RailTrackRegistry.Instance.TrackRootParent.GetComponentsInChildren<RailTrack>(true).ToList(); //this breaks when includeInactive is false
             foreach (var customSwitch in Object.FindObjectsOfType<CustomSwitch>())
             {
                 CreateCustomSwitch(customSwitch, railTracksCache);

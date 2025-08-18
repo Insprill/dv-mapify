@@ -33,7 +33,7 @@ namespace Mapify.Editor
         public float jobGenerationDistance = 500;
         [Tooltip("The distance, in meters, the player has to be relative to the yard center for jobs to despawn")]
         public float jobDestroyDistance = 600;
-        [Range(1, 30)]
+        [Range(1, 999)]
         [Tooltip("The maximum number of jobs that can be generated at once. This number may not be met, but it'll never be exceeded")]
         public int jobsCapacity = 30;
         [Tooltip("The minimum number of cars per-job")]

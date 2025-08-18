@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DV.CashRegister;
+using DV.Optimizers;
 using DV.Printers;
 using DV.Shops;
 using DV.Utils;

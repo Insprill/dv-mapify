@@ -182,9 +182,6 @@ namespace Mapify.Editor
         StoreItemPaintCan = 178,
         StoreItemPaintCanMuseum = 179,
         StoreItemPaintCanSand = 180,
-        StoreItemCrate = 181,
-        StoreItemCratePlastic = 182,
-        StoreItemPaperBox = 183,
         StoreItemBeaconAmber = 184,
         StoreItemBeaconRed = 185,
         StoreItemBeaconBlue = 186,
@@ -218,7 +215,10 @@ namespace Mapify.Editor
         StoreItemItemContainerFolderBlue = 212,
         StoreItemItemContainerFolderRed = 213,
         StoreItemItemContainerFolderYellow = 214,
-        StoreItemItemContainerRegistrator = 215
+        StoreItemItemContainerRegistrator = 215,
+
+        // build 99.7
+        StoreItemGooglyEye = 216
 
         #endregion
     }

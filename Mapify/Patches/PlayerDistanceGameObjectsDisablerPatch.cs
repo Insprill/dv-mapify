@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using DV.Optimizers;
+using HarmonyLib;
 using UnityEngine;
 
 namespace Mapify.Patches

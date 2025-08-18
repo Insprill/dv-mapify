@@ -18,7 +18,8 @@ namespace Mapify
 
         public static GameObject Instantiate(VanillaAsset asset, bool active = true, bool originShift = true)
         {
-            Mapify.LogDebug(() => "Instantiating asset: " + asset);
+            Mapify.LogDebug("Instantiating asset: " + asset);
+
             var gameObject = GameObject.Instantiate(prefabs[asset], originShift ? WorldMover.OriginShiftParent : null);
             gameObject.SetActive(active);
             return gameObject;

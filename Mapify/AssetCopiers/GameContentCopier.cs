@@ -114,8 +114,7 @@ namespace Mapify.SceneInitializers.Vanilla.GameContent
             foreach (var module in shop.GetComponentsInChildren<ScanItemCashRegisterModule>())
                 Object.Destroy(module.gameObject);
 
-            Object.Destroy(shop.transform.FindChildByName("Stopwatch"));
-            Object.Destroy(shop.transform.FindChildByName("PosterAnchor"));
+            Object.Destroy(shop.gameObject.FindChildByName("PosterAnchor"));
 
             yield return (VanillaAsset.StoreObject, shop.gameObject);
 

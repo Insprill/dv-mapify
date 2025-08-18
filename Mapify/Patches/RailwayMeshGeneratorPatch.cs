@@ -52,25 +52,12 @@ namespace Mapify.Patches
     [HarmonyPatch(typeof(RailwayMeshGenerator), nameof(RailwayMeshGenerator.UpdateSleepersData))]
     public class RailwayMeshGenerator_UpdateSleepersData_Patch
     {
-        private static bool Prefix(TrackChunk chunk, ref JobHandle ___sleepersHandle, NativeList<Vector3> ___sleepersAnchorsPositions, NativeList<float> ___sleepersAnchorsTransformBufferData)
+        private static bool Prefix(TrackChunk chunk)
         {
-            if (Maps.IsDefaultMap)
-                return true;
+            if (Maps.IsDefaultMap) return true;
 
-            Track track = chunk.track.GetComponent<Track>();
-            if (!track.generateSleepers)
-                return false;
-
-            ___sleepersHandle = new PlaceSleepersAppendJob(
-                ___sleepersAnchorsTransformBufferData,
-                ___sleepersAnchorsPositions,
-                chunk.pointSet,
-                chunk.minIndex,
-                chunk.maxIndex,
-                chunk.track.baseType.randomizeAnchorDirection,
-                chunk.track.baseType.sleeperVerticalOffset
-            ).Schedule(___sleepersHandle);
-            return false;
+            var track = chunk.track.GetComponent<Track>();
+            return track.generateSleepers;
         }
     }
 }

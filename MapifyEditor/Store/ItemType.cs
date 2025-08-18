@@ -106,9 +106,6 @@ namespace Mapify.Editor
         PaintCan = 178,
         PaintCanMuseum = 179,
         PaintCanSand = 180,
-        Crate = 181,
-        CratePlastic = 182,
-        PaperBox = 183,
         BeaconAmber = 184,
         BeaconRed = 185,
         BeaconBlue = 186,
@@ -118,7 +115,7 @@ namespace Mapify.Editor
         SwitchSetter = 190,
         SwitchAlternating = 191,
 
-        //build 99.4
+        // build 99.4
         ItemContainerBriefcase = 192,
         ItemContainerFolder = 193,
         Nameplate = 194,
@@ -142,6 +139,9 @@ namespace Mapify.Editor
         ItemContainerFolderBlue = 212,
         ItemContainerFolderRed = 213,
         ItemContainerFolderYellow = 214,
-        ItemContainerRegistrator = 215
+        ItemContainerRegistrator = 215,
+
+        // build 99.7
+        GooglyEye = 216
     }
 }

@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Runtime:
 #### Added
 - More in-game translations (Dutch, Chinese(Simplified), Chinese(Traditional), German, Italian, French, Russian, Hungarian, Spanish) ([#123] by [@Tostiman], 我叫无聊 My Name Is BorING, kev & Coookie, tablesidecat02, Corpet, Louvet & Cie, RaY, Dank_memey and The72)
-- The ability to have stations generate practically unlimited jobs (was previously limited to 30) ([#126] by [@Tostiman])
+- Support for B99.7 ([#140], by [@Tostiman]).
 
 #### Fixed
 
@@ -20,10 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 - Ability to translate station names ([#123] by [@Tostiman]).
-
-### Documentation:
-
-- Changed the documentation website generator to mdBook ([#115] by [@Tostiman]).
+- Ability to create custom switches ([#136] by [@Tostiman]).
 
 
 ## [0.5.0] - 2025.??.??
@@ -33,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for B99 ([#97], by [@Tostiman]).
 - Support for B99.2 ([#106], by [@Tostiman]).
 - Support for B99.4 ([#121], by [@Tostiman]).
+- The ability to have stations generate practically unlimited jobs (was previously limited to 30) ([#126] by [@Tostiman])
  
 #### Fixed
 - Job booklets spawning under the station ([#45] by [@Tostiman]).
@@ -65,6 +63,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified the error message when warehouse machine validation failed ([#36] by [@Tostiman]).
 - Restricted station IDs to letters & numbers, to avoid breaking Wiz's cargo loading format ([#72] by [@Tostiman]).
 - Enabled sign generation by default ([#82] by [@Tostiman]).
+
+### Documentation:
+
+- Changed the documentation website generator to mdBook ([#115] by [@Tostiman]).
 
 
 ## [0.4.1] - 2023-07-23
@@ -212,7 +214,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#129]: https://github.com/Insprill/dv-mapify/pull/129
 [#124]: https://github.com/Insprill/dv-mapify/pull/124
 [#121]: https://github.com/Insprill/dv-mapify/pull/121
-
+[#136]: https://github.com/Insprill/dv-mapify/pull/136
+[#140]: https://github.com/Insprill/dv-mapify/pull/140
 
 
 

@@ -73,6 +73,12 @@ namespace Mapify.Map
                 if (!File.Exists(mapInfoPath))
                     continue;
 
+                if (!modEntry.Enabled)
+                {
+                    Mapify.Log($"Skipping map from '{modEntry.Info.DisplayName}' in '{dir}' because it is disabled.");
+                    continue;
+                }
+
                 BasicMapInfo mapInfo = JsonUtility.FromJson<BasicMapInfo>(File.ReadAllText(mapInfoPath));
                 if (mapInfo.name == Names.DEFAULT_MAP_NAME)
                 {

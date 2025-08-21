@@ -37,8 +37,8 @@ namespace MapifyEditor.Export.Validators.Project
             }
 
             //World
-            if (mapInfo.waterLevel < -1)
-                yield return Result.Error("Water level cannot be lower than -1", mapInfo);
+            if (mapInfo.waterLevel < MapInfo.MINIMUM_WATER_LEVEL)
+                yield return Result.Error($"Water level cannot be lower than {MapInfo.MINIMUM_WATER_LEVEL}", mapInfo); //https://github.com/Insprill/dv-mapify/issues/131
 
             Terrain[] terrains = scenes.terrainScene.GetAllComponents<Terrain>();
             float worldSize = terrains.CalculateWorldSize();

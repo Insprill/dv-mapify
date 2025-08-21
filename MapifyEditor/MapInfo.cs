@@ -5,6 +5,8 @@ namespace Mapify.Editor
     [CreateAssetMenu(menuName = "Mapify/MapInfo")]
     public class MapInfo : ScriptableObject
     {
+        public const int MINIMUM_WATER_LEVEL = 0;
+
         [Header("Map Information")]
         [Tooltip("The display name of the map")]
         public new string name = "My Custom Map";
@@ -27,9 +29,9 @@ namespace Mapify.Editor
         public float loadingGaugeWidth = 4;
 
         [Header("World")]
-        [Min(-1)]
+        [Min(MINIMUM_WATER_LEVEL)]
         [Tooltip("The height at which water will appear")]
-        public float waterLevel = -1;
+        public float waterLevel = MINIMUM_WATER_LEVEL;
         [Tooltip("The player's initial spawn position")]
         public Vector3 defaultSpawnPosition;
         [Tooltip("The player's initial spawn rotation")]
